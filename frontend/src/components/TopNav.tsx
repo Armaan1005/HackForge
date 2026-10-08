@@ -1,10 +1,8 @@
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { ai, useEngineSource } from '../lib/api';
-import { useInterval } from '../lib/hooks';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useEngineSource } from '../lib/api';
 import { spring } from '../lib/theme';
-import type { AiStatus } from '../lib/types';
 import { HowItWorks } from './HowItWorks';
 import { Icon, type IconName } from './Icon';
 import { MascotMark } from './Mascot';
@@ -23,34 +21,43 @@ const links: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: '/trust', label: 'Trust', icon: 'shield' },
 ];
 
+// Each page renders its own TopNav, so the pill's last position lives outside the component: the new nav starts
+// the pill where the old one left it, then glides to the active link (CSS transition, no layout animation).
+let lastPill: { x: number; w: number } | null = null;
+
 export function TopNav() {
+  const navRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+  const [pill, setPill] = useState(lastPill);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const a = navRef.current?.querySelector<HTMLElement>('.navlink.active');
+      const next = a ? { x: a.offsetLeft, w: a.offsetWidth } : null;
+      lastPill = next;
+      requestAnimationFrame(() => setPill(next));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (navRef.current) ro.observe(navRef.current);
+    return () => ro.disconnect();
+  }, [pathname]);
   const source = useEngineSource();
-  const [status, setStatus] = useState<AiStatus | null>(null);
   const [help, setHelp] = useState(false);
   const [menu, setMenu] = useState(false);
-  const poll = () => ai.status().then(setStatus).catch(() => setStatus(null));
-  useInterval(poll, 8000);
-  useEffect(() => { poll(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const aiOn = !!status?.enabled;
   return (
     <header className="topnav no-print">
       <div className="container topnav-inner">
         <Link to="/" className="brand" aria-label="Axon home"><MascotMark size={30} />Axon <small>for SIU teams</small></Link>
-        <nav className="navlinks" aria-label="Main">
+        <nav ref={navRef} className="navlinks" aria-label="Main">
+          {pill && <span className="nav-pill" style={{ transform: `translateX(${pill.x}px)`, width: pill.w }} aria-hidden />}
           {links.map(l => (
             <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
-              {({ isActive }) => (<>
-                {isActive && <motion.span layoutId="nav-pill" className="nav-pill" transition={spring} />}
-                <Icon name={l.icon} size={15} /><span className="lbl">{l.label}</span>
-              </>)}
+              <Icon name={l.icon} size={15} /><span className="lbl">{l.label}</span>
             </NavLink>
           ))}
         </nav>
         <div className="nav-tools">
-          <span className={`engine-pill ${aiOn ? 'on' : ''}`} title={`${source === 'live' ? 'Live detection engine' : 'Sample data (engine not connected yet)'} · ${status ? `${status.model}, ${status.mode}` : 'AI service offline'}`}>
-            <Icon name="ai" size={13} />{!aiOn ? 'AI templates' : status?.model.startsWith('sap/') ? 'SAP AI Core' : status?.model.startsWith('ollama/') ? 'Local AI on' : 'Gemini on'}
-          </span>
           <IconButton icon="sys-help" label="How Axon works" onClick={() => setHelp(true)} />
           <div style={{ position: 'relative' }}>
             <button className="icon-btn" style={{ width: 'auto', padding: 3 }} aria-label="Account" aria-expanded={menu} onClick={() => setMenu(v => !v)}>

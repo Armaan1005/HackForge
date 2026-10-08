@@ -107,7 +107,8 @@ main.page { padding-top: 26px; padding-bottom: 56px; min-height: calc(100vh - 64
 .navlinks { display: flex; gap: 2px; margin: 0 auto; padding: 4px; background: var(--bg-2); border-radius: 999px; position: relative; }
 .navlink { position: relative; display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 999px; color: var(--text-2); font-weight: 550; font-size: .92rem; white-space: nowrap; z-index: 0; transition: color var(--dur) var(--ease); }
 .navlink:hover, .navlink.active { color: var(--text); }
-.nav-pill { position: absolute; inset: 0; background: var(--surface); border-radius: 999px; box-shadow: var(--shadow); z-index: -1; }
+.nav-pill { position: absolute; top: 4px; bottom: 4px; left: 0; background: var(--surface); border-radius: 999px; box-shadow: var(--shadow); z-index: 0; pointer-events: none; transition: transform .32s var(--ease), width .32s var(--ease); }
+.navlinks > .navlink { z-index: 1; }
 .nav-tools { display: flex; align-items: center; gap: 4px; }
 @media (max-width: 960px) {
   .topnav-inner { height: auto; padding: 10px 0 8px; flex-wrap: wrap; row-gap: 8px; }
@@ -764,7 +765,8 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .utabs button { position: relative; flex: 1 0 auto; padding: 10px 12px 12px; border: 0; background: none; font: inherit; font-size: .92rem; font-weight: 550; color: var(--text-3); cursor: pointer; white-space: nowrap; transition: color var(--dur) var(--ease); }
 .utabs button:hover { color: var(--text); }
 .utabs button.on { color: var(--text); font-weight: 650; }
-.utab-line { position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2.5px; border-radius: 2px; background: var(--accent); }
+.utabs { position: relative; }
+.utab-line { position: absolute; left: 0; bottom: -1px; height: 2.5px; border-radius: 2px; background: var(--accent); pointer-events: none; transition: transform .3s var(--ease), width .3s var(--ease); }
 .side-panel { padding: 0; }
 .side-panel section { padding: 20px 22px; }
 .side-panel section + section { border-top: 1px solid var(--line); }

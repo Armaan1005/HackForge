@@ -1,5 +1,4 @@
-import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Card, ErrorState, PageHeader, Ring, Segmented, Skeleton, Status, Strength } from '../components/ui';
 import { api } from '../lib/api';
@@ -23,6 +22,9 @@ const TABS = [
 ] as const;
 
 export function CaseView() {
+  // underline measures the active tab and glides there (no layout animation, so scrolling can't throw it off)
+  const tabsRef = useRef<HTMLElement>(null);
+  const [line, setLine] = useState<{ x: number; w: number } | null>(null);
   const { id = '' } = useParams();
   const nav = useNavigate();
   const c = useAsync(() => api.case(id), [id]);
@@ -32,6 +34,18 @@ export function CaseView() {
   const [horizon, setHorizon] = useState<Horizon>(30);
   const [highlight, setHighlight] = useState<string | null>(null);
 
+  useLayoutEffect(() => {
+    const measure = () => {
+      const b = tabsRef.current?.querySelector<HTMLElement>('button.on');
+      if (!b) return;
+      const next = { x: b.offsetLeft + 8, w: b.offsetWidth - 16 };
+      setLine(cur => (cur && cur.x === next.x && cur.w === next.w ? cur : next));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (tabsRef.current) ro.observe(tabsRef.current);
+    return () => ro.disconnect();
+  }, [tab, c.data?.case_id]);
   if (c.error) return <ErrorState error={c.error} onRetry={c.reload} />;
   if (!c.data) return <div className="stack-lg"><Skeleton h={70} /><div className="cand-top"><Skeleton h={300} /><Skeleton h={300} /></div></div>;
   const k = c.data;
@@ -81,11 +95,11 @@ export function CaseView() {
       </div>
 
       <div className="no-print case-tabs">
-        <nav className="utabs" role="tablist" aria-label="Case sections">
+        <nav ref={tabsRef} className="utabs" role="tablist" aria-label="Case sections">
+          {line && <span className="utab-line" style={{ transform: `translateX(${line.x}px)`, width: line.w }} aria-hidden />}
           {TABS.map(t => (
             <button key={t.value} type="button" role="tab" aria-selected={tab === t.value} className={tab === t.value ? 'on' : ''} onClick={() => setTab(t.value)}>
               {t.label}
-              {tab === t.value && <motion.span layoutId="utab-line" className="utab-line" transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} />}
             </button>
           ))}
         </nav>
