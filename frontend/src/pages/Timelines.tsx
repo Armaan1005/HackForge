@@ -11,9 +11,9 @@ import type { CaseDetail } from '../lib/types';
 
 // ── Script timing (ms). One clock drives everything, so pause / skip / replay are exact. ──
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
-const ACT1 = [3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 4].map(s => s * 1000);  // ~32 s with Axon
-const ACT2 = [3.5, 3.5, 3.5, 1, 1, 1, 1, 1, 5].map(s => s * 1000);    // ~21 s without: detection steps flash by greyed out
-const REWIND = 3000, STRIKE = 2600;
+const ACT1 = [1.4, 1.4, 1.7, 1.6, 1.6, 1.6, 1.6, 1.6, 2].map(s => s * 1000);  // ~15 s with Axon
+const ACT2 = [1.6, 1.6, 1.8, .5, .5, .5, .5, .5, 2.6].map(s => s * 1000);  // ~10 s without: detection steps flash by greyed out
+const REWIND = 2000, STRIKE = 2200;  // whole run ~30 s; ?speed=0.5 halves the pace, ?speed=2 doubles it
 const A1_END = sum(ACT1), A2_START = A1_END + REWIND, A2_END = A2_START + sum(ACT2), STRIKE_END = A2_END + STRIKE, END = STRIKE_END + 400;
 const DETECTION = new Set([3, 4, 5, 6, 7]);
 const start1 = (i: number) => sum(ACT1.slice(0, i));
@@ -179,16 +179,17 @@ export function Timelines() {
   const [params] = useSearchParams();
   const id = params.get('case') ?? 'CASE-0002';
   const kq = useAsync(() => api.case(id), [id]);
-  const [t, setT] = useState(() => Math.min(END, Math.max(0, Number(params.get('at') ?? 0) * 1000 || 0)));  // ?at=35 starts at Act 2
+  const [t, setT] = useState(() => Math.min(END, Math.max(0, Number(params.get('at') ?? 0) * 1000 || 0)));  // ?at=16.5 starts at Act 2
   const [playing, setPlaying] = useState(false);
+  const speed = Math.min(4, Math.max(.25, Number(params.get('speed')) || 1));
 
   useEffect(() => {
     if (!playing) return;
     let raf = 0, last = performance.now();
-    const tick = (now: number) => { setT(x => Math.min(END, x + (now - last))); last = now; raf = requestAnimationFrame(tick); };
+    const tick = (now: number) => { setT(x => Math.min(END, x + (now - last) * speed)); last = now; raf = requestAnimationFrame(tick); };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing]);
+  }, [playing, speed]);
   useEffect(() => { if (t >= END) setPlaying(false); }, [t]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {

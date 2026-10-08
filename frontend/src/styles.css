@@ -470,7 +470,7 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .tl-step.lost .tl-node { background: var(--bad) !important; border-color: var(--bad) !important; color: #fff !important; box-shadow: 0 0 0 6px color-mix(in srgb, var(--bad) 14%, transparent) !important; }
 .tl-step.lost .tl-title { color: var(--bad); }
 
-.tl-rewind .tl-main { animation: tl-rewind 3s linear; }
+.tl-rewind .tl-main { animation: tl-rewind 2s linear; }
 .tl-rewind .tl-main::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(20, 20, 30, .05) 0 2px, transparent 2px 5px); animation: tl-scan .25s linear infinite; }
 @keyframes tl-rewind { 0%, 100% { filter: none; } 15%, 85% { filter: blur(1.2px) saturate(.3) contrast(1.05); transform: skewX(-.6deg); } }
 @keyframes tl-scan { to { background-position: 0 5px; } }
