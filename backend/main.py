@@ -12,6 +12,16 @@ load_dotenv()
 
 log = logging.getLogger("axon")
 
+
+class _QuietPolling(logging.Filter):
+    """Hide the UI's 8-second /api/ai/status polling so the Gemini trace stays readable."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/api/ai/status" not in record.getMessage()
+
+
+logging.getLogger("uvicorn.access").addFilter(_QuietPolling())
+
 app = FastAPI(title="Axon", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
