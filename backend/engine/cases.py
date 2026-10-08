@@ -67,7 +67,7 @@ def group_alerts(store: DataStore, entities: dict, signals: list[dict], open_ids
                     uf.union(eid, other)
     provs = [e for e in open_ids if e.startswith("PRV-")]
     pidx = store.provider_index
-    for col in ("owner_id", "primary_facility_id"):
+    for col in ("owner_id",):
         by: dict[str, list[str]] = defaultdict(list)
         for pid in sorted(provs):
             by[pidx.loc[pid, col]].append(pid)
