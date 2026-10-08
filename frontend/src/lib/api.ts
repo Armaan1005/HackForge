@@ -97,7 +97,7 @@ export const api = {
 // ── Part B: genai ────────────────────────────────────────────────────────────
 export const ai = {
   status: () => fetchJson<AiStatus>('/api/ai/status', undefined, 4000),
-  court: (id: string, refresh = false) => fetchJson<Court>(`/api/ai/court/${id}${refresh ? '?refresh=true' : ''}`, { method: 'POST' }, 90000),
+  court: (id: string, refresh = false, fresh = false) => fetchJson<Court>(`/api/ai/court/${id}${fresh ? '?fresh=true' : refresh ? '?refresh=true' : ''}`, { method: 'POST' }, 90000),
   brief: (id: string) => fetchJson<{ markdown: string; source: string; note?: string }>(`/api/ai/brief/${id}`, undefined, 90000),
   forensics: (id: string) => fetchJson<Forensics>(`/api/ai/forensics/${id}`, { method: 'POST' }, 90000),
   explainCleared: (limit = 20) => fetchJson<{ items: { alert_id: string; text: string; source: string }[]; note?: string }>('/api/ai/explain_cleared', { method: 'POST', body: JSON.stringify({ limit }) }, 60000),

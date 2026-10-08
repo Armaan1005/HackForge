@@ -14,22 +14,22 @@ from ..schemas import DefenseOut, ProsecutionOut, VerdictOut
 from ..verifier import index_case, strip_id_refs, verify_arguments, verify_text
 
 
-async def _agent(name: str, prompt: str, schema, fallback: dict, priority: int) -> tuple[dict, str, str | None]:
+async def _agent(name: str, prompt: str, schema, fallback: dict, priority: int, fresh: bool = False) -> tuple[dict, str, str | None]:
     """Returns (output, source, note). source is 'llm' or 'template'."""
     try:
-        out = await gateway.run(name, prompt, schema, system=prompts.BASE, priority=priority)
+        out = await gateway.run(name, prompt, schema, system=prompts.BASE, priority=priority, fresh=fresh)
         return out.model_dump(), "llm", None
     except AIUnavailable as e:
         return fallback, "template", str(e)
 
 
-async def run_court(case: dict, priority: int = LIVE) -> dict:
+async def run_court(case: dict, priority: int = LIVE, fresh: bool = False) -> dict:
     idx = index_case(case)
     pool = pool_json(case)
 
     (pros, pros_src, pros_note), (defn, def_src, def_note) = await asyncio.gather(
-        _agent("prosecutor", prompts.PROSECUTOR.format(pool=pool), ProsecutionOut, templates.prosecution(case), priority),
-        _agent("defense", prompts.DEFENSE.format(pool=pool), DefenseOut, templates.defense(case), priority),
+        _agent("prosecutor", prompts.PROSECUTOR.format(pool=pool), ProsecutionOut, templates.prosecution(case), priority, fresh),
+        _agent("defense", prompts.DEFENSE.format(pool=pool), DefenseOut, templates.defense(case), priority, fresh),
     )
     pros_kept, pros_dropped = verify_arguments("prosecutor", pros["arguments"], idx)
     def_kept, def_dropped = verify_arguments("defense", defn["arguments"], idx)
@@ -55,7 +55,7 @@ async def run_court(case: dict, priority: int = LIVE) -> dict:
         defense=json.dumps([a["point"] for a in def_kept[:3]], ensure_ascii=False),
         missing=json.dumps(missing[:4], ensure_ascii=False),
     )
-    clerk, clerk_src, clerk_note = await _agent("verdict_clerk", verdict_prompt, VerdictOut, templates.verdict_summary(case), priority)
+    clerk, clerk_src, clerk_note = await _agent("verdict_clerk", verdict_prompt, VerdictOut, templates.verdict_summary(case), priority, fresh)
     ok, reason = verify_text(clerk["summary"], clerk.get("evidence_ids", []), idx, whole_case=case)
     if not ok or not clerk["summary"].lower().startswith(status_label.lower()):
         clerk, clerk_src = templates.verdict_summary(case), "template"

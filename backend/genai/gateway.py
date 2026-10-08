@@ -140,8 +140,8 @@ class LLMGateway:
         return None
 
     async def run(self, agent: str, prompt: str, schema: type[T], *, system: str = "", images: list[Image] | None = None,
-                  priority: int = LIVE, timeout: float | None = None) -> T:
-        hit = self.cached(agent, prompt, schema, system, images)
+                  priority: int = LIVE, timeout: float | None = None, fresh: bool = False) -> T:
+        hit = None if fresh else self.cached(agent, prompt, schema, system, images)
         if hit is not None:
             self.stats["cache_hits"] += 1
             trace.cache_hit(agent)
