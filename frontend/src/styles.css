@@ -704,3 +704,12 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
   .tf-step:not(:nth-child(7))::after { right: auto; left: 28px; top: auto; bottom: -9px; transform: rotate(135deg); }
   .tf-legend { grid-row: 7; justify-content: flex-start; }
 }
+
+/* Fraud Twin rows: both columns share one height, so no empty space opens up beside the shorter card */
+.twin-row { align-items: stretch; }
+.qr-card { display: flex; flex-direction: column; }
+.qr-slot { flex: 1; display: grid; place-items: center; margin: 4px 0 14px; min-height: 180px; }
+.graph-card { display: flex; flex-direction: column; overflow: hidden; }
+.graph-slot { position: relative; flex: 1; min-height: 380px; }
+.graph-slot .graph-box { position: absolute; inset: 0; height: auto; border-radius: 0 0 var(--radius) var(--radius); }
+.graph-slot .graph-box > [role="img"] { bottom: 64px !important; }  /* keep nodes clear of the legend in the shorter Twin card */

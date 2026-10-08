@@ -71,7 +71,7 @@ export function Twin() {
         }} />}
       </Card>
 
-      <div className="home-grid" style={{ marginBottom: 20 }}>
+      <div className="home-grid twin-row" style={{ marginBottom: 20 }}>
         <Card>
           <div className="field">
             <label htmlFor="scheme">What if…</label>
@@ -137,7 +137,7 @@ export function Twin() {
 
 function Results({ run }: { run: TwinRun }) {
   return (
-    <div className="home-grid">
+    <div className="home-grid twin-row">
       <Card>
         <div className="rec-head" style={{ marginBottom: 18 }}>
           <Ring value={run.detection_rate * 100} size={96} label={`Caught ${pct(run.detection_rate, 1)}`}>
@@ -156,9 +156,11 @@ function Results({ run }: { run: TwinRun }) {
           </div>
         )}
       </Card>
-      <Card style={{ padding: 0 }}>
+      <Card className="graph-card" style={{ padding: 0 }}>
         <div className="pad"><h2>The fake network</h2></div>
-        {run.injected_graph.nodes.length ? <NetworkGraph nodes={run.injected_graph.nodes} edges={run.injected_graph.edges} injectedIds={new Set(run.injected_graph.nodes.map(n => n.id))} /> : <p className="pad muted">No network for this scheme.</p>}
+        {run.injected_graph.nodes.length
+          ? <div className="graph-slot"><NetworkGraph nodes={run.injected_graph.nodes} edges={run.injected_graph.edges} injectedIds={new Set(run.injected_graph.nodes.map(n => n.id))} /></div>
+          : <p className="pad muted">No network for this scheme.</p>}
       </Card>
     </div>
   );
@@ -189,9 +191,9 @@ function JudgeQr() {
   useEffect(() => { QRCode.toString(url, { type: 'svg', margin: 1, width: 170, color: { dark: '#1d1d1f', light: '#ffffff' } }).then(setSvg).catch(() => setSvg('')); }, [url]);
   const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
   return (
-    <Card>
+    <Card className="qr-card">
       <div className="card-title"><span className="row-icon"><Icon name="qr-code" size={15} /></span><h2>Judges, try it</h2></div>
-      <div style={{ display: 'grid', placeItems: 'center', margin: '4px 0 14px' }} dangerouslySetInnerHTML={{ __html: svg }} />
+      <div className="qr-slot" dangerouslySetInnerHTML={{ __html: svg }} />
       <input className="input mono" value={url} onChange={e => setUrl(e.target.value)} aria-label="Challenge link" />
       {ips.length > 1 && (
         <select className="select" style={{ marginTop: 8 }} value={ips.includes(host) ? host : ''} onChange={e => setUrl(at(e.target.value))} aria-label="Network address">
