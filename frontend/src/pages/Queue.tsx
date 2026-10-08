@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PortfolioChart } from '../components/PortfolioChart';
 import { Icon } from '../components/Icon';
-import { Card, ErrorState, PageHeader, RiskPill, Segmented, Sheet, Skeleton, Status, Strength } from '../components/ui';
+import { ErrorState, PageHeader, RiskPill, Segmented, Sheet, Skeleton, Status, Strength } from '../components/ui';
 import { api } from '../lib/api';
 import { inr, PATTERN_ICON } from '../lib/format';
 import { useAsync, useDebounced } from '../lib/hooks';
@@ -33,33 +33,35 @@ export function QueuePage() {
       <PageHeader eyebrow="Cases" title="Where your hours go furthest"
         actions={<button className="btn btn-ghost btn-sm" onClick={() => setFormula(true)}><Icon name="hint" size={15} />How cases are ranked</button>} />
 
-      <div className="stats" style={{ marginBottom: 20 }}>
-        <div className="stat"><b>{d?.selected_count ?? '…'}</b><span>cases in today's plan</span></div>
-        <div className="stat"><b>{d ? `${d.hours_used}h` : '…'}</b><span>of {capacity} hours used</span></div>
-        <div className="stat"><b>{d ? inr(d.expected_recovery_selected) : '…'}</b><span>likely recovered</span></div>
-        <div className="stat"><b>{d ? inr(d.recovery_per_hour) : '…'}</b><span>per hour</span></div>
-      </div>
-
-      <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.6fr)', marginBottom: 20, alignItems: 'start' }}>
-        <Card>
-          <div className="slider-head"><b>Investigator hours today</b><span className="slider-val">{capacity}h</span></div>
-          <p className="xs muted" style={{ margin: '-4px 0 8px' }}>{staffing(capacity)}</p>
-          <input type="range" min={8} max={120} step={2} value={capacity} aria-label="Investigator hours"
-            style={{ ['--pct' as string]: `${((capacity - 8) / 112) * 100}%` }} onChange={e => setCapacity(Number(e.target.value))} />
-          <div className="row-flex xs faint" style={{ justifyContent: 'space-between', marginTop: 6 }}><span>8h · 1 investigator</span><span>120h · 15 investigators</span></div>
-          <div className="divider" />
+      <section className="planner">
+        <aside className="planner-side">
+          <div className="planner-hero">
+            <span className="eyebrow">Likely recovered today</span>
+            <b>{d ? inr(d.expected_recovery_selected) : '…'}</b>
+            <span className="small muted">{d ? `${d.selected_count} cases · ${d.hours_used} of ${capacity}h used · ${inr(d.recovery_per_hour)} per hour` : ' '}</span>
+          </div>
+          <div>
+            <div className="slider-head"><b>Investigator hours today</b><span className="slider-val">{capacity}h</span></div>
+            <p className="xs muted" style={{ margin: '-4px 0 8px' }}>{staffing(capacity)}</p>
+            <input type="range" min={8} max={120} step={2} value={capacity} aria-label="Investigator hours"
+              style={{ ['--pct' as string]: `${((capacity - 8) / 112) * 100}%` }} onChange={e => setCapacity(Number(e.target.value))} />
+            <div className="row-flex xs faint" style={{ justifyContent: 'space-between', marginTop: 6 }}><span>8h · 1 investigator</span><span>120h · 15</span></div>
+          </div>
           <div className="row-flex" style={{ justifyContent: 'space-between' }}>
             <span className="small strong">Look ahead</span>
-            <Segmented size="sm" label="Look ahead" value={horizon} onChange={setHorizon} options={[{ value: 30, label: '30 days' }, { value: 60, label: '60 days' }, { value: 90, label: '90 days' }]} />
+            <Segmented size="sm" label="Look ahead" value={horizon} onChange={setHorizon} options={[{ value: 30, label: '30d' }, { value: 60, label: '60d' }, { value: 90, label: '90d' }]} />
           </div>
-        </Card>
-        <Card style={{ padding: 0 }}>
+        </aside>
+        <div className="planner-chart">
           {d ? <PortfolioChart cases={d.cases} capacity={capacity} onPick={id => nav(`/cases/${id}`)} /> : <Skeleton h={300} />}
-        </Card>
-      </div>
+        </div>
+      </section>
 
-      <div style={{ marginBottom: 14 }}><Segmented size="sm" label="Show" value={view} onChange={setView} options={[{ value: 'all', label: 'All cases' }, { value: 'plan', label: "Today's plan" }]} /></div>
-      <Card style={{ padding: 0 }}>
+      <div className="list-head">
+        <h2>{view === 'all' ? 'All cases' : "Today's plan"}</h2>
+        <Segmented size="sm" label="Show" value={view} onChange={setView} options={[{ value: 'all', label: 'All cases' }, { value: 'plan', label: "Today's plan" }]} />
+      </div>
+      <div className="plain-table">
         {!d ? <Skeleton h={260} style={{ margin: 16 }} /> : (
           <div className="table-wrap">
             <table className="table">
@@ -92,7 +94,7 @@ export function QueuePage() {
             </table>
           </div>
         )}
-      </Card>
+      </div>
 
       <Sheet open={formula} onClose={() => setFormula(false)} title="How cases are ranked">
         <ul className="list-check">

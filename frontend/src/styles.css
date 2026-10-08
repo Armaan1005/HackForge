@@ -785,3 +785,16 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .panel-stack > .stats { border: 0; border-radius: 0; box-shadow: none; }
 .panel-stack > .fair-note, .panel-stack > .warn-note { border-radius: 0; padding: 16px 22px; }
 .panel-stack > .card-link, .panel-stack > a.card { border-radius: 0; }
+
+/* Cases: one planner panel + a table on rules, not in boxes */
+.planner { display: grid; grid-template-columns: 300px minmax(0, 1fr); margin-bottom: 36px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.planner-side { display: flex; flex-direction: column; gap: 22px; padding: 22px; border-right: 1px solid var(--line); background: var(--surface-2); }
+.planner-hero { display: grid; gap: 2px; }
+.planner-hero b { font-family: var(--font-display); font-size: 2.5rem; letter-spacing: -.03em; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.planner-chart { min-width: 0; }
+@media (max-width: 1000px) { .planner { grid-template-columns: 1fr; } .planner-side { border-right: 0; border-bottom: 1px solid var(--line); } }
+.list-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.list-head h2 { margin: 0; }
+.plain-table { border-top: 1px solid var(--line-strong); }
+.plain-table .table thead th { background: transparent; }
+.plain-table .table tbody tr:hover { background: var(--surface); }
