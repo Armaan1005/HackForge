@@ -1,0 +1,15 @@
+drug_code,description,drug_class,price_per_day_inr,typical_days_supply,chronic
+DRG-001,Synthetic antihypertensive A,cardiovascular,12,30,1
+DRG-002,Synthetic antihypertensive B,cardiovascular,18,30,1
+DRG-003,Synthetic statin,cardiovascular,15,30,1
+DRG-004,Synthetic oral antidiabetic,endocrine,10,30,1
+DRG-005,Synthetic insulin pen,endocrine,95,30,1
+DRG-006,Synthetic thyroid hormone,endocrine,6,90,1
+DRG-007,Synthetic inhaler,respiratory,40,30,1
+DRG-008,Synthetic antidepressant,cns,22,30,1
+DRG-009,Synthetic broad-spectrum antibiotic,anti-infective,60,7,0
+DRG-010,Synthetic analgesic,analgesic,8,7,0
+DRG-011,Synthetic antipyretic,analgesic,5,5,0
+DRG-012,Synthetic proton pump inhibitor,gastro,9,14,0
+DRG-013,Synthetic oral chemotherapy agent,oncology,260,28,1
+DRG-014,Synthetic erythropoietin analogue,renal,180,30,1
