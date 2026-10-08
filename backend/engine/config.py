@@ -57,6 +57,23 @@ class Config:
     EARLY_REFILL_FRACTION: float = 0.75
     IDENTITY_SHARE_MIN: int = 5
     FREQ_PEER_PERCENTILE: int = 99
+    # minimum evidence before a rule emits a provider-level signal (small samples are noise)
+    DUP_MIN_CLAIMS: int = 2
+    NEAR_DUP_MIN_PAIRS: int = 3
+    UPCODE_MIN_EM_LINES: int = 20
+    UPCODE_RECENT_MONTHS: int = 6
+    UPCODE_MAX_PVALUE: float = 0.01  # binomial test vs peer median rate (small-sample guard)
+    FREQ_MIN_FAMILY_PAIRS: int = 50  # fewer member-provider pairs: use the service type's p99
+    UNBUNDLE_MIN_MEMBER_DAYS: int = 3
+    AMBULANCE_MIN_TRIPS: int = 2
+    THRESHOLD_HUG_MIN_CLAIMS: int = 10
+    THRESHOLD_HUG_MIN_IN_BAND: int = 5
+    THRESHOLD_HUG_PEER_MULT: float = 3.0
+    EARLY_REFILL_MIN_COUNT: int = 3
+    REFERRAL_MIN_INBOUND: int = 5
+    IDENTITY_SHARE_HARD: int = 10
+    PEER_MIN_N: int = 20
+    CASE_GRAPH_NODE_CAP: int = 150
 
     # graph / temporal
     LOUVAIN_RESOLUTION: float = 1.0

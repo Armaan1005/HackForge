@@ -31,6 +31,16 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 - **Inserted consults are created the same day**, so they don't also trip `post_submission_creation`; each tamper type is planted on separate documents.
 - `style_shift` is LLM-only (Part B); everything else is recoverable by a simple script (`tests/engine/test_documents.py::detect`).
 
+### M3 (rules, cases, scoring, live API)
+- **Fused risk is normalised** by the maximum the *available* layers could reach: `risk = 100·(1 − Π(1 − w·s)) / (1 − Π(1 − w))`. Taken literally, the spec formula caps a non-hard entity at 69 (below the fixtures' 79–96, barely above `CASE_MIN_RISK` 55), and a missing layer would deflate everyone.
+- **Small-sample guards (all in config):** R03 needs ≥ 20 E&M lines *and* a binomial test vs the peer median (`UPCODE_MAX_PVALUE = 0.01`); R12 needs ≥ 10 claims and ≥ 5 in the band; R02 ≥ 3 pairs; R15 ≥ 5 inbound referrals; R11 falls back to the service type's p99 when a code family has < 50 member–provider pairs (otherwise the dialysis decoy defines its own p99).
+- **Peer groups** for individual + group practices are by specialty (× state, national fallback when n < 20); other provider types by type.
+- **Verdict vs missing documents:** the fixture sends a strong case with 12 missing operative notes to `needs_siu_review`. So: strong + confidence ≥ 0.75 → `needs_siu_review` (records are requested in `next_action_text`); other strong/moderate → `request_documentation`; weak → `monitor`. Missing critical docs still lower confidence (−0.08 each).
+- **Evidence strength "strong"** = hard signal + ≥ 2 agreeing methods, or ≥ 3 methods. With rules only (M3) every case is weak → `monitor`; M4's layers lift them.
+- **Document cross-checks** (`engine/doccheck.py`) become `type: "document"` evidence; they do not change risk. The prompt-injection line is reported as `document.embedded_instruction` (treated as data).
+- **Horizon risk** is a labelled placeholder (from current risk) until the M7 forecast; the limitation line says so.
+- **Live API:** a feature whose milestone hasn't landed answers 503 `layer_unavailable`; unknown IDs 404. `/cases/{id}/claims` serves precomputed rows from `processed/claims/`.
+
 ## Handoff log
 
 ### M0 — fixture server (done)
@@ -53,3 +63,10 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 3. Tamper → document (seed 42; share in chat only, never via the API): inserted_consult DOC-00319, DOC-00322 · post_submission_creation DOC-00323, DOC-00328 · procedure_absent DOC-00318, DOC-00321 · date_contradiction DOC-00331, DOC-00401 · prompt_injection DOC-00333 (scan) · duplicated_signature DOC-00336, DOC-00338, DOC-00340 · phantom_lab_result DOC-00396, DOC-00398 · templated_values DOC-00046, DOC-00047, DOC-00065, DOC-00071, DOC-00188, DOC-00191 · style_shift DOC-00402.
 4. Next: M3: rules R01–R16 → cases → basic scoring → pipeline + live endpoints.
 5. Gotcha: `procedures()` must exclude only EM1–EM5, not every code starting with "EM" (EMR-110/210 are procedures).
+
+### M3 — rules, cases, scoring, live API (done)
+1. Done: `store.py`, `features.py`, `detect/{signals,rules,graph}.py` (graph = case subgraph only), `fuse.py`, `doccheck.py`, `cases.py`, `scoring.py`, `pipeline.py`, live mode in `router.py`; 17 rule tests (hit + non-hit, incl. D8/D9), live API tests.
+2. Run: `python -m engine.pipeline` (~8 s) → `data/processed/`; then `USE_FIXTURES=false uvicorn main:app`.
+3. Seed 42 (rules only): 14 cases; all of S1–S8 are in cases; decoys D2 (oncologist) and D6 (dialysis) are cases until M5 exoneration; 3 cases are innocent noise.
+4. Next: M4: anomaly (IsolationForest + robust z + KL), temporal (drift, bursts, ramp), graph analytics (cycles, shared indicators, Louvain, exposure, small-claims pattern).
+5. Gotcha: every M3 status is `monitor` by design (one method); don't tune thresholds to "fix" that before M4.
