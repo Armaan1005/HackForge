@@ -36,16 +36,16 @@ export const GLOBE_CONFIG: COBEOptions = {
   glowColor: [0.96, 0.96, 0.94],
   markers: [
     ...INDIA_DOTS,
-    { location: [19.076, 72.8777], size: 0.12 },   // Mumbai
-    { location: [28.6139, 77.209], size: 0.11 },   // Delhi
-    { location: [12.9716, 77.5946], size: 0.08 },  // Bengaluru
-    { location: [13.0827, 80.2707], size: 0.07 },  // Chennai
-    { location: [17.385, 78.4867], size: 0.07 },   // Hyderabad
-    { location: [22.5726, 88.3639], size: 0.07 },  // Kolkata
-    { location: [18.5204, 73.8567], size: 0.06 },  // Pune
-    { location: [23.0225, 72.5714], size: 0.06 },  // Ahmedabad
-    { location: [26.9124, 75.7873], size: 0.05 },  // Jaipur
-    { location: [26.8467, 80.9462], size: 0.05 },  // Lucknow
+    { location: [19.076, 72.8777], size: 0.06 },   // Mumbai
+    { location: [28.6139, 77.209], size: 0.055 },   // Delhi
+    { location: [12.9716, 77.5946], size: 0.04 },  // Bengaluru
+    { location: [13.0827, 80.2707], size: 0.035 },  // Chennai
+    { location: [17.385, 78.4867], size: 0.035 },   // Hyderabad
+    { location: [22.5726, 88.3639], size: 0.035 },  // Kolkata
+    { location: [18.5204, 73.8567], size: 0.03 },  // Pune
+    { location: [23.0225, 72.5714], size: 0.03 },  // Ahmedabad
+    { location: [26.9124, 75.7873], size: 0.025 },  // Jaipur
+    { location: [26.8467, 80.9462], size: 0.025 },  // Lucknow
   ],
 };
 
