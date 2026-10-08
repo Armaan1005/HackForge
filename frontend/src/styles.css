@@ -736,11 +736,22 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .case-tags-sep { width: 1px; height: 22px; background: var(--line-strong); margin: 0 4px; }
 .case-tags .btn { height: 34px; }
 
-/* Cases scatter polish */
-.pf-chart { position: relative; }
-.pf-hint { position: absolute; top: 26px; left: 78px; font-size: .7rem; font-weight: 600; letter-spacing: .02em; color: var(--text-3); background: var(--surface-2); padding: 2px 8px; border-radius: 99px; pointer-events: none; }
-.pf-chart .recharts-scatter-symbol { transition: transform .2s var(--ease); transform-box: fill-box; transform-origin: center; }
-.pf-chart .recharts-scatter-symbol:hover { transform: scale(1.12); }
+/* Cases chart, shadcn-style card */
+.pc-head { display: flex; justify-content: space-between; align-items: stretch; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.pc-title { padding: 20px 22px 16px; min-width: 220px; flex: 1; }
+.pc-title h2 { margin: 0 0 2px; }
+.pc-totals { display: flex; }
+.pc-totals button { display: grid; align-content: center; gap: 1px; padding: 12px 20px; border: 0; border-left: 1px solid var(--line); background: none; font: inherit; text-align: left; cursor: pointer; transition: background .2s var(--ease); min-width: 128px; }
+.pc-totals button:hover { background: var(--surface-2); }
+.pc-totals button.on { background: var(--accent-softer); box-shadow: inset 0 -2px 0 var(--accent); }
+.pc-totals b { font-family: var(--font-display); font-size: 1.35rem; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.pc-total-label { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--text-3); font-weight: 600; }
+.pc-total-label i { width: 8px; height: 8px; border-radius: 50%; }
+.pc-total-sub { font-size: .72rem; color: var(--text-3); }
+.pc-plot { height: 300px; padding: 8px 12px 0 4px; }
+.pc-foot { display: grid; gap: 2px; padding: 14px 22px 18px; border-top: 1px solid var(--line); }
+.pc-foot b { font-weight: 600; font-size: .9rem; display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 760px) { .pc-totals { width: 100%; } .pc-totals button { flex: 1; min-width: 0; padding: 10px 12px; } .pc-totals button:first-child { border-left: 0; } .pc-totals b { font-size: 1.05rem; } }
 
 /* case page: fewer boxes */
 .case-ledger { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }

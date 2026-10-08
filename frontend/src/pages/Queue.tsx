@@ -53,7 +53,7 @@ export function QueuePage() {
             <Segmented size="sm" label="Look ahead" value={horizon} onChange={setHorizon} options={[{ value: 30, label: '30 days' }, { value: 60, label: '60 days' }, { value: 90, label: '90 days' }]} />
           </div>
         </Card>
-        <Card>
+        <Card style={{ padding: 0 }}>
           {d ? <PortfolioChart cases={d.cases} capacity={capacity} onPick={id => nav(`/cases/${id}`)} /> : <Skeleton h={300} />}
         </Card>
       </div>
