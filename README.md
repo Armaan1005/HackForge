@@ -18,6 +18,7 @@ A unified FWA (fraud, waste, abuse) platform: detects suspicious claims and coor
 | **App entrypoint** (mounts both routers) | Both — set up once, rarely touched | `backend/main.py` |
 
 Docs:
+- **Vaibhav: start with [docs/START_HERE_PART_A.md](docs/START_HERE_PART_A.md)** (setup, reading order, Claude Code prompt, handoffs)
 - [docs/PART_A_ENGINE.md](docs/PART_A_ENGINE.md) — full build spec for Part A
 - [docs/CONTRACT.md](docs/CONTRACT.md) — every endpoint, request and response shape
 - [contracts/](contracts/) — example JSON for every response (Part B builds the UI against these)
