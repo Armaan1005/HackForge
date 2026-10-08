@@ -64,7 +64,7 @@ if (env.USE_FIXTURES === 'false' && !existsSync(path.join(root, 'data', 'process
 }
 
 const api = spawn(py, ['-m', 'uvicorn', 'main:app', '--port', '8000'], { cwd: backend, stdio: 'inherit', env, detached: !win });
-const web = spawn(win ? 'npx.cmd' : 'npx', ['vite', '--port', '5173', '--strictPort'], { cwd: path.join(root, 'frontend'), stdio: 'inherit', env, shell: win, detached: !win });
+let web = null;
 
 let stopping = false;
 const stop = () => {
@@ -78,3 +78,14 @@ process.on('SIGINT', stop);
 process.on('SIGTERM', stop);
 process.on('exit', () => { killTree(api); killTree(web); });
 api.on('exit', c => { if (c && !stopping) console.error(`\nbackend exited (${c}).`); });
+
+// Start the website only once the API answers, so the first page load never hits a closed port.
+async function apiReady(ms = 60000) {
+  for (const until = Date.now() + ms; Date.now() < until && api.exitCode === null;) {
+    try { if ((await fetch('http://127.0.0.1:8000/api/health')).ok) return true; } catch { /* not up yet */ }
+    await new Promise(r => setTimeout(r, 300));
+  }
+  return false;
+}
+if (!(await apiReady())) console.error('\nThe API is not answering on :8000 yet; starting the website anyway.');
+if (!stopping) web = spawn(win ? 'npx.cmd' : 'npx', ['vite', '--port', '5173', '--strictPort'], { cwd: path.join(root, 'frontend'), stdio: 'inherit', env, shell: win, detached: !win });
