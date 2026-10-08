@@ -31,8 +31,8 @@ async def run_court(case: dict, priority: int = LIVE, fresh: bool = False) -> di
         _agent("prosecutor", prompts.PROSECUTOR.format(pool=pool), ProsecutionOut, templates.prosecution(case), priority, fresh),
         _agent("defense", prompts.DEFENSE.format(pool=pool), DefenseOut, templates.defense(case), priority, fresh),
     )
-    pros_kept, pros_dropped = verify_arguments("prosecutor", pros["arguments"], idx)
-    def_kept, def_dropped = verify_arguments("defense", defn["arguments"], idx)
+    pros_kept, pros_dropped = verify_arguments("prosecutor", pros["arguments"], idx, case)
+    def_kept, def_dropped = verify_arguments("defense", defn["arguments"], idx, case)
     trace.verifier("prosecutor", len(pros_kept), pros_dropped)
     trace.verifier("defense", len(def_kept), def_dropped)
 
@@ -84,7 +84,7 @@ async def run_court(case: dict, priority: int = LIVE, fresh: bool = False) -> di
             "dropped_items": dropped,
         },
         "ai": {
-            "model": gateway.last_model.get("prosecutor", settings.model),
+            "model": gateway.last_model.get("prosecutor", gateway.models[0] if gateway.models else settings.model),
             "pending": any("still queued" in n for n in (pros_note, def_note, clerk_note) if n),
             "enabled": settings.ai_enabled,
             "notes": [n for n in (pros_note, def_note, clerk_note) if n],

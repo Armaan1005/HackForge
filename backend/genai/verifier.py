@@ -131,13 +131,16 @@ def check_statement(text: str, cited_ids: list[str], idx: dict[str, dict], extra
     return ids, None
 
 
-def verify_arguments(agent: str, arguments: list[dict], idx: dict[str, dict]) -> tuple[list[dict], list[dict]]:
+def verify_arguments(agent: str, arguments: list[dict], idx: dict[str, dict], case: dict | None = None) -> tuple[list[dict], list[dict]]:
+    """Each argument must cite real evidence; every number must be one the engine produced
+    (in the cited items, or anywhere in this case's evidence when `case` is given). Derived numbers are struck."""
+    case_numbers = allowed_numbers([case]) if case is not None else set()
     kept, dropped = [], []
     uncited = numbers = 0
     for a in arguments:
-        ids, reason = check_statement(a.get("point", ""), a.get("evidence_ids", []), idx)
+        ids, reason = check_statement(a.get("point", ""), a.get("evidence_ids", []), idx, extra_numbers=case_numbers)
         if reason is None:
-            allowed = allowed_numbers(idx[i] for i in ids)
+            allowed = allowed_numbers(idx[i] for i in ids) | case_numbers
             for label, v in (("case_value", a.get("case_value")), ("comparison_value", a.get("comparison_value"))):
                 if v not in (None, 0) and not number_ok(float(v), allowed):
                     reason = f"{label} {v:g} not in cited evidence"

@@ -31,3 +31,7 @@ Thumbs.db
 CLAUDE.local.md
 *.tsbuildinfo
 .vite/
+
+# SAP AI Core service keys (never commit)
+aicore-key.json
+*ServiceKey*.json

@@ -59,7 +59,7 @@ def start(agent: str, model: str, system: str, prompt: str, images: int = 0, pri
         return None
     _n += 1
     extra = f" · {images} image{'s' if images != 1 else ''}" if images else ""
-    _out(f"\n{C['cyan']}{C['bold']}┌─ Gemini call #{_n} · {agent} agent{C['reset']} {C['dim']}({model} · {priority} priority{extra}){C['reset']}")
+    _out(f"\n{C['cyan']}{C['bold']}┌─ AI call #{_n} · {agent} agent{C['reset']} {C['dim']}({model} · {priority} priority{extra}){C['reset']}")
     if system:
         _out(f"{C['dim']}│ SYSTEM:{C['reset']} {clip(' '.join(system.split()), 300)}")
     _out(f"{C['dim']}│ USER →{C['reset']}\n{indent(clip(pretty(prompt), 1500))}")

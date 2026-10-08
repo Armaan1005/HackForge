@@ -47,7 +47,7 @@ export function TopNav() {
         </nav>
         <div className="nav-tools">
           <span className={`engine-pill ${aiOn ? 'on' : ''}`} title={`${source === 'live' ? 'Live detection engine' : 'Sample data (engine not connected yet)'} · ${status ? `${status.model}, ${status.mode}` : 'AI service offline'}`}>
-            <Icon name="ai" size={13} />{!aiOn ? 'AI templates' : status?.model.startsWith('ollama/') ? 'Local AI on' : 'Gemini on'}
+            <Icon name="ai" size={13} />{!aiOn ? 'AI templates' : status?.model.startsWith('sap/') ? 'SAP AI Core' : status?.model.startsWith('ollama/') ? 'Local AI on' : 'Gemini on'}
           </span>
           <IconButton icon="sys-help" label="How Axon works" onClick={() => setHelp(true)} />
           <div style={{ position: 'relative' }}>

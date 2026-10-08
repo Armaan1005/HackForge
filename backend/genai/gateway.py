@@ -23,7 +23,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from . import ollama, trace
+from . import ollama, sap, trace
 from .config import settings
 
 log = logging.getLogger("axon.gateway")
@@ -102,11 +102,15 @@ class LLMGateway:
     # ── public API ───────────────────────────────────────────────────────────
     @property
     def models(self) -> list[str]:
-        chain = [settings.model, *[m for m in settings.fallback_models if m != settings.model]]
+        gemini = [settings.model, *[m for m in settings.fallback_models if m != settings.model]]
+        if not settings.api_key:  # no Gemini key: drop Gemini models
+            gemini = [m for m in gemini if m.startswith(("ollama/", "sap/"))]
+        chain = [f"sap/{m}" for m in settings.sap_models] if sap.key_available() else []
+        if settings.ai_provider == "sap":  # SAP AI Core only: no Gemini, no Ollama
+            return chain
+        chain += [m for m in gemini if m not in chain]
         if settings.ollama_model and f"ollama/{settings.ollama_model}" not in chain:
             chain.append(f"ollama/{settings.ollama_model}")
-        if not settings.api_key:  # no key: only local models can answer
-            chain = [m for m in chain if m.startswith("ollama/")]
         return chain
 
     def status(self) -> dict:
@@ -115,7 +119,7 @@ class LLMGateway:
         return {
             "enabled": settings.ai_enabled,
             "mode": "live" if settings.ai_enabled else ("offline" if settings.ai_offline else "no_api_key"),
-            "model": settings.model,
+            "model": self.models[0] if self.models else settings.model,
             "fallback_models": settings.fallback_models,
             "resting": {m: round(t - now) for m, t in self._resting.items() if t > now},
             "queue_depth": self._queue.qsize() if self._queue else 0,
@@ -169,8 +173,9 @@ class LLMGateway:
             trace.skipped(agent, "same request already in flight, sharing it")
         try:
             # shield: on caller timeout the job keeps running and fills the cache for next time
-            local_first = self.models[:1] and self.models[0].startswith("ollama/")
-            return await asyncio.wait_for(asyncio.shield(fut), timeout or (settings.ollama_timeout_s if local_first else settings.timeout_s))
+            first = self.models[0] if self.models else ""
+            wait = settings.ollama_timeout_s if first.startswith("ollama/") else settings.sap_timeout_s if first.startswith("sap/") else settings.timeout_s
+            return await asyncio.wait_for(asyncio.shield(fut), timeout or wait)
         except asyncio.TimeoutError as e:
             raise AIUnavailable(f"{agent}: timed out, still queued") from e
         except AIUnavailable:
@@ -195,7 +200,8 @@ class LLMGateway:
                     if rest > 0:
                         waits.append(rest)
                         continue
-                    if m.startswith("ollama/") or len(calls) < settings.rpm:  # local model: no quota
+                    limit = settings.sap_rpm if m.startswith("sap/") else settings.rpm
+                    if m.startswith("ollama/") or len(calls) < limit:  # local model: no quota
                         calls.append(now)
                         return m
                     waits.append(60 - (now - calls[0]))
@@ -236,7 +242,9 @@ class LLMGateway:
             for i in range(attempts):
                 try:
                     self.stats["calls"] += 1
-                    if model.startswith("ollama/"):
+                    if model.startswith("sap/"):
+                        text, usage = await sap.generate(model, job.system, job.prompt, job.schema, job.images)
+                    elif model.startswith("ollama/"):
                         text, usage = await ollama.generate(model, job.system, job.prompt, job.schema)
                     else:
                         resp = await self._client.aio.models.generate_content(model=model, contents=contents, config=config)
@@ -245,7 +253,7 @@ class LLMGateway:
                     self.last_model[job.agent] = model
                     trace.end(span, text, usage, model=model)
                     return result
-                except (errors.APIError, ollama.OllamaError) as e:
+                except (errors.APIError, ollama.OllamaError, sap.SapError) as e:
                     if not (e.code == 429 or e.code >= 500) or i == attempts - 1:
                         raise
                     # rest this model for as long as Google asks (or a short default), then use the next free one
