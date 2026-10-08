@@ -14,7 +14,7 @@ const roles: { id: string; label: string; icon: IconName }[] = [
 
 /** Demo sign-in only: Axon runs on synthetic data and has no real accounts or auth backend.
  *  The chosen name/role is kept in sessionStorage so the app can greet the user. */
-export function Login() {
+export function LoginForm({ back = true }: { back?: boolean }) {
   const nav = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +34,58 @@ export function Login() {
   };
 
   return (
+    <motion.form className="auth-card stack" onSubmit={submit} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={spring} noValidate>
+      <div>
+        {back && <Link to="/welcome" className="small muted row-flex" style={{ gap: 6 }}><Icon name="slim-arrow-left" size={14} />Back</Link>}
+        <h1>Welcome back</h1>
+        <p className="muted">Sign in to your SIU workspace.</p>
+      </div>
+
+      <div className="field">
+        <label>I am a</label>
+        <div className="role-pick" role="radiogroup">
+          {roles.map(r => (
+            <button type="button" key={r.id} role="radio" aria-checked={role === r.id} className={role === r.id ? 'on' : ''} onClick={() => setRole(r.id)}>
+              <Icon name={r.icon} size={18} />{r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="field">
+        <label htmlFor="email">Work email</label>
+        <input id="email" className="input" type="email" autoComplete="username" placeholder="you@insurer.com" value={email} onChange={e => setEmail(e.target.value)} />
+      </div>
+
+      <div className="field">
+        <div className="row-flex" style={{ justifyContent: 'space-between' }}>
+          <label htmlFor="pw">Password</label>
+          <a className="small" href="#" onClick={e => e.preventDefault()}>Forgot password?</a>
+        </div>
+        <div className="pw-wrap">
+          <input id="pw" className="input" type={show ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+          <button type="button" className="eye" aria-label={show ? 'Hide password' : 'Show password'} onClick={() => setShow(v => !v)}>
+            <Icon name={show ? 'hide' : 'inspect'} size={16} />
+          </button>
+        </div>
+      </div>
+
+      {err && <motion.div className="auth-err" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{err}</motion.div>}
+
+      <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
+        {busy ? 'Signing in…' : <><Icon name="unlocked" size={16} />Sign in</>}
+      </button>
+      <div className="auth-or">or</div>
+      <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={() => nav('/')}>
+        <Icon name="play" size={15} />Explore the demo without signing in
+      </button>
+      <p className="xs faint" style={{ textAlign: 'center' }}>Demo sign-in: no real accounts. Human review is required for every decision.</p>
+    </motion.form>
+  );
+}
+
+export function Login() {
+  return (
     <div className="auth">
       <aside className="auth-side">
         <div className="glow" />
@@ -47,53 +99,7 @@ export function Login() {
       </aside>
 
       <main className="auth-main">
-        <motion.form className="auth-card stack" onSubmit={submit} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={spring} noValidate>
-          <div>
-            <Link to="/welcome" className="small muted row-flex" style={{ gap: 6 }}><Icon name="slim-arrow-left" size={14} />Back</Link>
-            <h1>Welcome back</h1>
-            <p className="muted">Sign in to your SIU workspace.</p>
-          </div>
-
-          <div className="field">
-            <label>I am a</label>
-            <div className="role-pick" role="radiogroup">
-              {roles.map(r => (
-                <button type="button" key={r.id} role="radio" aria-checked={role === r.id} className={role === r.id ? 'on' : ''} onClick={() => setRole(r.id)}>
-                  <Icon name={r.icon} size={18} />{r.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="field">
-            <label htmlFor="email">Work email</label>
-            <input id="email" className="input" type="email" autoComplete="username" placeholder="you@insurer.com" value={email} onChange={e => setEmail(e.target.value)} />
-          </div>
-
-          <div className="field">
-            <div className="row-flex" style={{ justifyContent: 'space-between' }}>
-              <label htmlFor="pw">Password</label>
-              <a className="small" href="#" onClick={e => e.preventDefault()}>Forgot password?</a>
-            </div>
-            <div className="pw-wrap">
-              <input id="pw" className="input" type={show ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
-              <button type="button" className="eye" aria-label={show ? 'Hide password' : 'Show password'} onClick={() => setShow(v => !v)}>
-                <Icon name={show ? 'hide' : 'inspect'} size={16} />
-              </button>
-            </div>
-          </div>
-
-          {err && <motion.div className="auth-err" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{err}</motion.div>}
-
-          <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
-            {busy ? 'Signing in…' : <><Icon name="unlocked" size={16} />Sign in</>}
-          </button>
-          <div className="auth-or">or</div>
-          <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={() => nav('/')}>
-            <Icon name="play" size={15} />Explore the demo without signing in
-          </button>
-          <p className="xs faint" style={{ textAlign: 'center' }}>Demo sign-in: no real accounts. Human review is required for every decision.</p>
-        </motion.form>
+        <LoginForm />
       </main>
     </div>
   );

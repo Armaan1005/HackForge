@@ -1,110 +1,107 @@
-import { motion } from 'motion/react';
+import { motion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
+import { Globe } from '../components/Globe';
 import { Icon, type IconName } from '../components/Icon';
-import { Mascot, MascotMark } from '../components/Mascot';
-import { fade, spring } from '../lib/theme';
+import { MascotMark } from '../components/Mascot';
+import { LoginForm } from './Login';
 import './landing.css';
 
-const features: { icon: IconName; title: string; body: string }[] = [
-  { icon: 'org-chart', title: 'Connected claims tell the truth', body: 'Six ₹40K claims look normal alone. Axon links providers, owners, members and timing to expose the network behind them.' },
-  { icon: 'complete', title: 'Explains alerts away first', body: 'Every alert is tested against innocent explanations (rural access, sicker patients, seasonal spikes) before a human sees it.' },
-  { icon: 'document-text', title: 'Catches fabricated records', body: 'Documents are cross-checked against claims to spot inserted consults, edited dates and copied signatures.' },
-  { icon: 'money-bills', title: 'Money clock', body: 'See which suspicious payments release in the next days, with a hold recommendation a human approves.' },
-  { icon: 'target-group', title: 'Investigator-hours optimizer', body: 'Ranks cases as a portfolio against your team’s real capacity, with a plain reason for every pick.' },
-  { icon: 'lab', title: 'Fraud Twin', body: 'Axon attacks itself with tomorrow’s fraud, explains what it missed and proposes a safe fix.' },
+const chips: { icon: IconName; big: string; small: string; at: number; pos: CSSProperties }[] = [
+  { icon: 'status-critical', big: '₹5.34L', small: 'held before release', at: .26, pos: { top: '22%', left: '6%' } },
+  { icon: 'org-chart', big: '47 connected claims', small: '3 providers, 1 owner', at: .34, pos: { top: '30%', right: '5%' } },
+  { icon: 'accept', big: '27 alerts', small: 'explained away first', at: .42, pos: { bottom: '18%', left: '9%' } },
 ];
+const steps = ['Detect with 4 methods', 'Explain the innocent away', 'Rank by recovery per hour', 'A human decides'];
 
-const steps = ['Detect with 4 methods', 'Explain the innocent away', 'Build evidence-backed cases', 'Rank by recovery per hour', 'A human decides'];
+function useNarrow() {
+  const [n, setN] = useState(() => window.innerWidth < 860);
+  useEffect(() => { const f = () => setN(window.innerWidth < 860); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
+  return n;
+}
 
-const stats = [
-  { num: '97%', label: 'precision on planted fraud' },
-  { num: '0', label: 'real frauds wrongly cleared' },
-  { num: '109 → 8', label: 'alerts → cases worth a look' },
-  { num: '< 1 s', label: 'to re-plan the queue' },
-];
+/** A window [a,b] that fades in, holds, then fades out (or holds to the end if `stay`). */
+const useWin = (p: MotionValue<number>, a: number, b: number, stay = false) =>
+  useTransform(p, stay ? [a, a + .05] : [a, a + .05, b - .05, b], stay ? [0, 1] : [0, 1, 1, 0]);
 
-const rise = (d = 0) => ({ initial: { opacity: 0, y: 14 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { ...fade, delay: d } });
+function Chip({ p, c }: { p: MotionValue<number>; c: typeof chips[number] }) {
+  const o = useWin(p, c.at, .62);
+  const y = useTransform(p, [c.at, c.at + .08], [24, 0]);
+  return (
+    <motion.div className="lp-float gl-chip" style={{ ...c.pos, opacity: o, y }}>
+      <Icon name={c.icon} size={18} /><span><b>{c.big}</b><span className="muted">{c.small}</span></span>
+    </motion.div>
+  );
+}
 
 export function Landing() {
+  const ref = useRef<HTMLDivElement>(null);
+  const narrow = useNarrow();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const p = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: .4 });
+
+  // Act 1 (0–.2): the "Axon" title over a half-risen globe.
+  const titleO = useTransform(p, [0, .14, .22], [1, 1, 0]);
+  const titleY = useTransform(p, [0, .22], [0, -120]);
+  const titleS = useTransform(p, [0, .22], [1, .9]);
+  // Globe path: rises from the fold, sits centered, then glides aside for sign-in.
+  const gY = useTransform(p, [0, .25, .78, 1], narrow ? ['38vh', '4vh', '4vh', '-30vh'] : ['44vh', '4vh', '4vh', '2vh']);
+  const gX = useTransform(p, [.78, 1], ['0vw', narrow ? '0vw' : '-22vw']);
+  const gS = useTransform(p, [0, .25, .55, .78, 1], narrow ? [1, 1, 1.08, 1, .5] : [1, .95, 1.06, 1, .86]);
+  // Act 3 (.5–.8): the thesis.
+  const thesisO = useWin(p, .52, .8);
+  const thesisY = useTransform(p, [.52, .6], [30, 0]);
+  // Act 4 (.82–1): sign-in.
+  const cardO = useTransform(p, [.82, .94], [0, 1]);
+  const cardX = useTransform(p, [.8, .97], narrow ? ['0vw', '0vw'] : ['30vw', '0vw']);
+  const cardY = useTransform(p, [.8, .97], narrow ? ['60vh', '0vh'] : ['0vh', '0vh']);
+  const cardPE = useTransform(p, v => (v > .9 ? 'auto' : 'none'));
+  const hintO = useTransform(p, [0, .06], [1, 0]);
+  const bar = useTransform(p, [0, 1], ['0%', '100%']);
+
+  const toLogin = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+
   return (
-    <div className="lp">
-      <div className="container">
-        <header className="lp-nav">
-          <Link to="/welcome" className="brand" aria-label="Axon"><MascotMark size={30} />Axon <small>for SIU teams</small></Link>
-          <nav className="links">
-            <a href="#how" className="btn btn-ghost btn-sm hide-sm">How it works</a>
-            <a href="#features" className="btn btn-ghost btn-sm hide-sm">Features</a>
-            <Link to="/login" className="btn btn-secondary btn-sm">Sign in</Link>
-          </nav>
-        </header>
+    <div className="gl" ref={ref}>
+      <motion.div className="gl-bar" style={{ width: bar }} />
+      <header className="gl-nav container">
+        <Link to="/welcome" className="brand" aria-label="Axon"><MascotMark size={30} />Axon</Link>
+        <nav className="row-flex" style={{ gap: 8 }}>
+          <Link to="/" className="btn btn-ghost btn-sm hide-sm">Explore demo</Link>
+          <button className="btn btn-primary btn-sm" onClick={toLogin}>Sign in</button>
+        </nav>
+      </header>
 
-        <section className="lp-hero">
-          <motion.div {...rise()}>
-            <span className="lp-tag"><span className="dot" />Fraud, waste &amp; abuse intelligence</span>
-            <h1>Connected claims <em>tell the truth.</em></h1>
-            <p className="lead">Axon finds the fraud networks hiding in plain sight, explains away the noise, and puts the few cases that matter in front of your investigators before the money leaves.</p>
-            <div className="lp-cta">
-              <Link to="/login" className="btn btn-primary btn-lg"><Icon name="arrow-right" size={17} />Get started</Link>
-              <a href="#how" className="btn btn-secondary btn-lg"><Icon name="play" size={16} />See how it works</a>
-            </div>
-          </motion.div>
+      <div className="gl-stage">
+        <div className="gl-aura" />
 
-          <motion.div className="lp-visual" initial={{ opacity: 0, scale: .96 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...spring, delay: .1 }}>
-            <Mascot size={220} mood="watching" />
-            <motion.div className="lp-float" style={{ top: 30, left: 0 }} animate={{ y: [0, -6, 0] }} transition={{ duration: 5, repeat: Infinity }}>
-              <Icon name="status-critical" size={18} /><span><b>₹5.34L</b><span className="muted">held before release</span></span>
-            </motion.div>
-            <motion.div className="lp-float" style={{ bottom: 40, right: 0 }} animate={{ y: [0, 6, 0] }} transition={{ duration: 6, repeat: Infinity }}>
-              <Icon name="org-chart" size={18} /><span><b>3 providers, 1 owner</b><span className="muted">47 connected claims</span></span>
-            </motion.div>
-            <motion.div className="lp-float" style={{ bottom: 150, left: -10 }} animate={{ y: [0, -5, 0] }} transition={{ duration: 7, repeat: Infinity }}>
-              <Icon name="accept" size={18} /><span><b>27 alerts</b><span className="muted">explained away</span></span>
-            </motion.div>
-          </motion.div>
-        </section>
+        <motion.div className="gl-hero" style={{ opacity: titleO, y: titleY, scale: titleS }}>
+          <span className="lp-tag"><span className="dot" />Fraud, waste &amp; abuse intelligence</span>
+          <h1 className="gl-title">Axon</h1>
+          <p className="gl-sub">Connected claims tell the truth.</p>
+        </motion.div>
 
-        <section className="lp-stats">
-          {stats.map((s, i) => (
-            <motion.div key={s.label} className="card lp-stat" {...rise(i * .05)}>
-              <div className="num tabular">{s.num}</div><div className="small muted">{s.label}</div>
-            </motion.div>
-          ))}
-        </section>
+        <motion.div className="gl-globe" style={{ x: gX, y: gY, scale: gS }}>
+          <Globe progress={p} />
+        </motion.div>
 
-        <section id="features">
-          <div className="lp-section-title"><div className="eyebrow">Why Axon</div><h2>Evidence first. Humans decide.</h2></div>
-          <div className="lp-grid">
-            {features.map((f, i) => (
-              <motion.div key={f.title} className="card lp-feature" {...rise(i * .04)}>
-                <div className="ico"><Icon name={f.icon} size={22} /></div>
-                <h3>{f.title}</h3><p className="small muted">{f.body}</p>
-              </motion.div>
-            ))}
+        {chips.map(c => <Chip key={c.big} p={p} c={c} />)}
+
+        <motion.div className="gl-thesis" style={{ opacity: thesisO, y: thesisY }}>
+          <div className="eyebrow">One claim looks normal</div>
+          <h2>Forty-seven connected claims <em>don’t.</em></h2>
+          <div className="gl-steps">
+            {steps.map((s, i) => <span key={s}><b>{i + 1}</b>{s}</span>)}
           </div>
-        </section>
+        </motion.div>
 
-        <section id="how">
-          <div className="lp-section-title"><div className="eyebrow">How it works</div><h2>From thousands of alerts to a short, trusted list</h2></div>
-          <div className="lp-steps">
-            {steps.map((s, i) => (
-              <motion.div key={s} className="card lp-step" {...rise(i * .05)}>
-                <div className="n">{i + 1}</div><b>{s}</b>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+        <motion.div className="gl-card card" style={{ opacity: cardO, x: cardX, y: cardY, pointerEvents: cardPE }}>
+          <LoginForm back={false} />
+        </motion.div>
 
-        <motion.section className="card card-accent lp-final" {...rise()}>
-          <Mascot size={80} mood="happy" />
-          <h2 style={{ marginTop: 12 }}>Stop the money before it leaves</h2>
-          <p className="muted" style={{ margin: '8px auto 20px', maxWidth: 520 }}>Code computes every score and rupee figure. AI only explains. A human always makes the final call.</p>
-          <Link to="/login" className="btn btn-primary btn-lg"><Icon name="unlocked" size={16} />Sign in to Axon</Link>
-        </motion.section>
-
-        <footer className="lp-foot">
-          <span>© Axon · Built on 100% synthetic data</span>
-          <span>No real patient, member, provider or payer data is used.</span>
-        </footer>
+        <motion.div className="gl-hint" style={{ opacity: hintO }}>
+          <span>Scroll to explore</span><motion.i animate={{ y: [0, 6, 0] }} transition={{ duration: 1.6, repeat: Infinity }} />
+        </motion.div>
       </div>
     </div>
   );
