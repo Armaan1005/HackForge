@@ -402,3 +402,27 @@ mark.inj { background: color-mix(in srgb, var(--warn) 25%, transparent); color: 
   body { background: #fff; }
   .card { box-shadow: none; border: 1px solid #ddd; }
 }
+
+/* ── Evidence Court hearing ───────────────────────────────────────────────── */
+.hearing { display: flex; flex-direction: column; gap: 14px; }
+.turn { display: flex; gap: 12px; align-items: flex-end; max-width: 78%; }
+.turn.defense { align-self: flex-end; flex-direction: row-reverse; }
+.speaker { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; flex: none; }
+.speaker.prosecution { background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--bad); }
+.speaker.defense { background: var(--accent-soft); color: var(--accent); }
+.speaker.clerk { background: var(--accent); color: var(--on-accent); }
+.bubble-turn { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 20px; padding: 12px 16px; line-height: 1.5; }
+.turn.prosecution .bubble-turn { border-bottom-left-radius: 6px; }
+.turn.defense .bubble-turn { border-bottom-right-radius: 6px; background: linear-gradient(var(--accent-softer), var(--accent-softer)), var(--surface); }
+.turn-who { font-size: .76rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 3px; }
+.turn.prosecution .turn-who { color: var(--bad); }
+.turn.defense .turn-who { color: var(--accent); text-align: right; }
+.struck { align-self: center; display: flex; gap: 8px; align-items: center; font-size: .84rem; color: var(--text-2); padding: 6px 12px; border-radius: 999px; background: var(--bg-2); max-width: 90%; }
+.struck s { color: var(--text-3); }
+.court-banner { align-self: center; font-size: .74rem; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); display: flex; align-items: center; gap: 10px; width: 100%; }
+.court-banner::before, .court-banner::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.typing { display: inline-flex; gap: 4px; padding: 14px 16px; }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); animation: tpdot 1.2s infinite ease-in-out; }
+.typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes tpdot { 0%, 100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+@media (max-width: 760px) { .turn { max-width: 100%; } }

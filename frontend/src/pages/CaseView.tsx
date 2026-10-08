@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Card, ErrorState, PageHeader, Ring, Segmented, Skeleton, Status, Strength } from '../components/ui';
 import { api } from '../lib/api';
 import { inr, PATTERN, pct, titleCase } from '../lib/format';
@@ -20,7 +20,8 @@ export function CaseView() {
   const { id = '' } = useParams();
   const nav = useNavigate();
   const c = useAsync(() => api.case(id), [id]);
-  const [tab, setTab] = useState<Tab>('evidence');
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<Tab>((params.get('tab') as Tab) || 'evidence');
   const [horizon, setHorizon] = useState<Horizon>(30);
   const [highlight, setHighlight] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export function CaseView() {
       <Button variant="ghost" size="sm" icon="navigation-left-arrow" onClick={() => nav('/queue')} className="no-print">All cases</Button>
       <div style={{ height: 12 }} />
       <PageHeader eyebrow={`${PATTERN[k.pattern] ?? titleCase(k.pattern)} · ${k.case_id}${k.fixture_sample ? ' · sample evidence' : ''}`} title={k.title}
-        actions={<><Strength value={k.evidence_strength} /><Status value={k.verdict.status} /></>} />
+        actions={<><Strength value={k.evidence_strength} /><Status value={k.verdict.status} /><Button size="sm" variant="tinted" icon="decision" onClick={() => setTab('court')}>Hear it in court</Button></>} />
 
       <div className="cand-top" style={{ marginBottom: 20 }}>
         <Card className="card-accent">
@@ -75,7 +76,7 @@ export function CaseView() {
       <div className="no-print" style={{ marginBottom: 18, overflowX: 'auto' }}>
         <Segmented label="Case sections" value={tab} onChange={setTab} options={[
           { value: 'evidence', label: 'Evidence', icon: 'inspection' },
-          { value: 'court', label: 'Both sides', icon: 'compare' },
+          { value: 'court', label: 'Evidence Court', icon: 'decision' },
           { value: 'network', label: 'Network', icon: 'org-chart' },
           { value: 'documents', label: 'Records', icon: 'documents' },
           { value: 'timeline', label: 'Timeline', icon: 'history' },

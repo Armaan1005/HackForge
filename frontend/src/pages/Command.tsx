@@ -86,6 +86,7 @@ export function Command() {
           </Card>
 
           {([
+            ['decision', 'Watch the Evidence Court', '/court'],
             ['complete', 'Why alerts were cleared', '/explained'],
             ['lab', 'Try to beat the detector', '/twin'],
             ['shield', 'How well Axon works', '/trust'],
