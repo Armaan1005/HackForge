@@ -117,13 +117,13 @@ def plant_d2(w: World, book: ClaimBook) -> None:
     prov = CTX["D2"]["prov"]
     city = w.providers[prov]["city"]
     pool = [m for m in w.members_by_city[city] if m in w.oncology_pool and m not in w.reserved_members]
-    for _ in range(160):
+    for _ in range(80):
         m = w.choice(pool)
         d = pick_day(w, m, provider=prov)
         if d is None:
             continue
         lines = [{"code": em_code(w, "oncology", [0.02, 0.06, 0.12, 0.20, 0.60])}]
-        if w.rng.random() < 0.4:
+        if w.rng.random() < 0.25:
             lines.append({"code": w.choice(["ONC-120", "ONC-210"], [0.8, 0.2])})
         book.add(member=m, provider=prov, day=d, service_type="professional", pos="office", lines=lines)
     w.add_truth(entity_type="provider", entity_index=prov, scheme_id="D2", role="high_complexity_oncologist", is_decoy=1,

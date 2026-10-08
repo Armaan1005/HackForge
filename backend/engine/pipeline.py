@@ -178,7 +178,7 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
                    "community_id": context.get("community_of", {}).get(case["primary"]),
                    "community_size": context.get("community_size", {}).get(case["primary"], 0),
                    "flagged_neighbor_share": case["flagged_neighbor_share"], "connected_claims": len(case["claim_ids"])}
-        peer = pc_mod.build(store, cfg, feats, case) if pc_mod else []
+        peer = pc_mod.build(store, cfg, context.get("feats_full", feats), case, context) if pc_mod else []
         tl = timeline(store, cfg, case, flags)
         doc = serialize_case(store, cfg, case, sc, layers, peer, tl, network, missing)
         S.CaseDetail.model_validate(doc)
