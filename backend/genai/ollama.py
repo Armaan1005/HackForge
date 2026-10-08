@@ -32,7 +32,7 @@ async def generate(model: str, system: str, prompt: str, schema: type[BaseModel]
         "messages": [*([{"role": "system", "content": system}] if system else []), {"role": "user", "content": prompt}],
         "format": schema.model_json_schema(),
         "stream": False,
-        "options": {"temperature": 0.2, "num_ctx": settings.ollama_num_ctx},
+        "options": {"temperature": 0.2, "num_ctx": settings.ollama_num_ctx, "num_predict": 1500},  # small models can loop; cap output
         "keep_alive": "30m",
     }
     try:
