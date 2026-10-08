@@ -10,8 +10,8 @@ const SHAPE: Record<string, string> = {
 const GROUP: Record<string, 1 | 2 | 3 | 0> = { provider: 1, owner: 2, bank: 2, facility: 3, location: 3, address: 3 };
 
 const C = {
-  s1: '#1a9a5a', s2: '#6b5bd6', s3: '#a39e8f', neutral: '#d6d1c4', text: '#1c211e', edge: '#d6d1c4',
-  bad: '#c9473f', surface: '#ffffff', hi: '#e9a21a',
+  s1: '#2b8a63', s2: '#b5651d', s3: '#8f8f86', neutral: '#d3d3cc', text: '#1d1d1f', edge: '#d3d3cc',
+  bad: '#b0473f', surface: '#ffffff', hi: '#a86a1c',
 };
 
 export function NetworkGraph({ nodes, edges, visibleIds, highlightEvidence, onSelect, injectedIds }: {

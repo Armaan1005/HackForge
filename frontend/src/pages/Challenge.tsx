@@ -1,25 +1,24 @@
 import { motion } from 'motion/react';
-import { FlaskConical, Waypoints } from 'lucide-react';
 import { useState } from 'react';
-import { Banner, Button, Card } from '../components/ui';
+import { Mascot, MascotMark } from '../components/Mascot';
+import { Bar, Button, Card, Note } from '../components/ui';
 import { ai, api } from '../lib/api';
 import { METHOD_LABEL, num, pct } from '../lib/format';
+import { spring } from '../lib/theme';
 import type { TwinRun } from '../lib/types';
 
-/** Mobile page opened from the QR code: a judge types a scheme and sees whether Axon catches it. */
+/** Phone page opened from the QR code: a judge types a scheme and sees whether Axon catches it. */
 export function Challenge() {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const [scenario, setScenario] = useState<string | null>(null);
   const [run, setRun] = useState<TwinRun | null>(null);
 
   const go = async () => {
-    setBusy(true); setMsg(null); setRun(null); setScenario(null);
+    setBusy(true); setMsg(null); setRun(null);
     try {
       const p = await ai.twinParse(text);
-      if (!p.supported || !p.scenario) { setMsg(p.reason ?? 'That scheme is not supported yet. We logged it as a new pattern to model.'); return; }
-      setScenario(p.scenario_name ?? p.scenario);
+      if (!p.supported || !p.scenario) { setMsg(p.reason ?? "I can't simulate that one yet. We've noted it."); return; }
       setRun(await api.twinRun(p.scenario, p.params ?? {}));
     } catch (e) { setMsg(`Couldn't reach Axon (${(e as Error).message}).`); }
     finally { setBusy(false); }
@@ -27,27 +26,28 @@ export function Challenge() {
 
   return (
     <div className="judge-shell">
-      <div className="judge-card stack">
-        <div className="row-nw" style={{ gap: 10 }}><span className="brand-mark"><Waypoints size={16} /></span><b style={{ fontSize: '1.1rem' }}>Axon · Judge challenge</b></div>
+      <div className="judge-card stack-lg">
+        <div className="brand"><MascotMark size={30} />Axon</div>
+        <div className="row-flex" style={{ alignItems: 'flex-end' }}>
+          <Mascot size={78} mood={busy ? 'thinking' : run ? 'happy' : 'watching'} />
+          <div className="bubble">Think like a fraudster. Can you get past me?</div>
+        </div>
         <Card>
-          <div className="stack">
-            <h2>Try to beat the detector.</h2>
-            <p className="small muted">Describe how a fraudster might bill a health insurer. Axon will simulate it on synthetic data and try to catch it.</p>
-            <textarea className="textarea" value={text} onChange={e => setText(e.target.value)} maxLength={600} placeholder="e.g. What if three clinics split ₹3 lakh surgeries into ₹45,000 claims?" />
-            <Button size="lg" block icon={FlaskConical} loading={busy} onClick={go} disabled={!text.trim()}>Run it</Button>
+          <div className="field">
+            <label htmlFor="j">Describe a billing scheme</label>
+            <textarea id="j" className="textarea" value={text} onChange={e => setText(e.target.value)} maxLength={600} placeholder="e.g. Three clinics split ₹3 lakh surgeries into ₹45,000 claims" />
           </div>
+          <div style={{ marginTop: 14 }}><Button size="lg" block icon="play" loading={busy} disabled={!text.trim()} onClick={go}>Try it</Button></div>
         </Card>
-        {msg && <Banner tone="warn">{msg}</Banner>}
+        {msg && <Note tone="warn">{msg}</Note>}
         {run && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <div className="xs faint">{scenario}</div>
-              <div className="stat-value" style={{ fontSize: '3rem' }}>{pct(run.detection_rate, 1)}</div>
-              <div className="small muted">caught · {num(run.detected)} of {num(run.generated)} synthetic claims</div>
-              <div className="divider" />
-              {Object.entries(run.by_layer).map(([k, v]) => <div key={k} className="row-nw between small"><span>{METHOD_LABEL[k] ?? k}</span><b>{num(v)}</b></div>)}
-              {run.missed > 0 && <p className="small" style={{ marginTop: 10 }}>Missed {num(run.missed)}: {run.missed_claims[0]?.description}</p>}
-              <p className="xs faint" style={{ marginTop: 10 }}>Sandbox simulation on synthetic data. Watch the big screen for the hardening rerun.</p>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
+            <Card className="card-accent">
+              <p className="eyebrow">Axon caught</p>
+              <h1>{pct(run.detection_rate, 0)}</h1>
+              <p className="muted">{num(run.detected)} of {num(run.generated)} fake claims</p>
+              <div className="stack" style={{ marginTop: 16 }}>{Object.entries(run.by_layer).map(([k, v]) => <Bar key={k} label={METHOD_LABEL[k] ?? k} value={v} max={run.generated} right={num(v)} />)}</div>
+              <p className="xs faint" style={{ marginTop: 14 }}>Simulated on synthetic data. Watch the big screen for what happens next.</p>
             </Card>
           </motion.div>
         )}

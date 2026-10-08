@@ -49,3 +49,14 @@ export const fmtUnit = (v: number | null | undefined, unit = ''): string => {
 
 export const relDays = (d: number | null | undefined): string =>
   d == null ? 'No pending release' : d <= 0 ? 'Releases today' : d === 1 ? 'Releases tomorrow' : `Releases in ${d} days`;
+
+import type { IconName } from './icons';
+export const PATTERN_ICON: Record<string, IconName> = {
+  claim_splitting_network: 'org-chart', referral_ring: 'chain-link', phantom_services: 'hide', upcoding_drift: 'trend-up',
+  duplicate_billing: 'copy', identity_cluster: 'customer', unbundling: 'documents', impossible_timing: 'time-entry-request', mixed: 'inspect',
+};
+
+export function greeting(): string {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
