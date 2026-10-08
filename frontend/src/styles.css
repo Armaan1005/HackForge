@@ -809,3 +809,17 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .plain-section > .pad:first-child { padding-left: 0; padding-right: 0; }
 .plain-section .table thead th { background: transparent; }
 .case-bar { padding: 12px 2px; margin-bottom: 18px; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+
+/* Home: section links as one 2x2 panel */
+.explore { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.explore-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 18px 20px; border: 0; background: none; font: inherit; text-align: left; color: var(--text); cursor: pointer; border-left: 1px solid var(--line); border-top: 1px solid var(--line); margin: -1px 0 0 -1px; transition: background .2s var(--ease); }
+.explore-item:hover { background: var(--surface-2); }
+.explore-text { display: grid; gap: 2px; }
+.explore-text b { font-size: .95rem; }
+.explore-text span { font-size: .82rem; color: var(--text-2); line-height: 1.4; }
+.explore-arrow { color: var(--text-3); margin-top: 3px; transition: transform .2s var(--ease), color .2s var(--ease); }
+.explore-item:hover .explore-arrow { transform: translateX(3px); color: var(--accent); }
+@media (max-width: 560px) { .explore { grid-template-columns: 1fr; } }
+.explore-row { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px; }
+@media (max-width: 1000px) { .explore-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .explore-row { grid-template-columns: 1fr; } }

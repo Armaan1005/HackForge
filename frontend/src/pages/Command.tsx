@@ -28,7 +28,8 @@ export function Command() {
         actions={<Mascot size={84} mood="watching" />} />
 
       <div className="home-grid">
-        <div className="stack-lg panel-stack">
+        <div className="stack-lg">
+          <div className="panel-stack">
           {urgent && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
               <Card className="card-accent" interactive onClick={() => nav(`/cases/${urgent.case_id}`)}>
@@ -66,6 +67,8 @@ export function Command() {
               </div>
             )}
           </Card>
+          </div>
+
         </div>
 
         <div className="stack-lg panel-stack">
@@ -85,22 +88,23 @@ export function Command() {
             ]} /> : <Skeleton h={160} />}
           </Card>
 
-          {([
-            ['decision', 'Watch the Evidence Court', '/court'],
-            ['complete', 'Why alerts were cleared', '/explained'],
-            ['lab', 'Try to beat the detector', '/twin'],
-            ['shield', 'How well Axon works', '/trust'],
-          ] as [IconName, string, string][]).map(([icon, label, to]) => (
-            <Card key={to} className="card-tight" interactive onClick={() => nav(to)}>
-              <div className="row-nw">
-                <span className="row-icon"><Icon name={icon} size={16} /></span>
-                <b style={{ flex: 1 }}>{label}</b>
-                <Icon name="slim-arrow-right" size={16} className="muted" />
-              </div>
-            </Card>
-          ))}
         </div>
       </div>
+
+    <div className="explore explore-row">
+      {([
+        ['decision', 'Evidence Court', `${f ? num(f.cases) : '…'} cases on the docket, argued both ways`, '/court'],
+        ['complete', 'Explained', `${f ? num(f.explained) : '…'} alerts cleared, with the facts behind each`, '/explained'],
+        ['lab', 'Fraud Twin', 'Invent a scheme and see if Axon catches it', '/twin'],
+        ['shield', 'Trust', 'Accuracy, fairness and the audit trail', '/trust'],
+      ] as [IconName, string, string, string][]).map(([icon, label, desc, to]) => (
+        <button key={to} type="button" className="explore-item" onClick={() => nav(to)}>
+          <span className="row-icon"><Icon name={icon} size={16} /></span>
+          <span className="explore-text"><b>{label}</b><span>{desc}</span></span>
+          <Icon name="arrow-right" size={14} className="explore-arrow" />
+        </button>
+      ))}
+    </div>
     </>
   );
 }
