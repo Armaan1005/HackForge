@@ -58,6 +58,12 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 - **Queue:** CP-SAT knapsack (1 worker, seeded, 0.2 s cap) over 90% of capacity; exploration fills the rest with the best-fitting eligible case (mixed pattern first, then confidence closest to 0.5). Ranks are by priority (value ÷ effort) over all cases. With seed 42 every case needs ≥ 10 h, so at 40 h the 4 h exploration reserve stays empty.
 - `/api/overview` `selected_today` is filled live from `queue.plan(40, 30)`.
 
+### M7 (forecast)
+- **Label proxy:** "provider gets newly flagged claims (claims named in its final incriminating signals) in (t, t+H]". Re-running every layer per monthly snapshot would break the 30 s budget. Because the label comes from the detectors themselves, holdout AUC is ~0.99; every forecast says so in `limitations`.
+- **Features at t** are computed from claims ≤ t; `network_exposure` is the current graph value (static, a known leak noted here).
+- **Case `horizon_risk`** = max over the case's providers. Forecast files are written for every provider with claims (`processed/forecast/PRV-*.json`, with `by_horizon`; the router picks the requested horizon).
+- Survival model (lifelines) not built (spec "optional", and on the cut list).
+
 ## Handoff log
 
 ### M0 — fixture server (done)
@@ -108,3 +114,10 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 3. Demo moment (seed 42): CASE-0001 risk 95 ranked #5, "Not selected: high effort 16 h, ₹6,558 per hour"; the S6 case is #1 with "₹5.34L releases in 1 day".
 4. Next: M7 forecast (monthly snapshots, HistGradientBoosting per horizon, time-based holdout).
 5. Gotcha: `horizon_risk` is still the placeholder until M7 replaces it, so queue values across horizons only differ by that placeholder.
+
+### M7 — forecast (done)
+1. Done: `forecast.py` (monthly snapshots, HistGradientBoosting × 3 horizons, time-based holdout, calibration, permutation-importance drivers), `/api/forecast/{id}?horizon=` live, case horizon risk from the model.
+2. Seed 42 holdout: AUC 0.994/0.995/0.994, Brier 0.007/0.005/0.007 (30/60/90). Pipeline ~15 s.
+3. Next: M8 Fraud Twin.
+4. Gotcha: `forecast_metrics.json` feeds the Trust panel (M9).
+5. Gotcha: forecast failure is caught; cases then fall back to the placeholder horizon risk with a limitation line.
