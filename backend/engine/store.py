@@ -43,7 +43,12 @@ class DataStore:
         self._records: dict[str, dict] = {}
 
     def _load(self, name: str) -> pd.DataFrame:
-        df = pd.read_csv(self.raw_dir / f"{name}.csv", dtype=str, keep_default_na=False)
+        return self.typed(name, pd.read_csv(self.raw_dir / f"{name}.csv", dtype=str, keep_default_na=False))
+
+    @staticmethod
+    def typed(name: str, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply the table's column types to a frame of strings (also used for injected rows)."""
+        df = df.astype(str).replace({"None": "", "nan": ""})
         for c in DATE_COLS.get(name, []):
             df[c] = pd.to_datetime(df[c].replace("", None))
         for c in INT_COLS.get(name, []):
@@ -51,6 +56,17 @@ class DataStore:
         for c in FLOAT_COLS.get(name, []):
             df[c] = pd.to_numeric(df[c].replace("", np.nan), errors="coerce")
         return df
+
+    def with_rows(self, extra: dict[str, pd.DataFrame]) -> DataStore:
+        """Sandbox copy: same raw files, plus extra rows appended in memory (never written)."""
+        sb = DataStore(self.raw_dir, self.ref_dir)
+        for name in ("claims", "members", "providers", "facilities", "owners", "admissions", "referrals", "investigations"):
+            base = getattr(self, name)
+            add = extra.get(name)
+            sb.__dict__[name] = base if add is None or add.empty else pd.concat(
+                [base, self.typed(name, add[base.columns.tolist()])], ignore_index=True)
+        sb.__dict__["documents"] = self.documents
+        return sb
 
     @cached_property
     def claims(self) -> pd.DataFrame:

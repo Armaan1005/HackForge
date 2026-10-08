@@ -72,7 +72,7 @@ def plan(capacity_hours: int = 40, horizon: int = 30) -> dict:
         v = value_of(c, horizon)
         eff = max(1, int(c["effort_hours"]))
         rows.append({"c": c, "value": v, "effort": eff, "priority": v / eff,
-                     "eligible": c["verdict"]["status"] in ELIGIBLE and c["payment_clock"]["hold_status"] != "cleared"})
+                     "eligible": c["verdict"]["status"] in ELIGIBLE and c.get("status", "open") not in ("cleared_by_human",)})
     rows.sort(key=lambda r: (-r["priority"], r["c"]["case_id"]))
     elig = [r for r in rows if r["eligible"]]
     main_cap = int(capacity_hours * (1 - CONFIG.EXPLORATION_SHARE))

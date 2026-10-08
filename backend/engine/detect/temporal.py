@@ -13,6 +13,7 @@ from scipy.stats import linregress
 
 from ..config import Config
 from ..store import DataStore
+from .graph_analytics import linked_claims
 from .signals import inr, pct, signal
 
 DRIFT_WINDOW_MONTHS = 9
@@ -148,12 +149,11 @@ def window_clusters(store: DataStore, cfg: Config, feats: pd.DataFrame, context:
     links: dict[str, set[str]] = defaultdict(set)
     for col in ("owner", "fac"):
         multi = h.groupby(col)["provider_id"].nunique()
-        sub = h[h[col].isin(multi[multi >= 2].index)].sort_values([col, "member_id", "service_date", "claim_id"])
-        prev = sub.shift()
-        hit = ((sub[col] == prev[col]) & (sub.member_id == prev.member_id) & (sub.provider_id != prev.provider_id)
-               & ((sub.service_date - prev.service_date).dt.days <= win))
-        for key, cur, before in zip(sub.loc[hit, col], sub.loc[hit, "claim_id"], prev.loc[hit, "claim_id"]):
-            links[f"{col}:{key}"] |= {cur, before}
+        sub = h[h[col].isin(multi[multi >= 2].index)]
+        for key, g in sub.groupby(col):
+            linked, _ = linked_claims(g, win)
+            if linked:
+                links[f"{col}:{key}"] |= linked
     context["window_links"] = links
     for key in sorted(links):
         ids = sorted(links[key])
