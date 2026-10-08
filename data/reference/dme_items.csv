@@ -1,0 +1,8 @@
+item_code,description,monthly_rent_inr,max_rental_months,purchase_price_inr
+DMEI-01,Semi-electric hospital bed (synthetic),6000,13,60000
+DMEI-02,Oxygen concentrator (synthetic),4500,36,55000
+DMEI-03,"Wheelchair, standard (synthetic)",1500,13,12000
+DMEI-04,CPAP device (synthetic),3500,13,40000
+DMEI-05,Nebuliser (synthetic),800,6,3000
+DMEI-06,Walker (synthetic),500,6,2500
+DMEI-07,Pressure-relief mattress (synthetic),2500,13,22000
