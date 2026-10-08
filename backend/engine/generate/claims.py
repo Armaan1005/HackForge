@@ -138,7 +138,7 @@ class Picker:
             cands = self._cands(ptype, specs, city)
             if not cands:
                 for other in sorted(geo.CITIES, key=lambda o: haversine(c.lat, c.lon, o.lat, o.lon)):
-                    if other.state == c.state and other.name != city:
+                    if other.state == c.state and other.name != city and haversine(c.lat, c.lon, other.lat, other.lon) <= 250:
                         cands = self._cands(ptype, specs, other.name)
                         if cands:
                             break
@@ -417,6 +417,7 @@ def gen_pharmacy(w: World, book: ClaimBook, pick: Picker, target_lines: int) -> 
     cw = np.array([c.weight for c in cities], dtype=float)
     cw /= cw.sum()
     guard = 0
+    chains: set[tuple[int, str]] = set()
     while book.lines_by_type["pharmacy"] - start < target_lines and guard < target_lines * 10:
         guard += 1
         c = cities[int(w.rng.choice(len(cities), p=cw))]
@@ -434,15 +435,18 @@ def gen_pharmacy(w: World, book: ClaimBook, pick: Picker, target_lines: int) -> 
                 drugs = ["DRG-013"]
             if m in w.renal_pool and w.rng.random() < 0.3:
                 drugs = ["DRG-014"]
+            if any((m, dg) in chains for dg in drugs):
+                continue
             d = pick_day(w, m, 0, 300, provider=ph)
             if d is None:
                 continue
+            chains.update((m, dg) for dg in drugs)
             ds = int(DRUGS[drugs[0]]["typical_days_supply"])
             for _ in range(int(w.rng.integers(2, 7))):
                 if d > LAST_DAY or not w.ok_day(m, d):
                     break
                 book.add(member=m, provider=ph, day=d, service_type="pharmacy", pos="pharmacy",
-                         lines=[pharmacy_line(w, dg) for dg in drugs])
+                         lines=[pharmacy_line(w, dg, ds) for dg in drugs])
                 d += int(math.ceil(ds * w.rng.uniform(1.0, 1.2)))
         else:
             d = pick_day(w, m, provider=ph)

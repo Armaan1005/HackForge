@@ -118,7 +118,10 @@ def test_errors_are_contract_shaped(client, method, path, payload, status, code)
     assert_error(r, status, code)
 
 
-def test_live_mode_is_honest_until_engine_exists(live_client):
+def test_live_mode_is_honest_until_engine_exists(live_client, tmp_path, monkeypatch):
+    from engine.config import CONFIG
+
+    monkeypatch.setattr(CONFIG, "data_dir", tmp_path)  # no pipeline output here
     h = live_client.get("/api/health").json()
     assert h["use_fixtures"] is False
     assert set(h["layers"].values()) == {"unavailable"}
