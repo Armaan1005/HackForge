@@ -49,7 +49,7 @@ export function Explained() {
         subtitle="Raised by the engine, then cleared because an innocent explanation fit the facts. Tap one to see why."
         actions={<Mascot size={80} mood="happy" />} />
 
-      <div className="home-grid">
+      <div className="home-grid flat">
         <div>
           {!cl.data ? <Skeleton h={320} /> : (
             <Section title="Recently cleared">

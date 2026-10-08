@@ -28,7 +28,7 @@ export function Command() {
         actions={<Mascot size={84} mood="watching" />} />
 
       <div className="home-grid">
-        <div className="stack-lg">
+        <div className="stack-lg panel-stack">
           {urgent && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
               <Card className="card-accent" interactive onClick={() => nav(`/cases/${urgent.case_id}`)}>

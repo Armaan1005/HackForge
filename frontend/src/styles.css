@@ -798,3 +798,14 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .plain-table { border-top: 1px solid var(--line-strong); }
 .plain-table .table thead th { background: transparent; }
 .plain-table .table tbody tr:hover { background: var(--surface); }
+
+/* Flat lists: grouped sections drawn as ruled rows on the page, not boxes */
+.flat .group-body { background: transparent; border: 0; border-radius: 0; box-shadow: none; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+.flat .group-body .row { padding-left: 4px; padding-right: 4px; }
+.flat .group-body .row.clickable:hover { background: var(--surface); }
+.flat .group-title { margin-left: 0; }
+.panel-stack > * > .card-accent { background: var(--accent-softer); }
+.plain-section { min-width: 0; border-top: 1px solid var(--line-strong); }
+.plain-section > .pad:first-child { padding-left: 0; padding-right: 0; }
+.plain-section .table thead th { background: transparent; }
+.case-bar { padding: 12px 2px; margin-bottom: 18px; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }

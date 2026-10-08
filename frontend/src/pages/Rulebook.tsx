@@ -131,7 +131,7 @@ export function Rulebook() {
           <p className="xs faint" style={{ textAlign: 'center' }}>Drag a page corner, swipe, or use the arrows.</p>
         </div>
 
-        <div className="stack-lg">
+        <div className="stack-lg flat">
           <div className="card" style={{ padding: 16 }}>
             <label className="small" htmlFor="bk-case" style={{ fontWeight: 600 }}>Show what Axon pulls for a case</label>
             <select id="bk-case" className="bk-select" value={caseId} onChange={e => setParams(e.target.value ? { case: e.target.value } : {})}>

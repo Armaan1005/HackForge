@@ -106,7 +106,7 @@ export function DocumentsTab({ k }: { k: CaseDetail }) {
   const flagged = docs.filter(d => d.integrity_flags.length).length;
 
   return (
-    <div className="cand-bottom">
+    <div className="cand-bottom flat">
       <div>
         <div className="row-flex" style={{ marginBottom: 14 }}>
           <Segmented size="sm" label="Show" value={view} onChange={setView}

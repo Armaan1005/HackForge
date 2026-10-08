@@ -30,7 +30,7 @@ export function Trust() {
       </div>
 
       <div className="home-grid" style={{ marginBottom: 20 }}>
-        <Card style={{ padding: 0 }}>
+        <div className="plain-section">
           <div className="pad"><h2>Planted schemes</h2></div>
           <table className="table">
             <thead><tr><th>Scheme</th><th>Found</th><th className="num">Claims caught</th><th className="num">Money caught</th></tr></thead>
@@ -45,7 +45,7 @@ export function Trust() {
               ))}
             </tbody>
           </table>
-        </Card>
+        </div>
         <div className="stack-lg panel-stack">
           <Card>
             <div className="row-flex" style={{ marginBottom: 10 }}><h2>Is the forecast honest?</h2><span className="spacer" />
@@ -63,7 +63,7 @@ export function Trust() {
         </div>
       </div>
 
-      <div className="home-grid">
+      <div className="home-grid flat">
         <Section title="Golden set: checked on every run">
           {d.golden_set.map(g => (
             <div key={g.case_id} className="row">
