@@ -40,7 +40,7 @@ export function CaseView() {
       <Button variant="ghost" size="sm" icon="navigation-left-arrow" onClick={() => nav('/queue')} className="no-print">All cases</Button>
       <div style={{ height: 12 }} />
       <PageHeader eyebrow={`${PATTERN[k.pattern] ?? titleCase(k.pattern)} · ${k.case_id}${k.fixture_sample ? ' · sample evidence' : ''}`} title={k.title}
-        actions={<><Strength value={k.evidence_strength} /><Status value={k.verdict.status} /><Button size="sm" variant="tinted" icon="decision" onClick={() => setTab('court')}>Hear it in court</Button></>} />
+        actions={<div className="case-tags"><Strength value={k.evidence_strength} /><Status value={k.verdict.status} /><span className="case-tags-sep" /><Button size="sm" variant="secondary" icon="decision" onClick={() => setTab('court')}>Hear it in court</Button></div>} />
 
       <div className="cand-top" style={{ marginBottom: 20 }}>
         <div className="stack-lg">

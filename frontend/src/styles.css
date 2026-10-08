@@ -723,3 +723,14 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .bk-page .bk-text.bk-lead { font-size: .95rem; font-weight: 500; }
 .bk-page .bk-inner { gap: 9px; overflow: hidden; }
 .bk-inner:has(.bk-ribbon) { padding-right: 60px; }
+
+/* case header: two matching label pills, then a real button */
+.case-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.case-tags .verdict, .case-tags .status { height: 30px; padding: 0 12px; border-radius: 999px; font-size: .8rem; font-weight: 650; }
+.case-tags .status { background: color-mix(in srgb, var(--text-3) 12%, transparent); }
+.case-tags .status-needs_siu_review { background: color-mix(in srgb, var(--bad) 11%, transparent); }
+.case-tags .status-request_documentation { background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn); }
+.case-tags .status-monitor { background: var(--accent-soft); color: var(--accent); }
+.case-tags .status-cleared { background: color-mix(in srgb, var(--good) 14%, transparent); }
+.case-tags-sep { width: 1px; height: 22px; background: var(--line-strong); margin: 0 4px; }
+.case-tags .btn { height: 34px; }
