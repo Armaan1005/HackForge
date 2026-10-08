@@ -1,0 +1,58 @@
+{
+  "total": 1961,
+  "limit": 3,
+  "offset": 0,
+  "items": [
+    {
+      "alert_id": "ALR-00117",
+      "entity_type": "provider",
+      "entity_id": "PRV-01204",
+      "entity_name": "Tarapur Community Hospital",
+      "triggered_by": ["anomaly.isolation_forest"],
+      "original_risk": 64,
+      "exoneration_code": "EX1_sole_provider",
+      "facts": {
+        "nearest_competitor_km": 78.4,
+        "volume_per_1k_pop": 41.2,
+        "peer_iqr": [33.0, 46.5],
+        "peer_group": "Facility hospital, rural MH, n=22"
+      },
+      "evidence_ids": ["EV-A117-01", "EV-A117-02"],
+      "explanation": null
+    },
+    {
+      "alert_id": "ALR-00342",
+      "entity_type": "provider",
+      "entity_id": "PRV-00877",
+      "entity_name": "Dr. Kavya Iyer (Oncology)",
+      "triggered_by": ["rule.R03_upcoding_em_share", "anomaly.isolation_forest"],
+      "original_risk": 71,
+      "exoneration_code": "EX2_case_mix_adjusted",
+      "facts": {
+        "raw_ratio": 3.9,
+        "case_mix_index": 2.8,
+        "adjusted_ratio": 1.39,
+        "clear_threshold": 1.5,
+        "peer_group": "Oncology, TN, n=31"
+      },
+      "evidence_ids": ["EV-A342-01", "EV-A342-02"],
+      "explanation": null
+    },
+    {
+      "alert_id": "ALR-00598",
+      "entity_type": "provider",
+      "entity_id": "PRV-00203",
+      "entity_name": "CityCare Diagnostics",
+      "triggered_by": ["rule.R01_exact_duplicate"],
+      "original_risk": 38,
+      "exoneration_code": "EX3_corrected_claim",
+      "facts": {
+        "frequency_code": 7,
+        "original_claim_id": "CLM-0018812",
+        "replacement_claim_id": "CLM-0019004"
+      },
+      "evidence_ids": ["EV-A598-01"],
+      "explanation": null
+    }
+  ]
+}

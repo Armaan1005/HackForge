@@ -1,0 +1,9 @@
+{
+  "total": 219,
+  "items": [
+    { "audit_id": "AUD-000219", "ts": "2026-10-01T11:42:10", "actor": "priya", "event": "decision.confirm", "case_id": "CASE-0001", "before": { "status": "needs_siu_review" }, "after": { "status": "confirmed_by_human" }, "details": { "decision_id": "DEC-00004" } },
+    { "audit_id": "AUD-000218", "ts": "2026-10-01T11:42:10", "actor": "system", "event": "weights.update", "case_id": "CASE-0001", "before": { "rules": 0.35 }, "after": { "rules": 0.3675 }, "details": { "eta": 0.05 } },
+    { "audit_id": "AUD-000210", "ts": "2026-10-01T11:20:03", "actor": "analyst", "event": "twin.harden", "case_id": null, "before": { "TEMPORAL_WINDOW_DAYS": 30, "detection_rate": 0.913 }, "after": { "TEMPORAL_WINDOW_DAYS": 45, "detection_rate": 0.971 }, "details": { "run_id": "TWIN-20261001-0008", "applied_to": "sandbox_only" } },
+    { "audit_id": "AUD-000001", "ts": "2026-10-01T08:00:00", "actor": "system", "event": "pipeline.run", "case_id": null, "before": null, "after": { "cases": 18 }, "details": { "seed": 42, "duration_ms": 21840 } }
+  ]
+}

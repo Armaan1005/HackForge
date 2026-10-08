@@ -1,0 +1,48 @@
+{
+  "synthetic": true,
+  "seed": 42,
+  "sim_today": "2026-10-01",
+  "date_range": { "start": "2025-04-01", "end": "2026-09-30" },
+  "currency": "INR",
+  "tables": {
+    "claims": 50213,
+    "providers": 1500,
+    "members": 20000,
+    "facilities": 300,
+    "owners": 900,
+    "referrals": 9042,
+    "admissions": 2511,
+    "investigations": 120,
+    "documents": 412
+  },
+  "service_types": {
+    "professional": 19081,
+    "facility": 6026,
+    "pharmacy": 9038,
+    "lab": 7030,
+    "ambulance": 1506,
+    "behavioral_health": 2511,
+    "home_health": 2510,
+    "dme": 2511
+  },
+  "funnel": {
+    "claim_lines": 50213,
+    "alerts": 2014,
+    "explained": 1961,
+    "open_alerts": 53,
+    "cases": 18,
+    "selected_today": 12,
+    "capacity_hours": 40
+  },
+  "exoneration_by_reason": {
+    "EX1_sole_provider": 412,
+    "EX2_case_mix_adjusted": 688,
+    "EX3_corrected_claim": 231,
+    "EX4_event_or_seasonal": 379,
+    "EX5_chronic_schedule": 174,
+    "EX6_network_explained": 77
+  },
+  "layers": { "rules": "ok", "anomaly": "ok", "temporal": "ok", "graph": "ok" },
+  "engine_version": "0.1.0",
+  "generated_at": "2026-10-01T08:00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "run_id": "TWIN-20261001-0008",
+  "parent_run_id": "TWIN-20261001-0007",
+  "change": { "param": "TEMPORAL_WINDOW_DAYS", "old_value": 30, "new_value": 45 },
+  "applied_to": "sandbox_only",
+  "approved_by": "analyst",
+  "scenario": "claim_splitting",
+  "params": { "parent_amount": 200000, "splits": 4, "providers": 3, "spread_days": 30, "count": 60 },
+  "seed": 7,
+  "runtime_ms": 13870,
+  "generated": 240,
+  "detected": 233,
+  "missed": 7,
+  "detection_rate": 0.971,
+  "by_layer": { "rules": 38, "anomaly": 112, "temporal": 71, "graph": 233 },
+  "false_positive_rate": { "baseline": 0.018, "run": 0.021 },
+  "before": { "detection_rate": 0.913, "false_positive_rate": 0.019 },
+  "after": { "detection_rate": 0.971, "false_positive_rate": 0.021 },
+  "injected_case_ids": ["CASE-T008-01"],
+  "missed_claims": [
+    { "claim_id": "CLM-T008-0207", "reason_code": "BELOW_HUG_SHARE", "param_key": "THRESHOLD_HUG_SHARE", "threshold": 0.35, "value": 0.29, "description": "Provider's share of claims in the band was 29%, under the 35% flag level" }
+  ],
+  "miss_reason_summary": [
+    { "reason_code": "BELOW_HUG_SHARE", "param_key": "THRESHOLD_HUG_SHARE", "count": 4, "threshold": 0.35, "typical_value": 0.3 },
+    { "reason_code": "TEMPORAL_WINDOW", "param_key": "TEMPORAL_WINDOW_DAYS", "count": 3, "threshold": 45, "typical_value": 52 }
+  ],
+  "injected_graph": { "nodes": [], "edges": [] },
+  "limitations": ["Change applied in the sandbox only. Applying it to live detection needs a separate human decision."]
+}

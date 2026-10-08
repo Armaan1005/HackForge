@@ -1,0 +1,36 @@
+{
+  "seed": 42,
+  "detection": {
+    "by_scheme": [
+      { "scheme_id": "S1", "name": "Referral-kickback ring", "detected": true, "claim_recall": 0.92, "inr_planted": 1460000, "inr_caught": 1390000, "case_ids": ["CASE-0002"] },
+      { "scheme_id": "S2", "name": "Phantom ambulance", "detected": true, "claim_recall": 0.88, "inr_planted": 412000, "inr_caught": 371000, "case_ids": ["CASE-0004"] },
+      { "scheme_id": "S3", "name": "Upcoding drift", "detected": true, "claim_recall": 0.81, "inr_planted": 640000, "inr_caught": 505000, "case_ids": ["CASE-0003"] },
+      { "scheme_id": "S4", "name": "Duplicate billing", "detected": true, "claim_recall": 0.96, "inr_planted": 188000, "inr_caught": 181000, "case_ids": ["CASE-0006"] },
+      { "scheme_id": "S5", "name": "Fake-card identity cluster", "detected": true, "claim_recall": 0.9, "inr_planted": 530000, "inr_caught": 478000, "case_ids": ["CASE-0005"] },
+      { "scheme_id": "S6", "name": "Claim-splitting network", "detected": true, "claim_recall": 0.94, "inr_planted": 2184000, "inr_caught": 2052000, "case_ids": ["CASE-0001"] },
+      { "scheme_id": "S7", "name": "Lab unbundling", "detected": true, "claim_recall": 0.85, "inr_planted": 96000, "inr_caught": 82000, "case_ids": ["CASE-0008"] },
+      { "scheme_id": "S8", "name": "Impossible hours", "detected": true, "claim_recall": 1.0, "inr_planted": 74000, "inr_caught": 74000, "case_ids": ["CASE-0007"] }
+    ],
+    "overall": { "precision": 0.78, "recall": 0.91, "f1": 0.84, "inr_planted": 5584000, "inr_caught": 5133000 }
+  },
+  "decoys": { "total": 12, "flagged_needs_review": 1, "correctly_defended": 11, "items": [ { "decoy_id": "D2", "entity_id": "PRV-00877", "outcome": "cleared", "by": "EX2_case_mix_adjusted" } ] },
+  "exoneration": { "alerts_cleared": 1961, "planted_fraud_wrongly_cleared": 0 },
+  "forecast": {
+    "30": { "auc": 0.86, "brier": 0.11, "calibration": [ { "bin": "0.0-0.1", "predicted": 0.05, "observed": 0.04, "n": 610 }, { "bin": "0.5-0.6", "predicted": 0.55, "observed": 0.51, "n": 38 }, { "bin": "0.9-1.0", "predicted": 0.93, "observed": 0.88, "n": 9 } ] },
+    "60": { "auc": 0.84, "brier": 0.13, "calibration": [] },
+    "90": { "auc": 0.82, "brier": 0.15, "calibration": [] }
+  },
+  "fairness": {
+    "by_region": [ { "group": "MH", "providers": 312, "flag_rate": 0.031 }, { "group": "UP", "providers": 241, "flag_rate": 0.029 } ],
+    "by_size": [ { "group": "Q1 smallest", "providers": 300, "flag_rate": 0.027 }, { "group": "Q5 largest", "providers": 300, "flag_rate": 0.034 } ],
+    "rural_vs_urban": [ { "group": "rural", "providers": 210, "flag_rate": 0.024 }, { "group": "urban", "providers": 1290, "flag_rate": 0.032 } ],
+    "max_disparity_ratio": 1.33
+  },
+  "golden_set": [
+    { "case_id": "CASE-0001", "kind": "fraud", "expected": "needs_siu_review", "actual": "needs_siu_review", "match": true },
+    { "case_id": "ALR-00342", "kind": "decoy", "expected": "cleared", "actual": "cleared", "match": true },
+    { "case_id": "CASE-0011", "kind": "ambiguous", "expected": "request_documentation", "actual": "request_documentation", "match": true }
+  ],
+  "ai": null,
+  "audit_events": 219
+}
