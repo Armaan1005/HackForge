@@ -11,6 +11,7 @@ import { CourtPage } from './pages/Court';
 import { Explained } from './pages/Explained';
 import { QueuePage } from './pages/Queue';
 import { Trust } from './pages/Trust';
+import { Timelines } from './pages/Timelines';
 import { Twin } from './pages/Twin';
 
 function Page({ children }: { children: ReactNode }) {
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/cases/:id" element={shell(<CaseView />)} />
           <Route path="/explained" element={shell(<Explained />)} />
           <Route path="/twin" element={shell(<Twin />)} />
+          <Route path="/timelines" element={shell(<Timelines />)} />
           <Route path="/trust" element={shell(<Trust />)} />
           <Route path="/challenge" element={<Challenge />} />
           <Route path="*" element={<Navigate to="/" replace />} />

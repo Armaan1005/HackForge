@@ -18,6 +18,7 @@ const links: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: '/court', label: 'Evidence Court', icon: 'decision' },
   { to: '/explained', label: 'Explained', icon: 'complete' },
   { to: '/twin', label: 'Fraud Twin', icon: 'lab' },
+  { to: '/timelines', label: 'Two Timelines', icon: 'history' },
   { to: '/trust', label: 'Trust', icon: 'shield' },
 ];
 
