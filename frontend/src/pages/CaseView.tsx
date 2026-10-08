@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Card, ErrorState, PageHeader, Ring, Segmented, Skeleton, Status, Strength } from '../components/ui';
 import { api } from '../lib/api';
@@ -22,14 +22,17 @@ export function CaseView() {
   const c = useAsync(() => api.case(id), [id]);
   const [params] = useSearchParams();
   const [tab, setTab] = useState<Tab>((params.get('tab') as Tab) || 'evidence');
+  useEffect(() => { const t = params.get('tab') as Tab | null; if (t) setTab(t); }, [params]);
   const [horizon, setHorizon] = useState<Horizon>(30);
   const [highlight, setHighlight] = useState<string | null>(null);
 
   if (c.error) return <ErrorState error={c.error} onRetry={c.reload} />;
   if (!c.data) return <div className="stack-lg"><Skeleton h={70} /><div className="cand-top"><Skeleton h={300} /><Skeleton h={300} /></div></div>;
   const k = c.data;
-  const forReview = k.evidence.filter(e => e.direction === 'incriminating').slice(0, 3);
-  const legit = [...k.evidence.filter(e => e.direction !== 'incriminating').map(e => e.name), ...k.peer_context.filter(p => p.direction !== 'incriminating').map(p => p.note ?? p.metric)].slice(0, 3);
+  // The engine emits one evidence item per provider, so the summary dedupes by name.
+  const uniq = (xs: string[]) => [...new Set(xs)];
+  const forReview = uniq([...k.evidence].filter(e => e.direction === 'incriminating').sort((a, b) => b.severity - a.severity).map(e => e.name)).slice(0, 3);
+  const legit = uniq([...k.evidence.filter(e => e.direction !== 'incriminating').map(e => e.name), ...k.peer_context.filter(p => p.direction !== 'incriminating').map(p => p.note ?? p.metric)]).slice(0, 3);
   const days = k.payment_clock.days_until_release;
 
   return (
@@ -52,7 +55,7 @@ export function CaseView() {
             </div>
           </div>
           <div className="wtw">
-            <div className="wtw-col"><h4>Points to review</h4><ul>{forReview.map(e => <li key={e.evidence_id}>{e.name}</li>)}</ul></div>
+            <div className="wtw-col"><h4>Points to review</h4><ul>{forReview.map(t => <li key={t}>{t}</li>)}</ul></div>
             <div className="wtw-col"><h4>Could be legitimate</h4><ul>{legit.map(t => <li key={t}>{t}</li>)}</ul></div>
             <div className="wtw-col"><h4>Missing before deciding</h4><ul>{k.missing_documents.length ? k.missing_documents.map(m => <li key={m.doc_type}>{titleCase(m.doc_type)} for {m.claim_count} claims</li>) : <li>Nothing</li>}</ul></div>
           </div>
