@@ -67,7 +67,7 @@ export function Explained() {
             </Section>
           )}
         </div>
-        <div className="stack-lg">
+        <div className="stack-lg panel-stack">
           <Card>
             <h2 style={{ marginBottom: 14 }}>Why they were cleared</h2>
             <div className="stack">{reasons.map(([k, v]) => <Bar key={k} label={EX_LABEL[k] ?? k} value={v} max={maxR} right={num(v)} />)}</div>

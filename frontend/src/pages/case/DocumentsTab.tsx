@@ -136,7 +136,7 @@ export function DocumentsTab({ k }: { k: CaseDetail }) {
         ))}
       </div>
 
-      <div className="stack-lg">
+      <div className="stack-lg panel-stack">
         <div className="stats" style={{ gridTemplateColumns: '1fr 1fr' }}>
           <div className="stat"><b>{docs.length}</b><span>records checked</span></div>
           <div className={`stat ${flagged ? 'warn' : ''}`}><b>{flagged}</b><span>need a look</span></div>

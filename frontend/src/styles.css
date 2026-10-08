@@ -758,3 +758,19 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .side-panel section { padding: 20px 22px; }
 .side-panel section + section { border-top: 1px solid var(--line); }
 .side-panel h3 { font-size: 1rem; margin: 0 0 12px; }
+
+/* ── Un-boxed, site-wide ──────────────────────────────────────────────────── */
+/* Stat rows: one panel, hairline dividers (works when the grid wraps: borders overlap by 1px, edges clipped) */
+.stats { gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.stats > .stat { background: none; border: 0; border-radius: 0; box-shadow: none; padding: 16px 18px; border-left: 1px solid var(--line); border-top: 1px solid var(--line); margin: -1px 0 0 -1px; }
+.stat.warn b { color: var(--warn); }
+
+/* Side columns: consecutive cards become one panel with ruled sections */
+.panel-stack { gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.panel-stack > * { margin: 0 !important; }
+.panel-stack > * + * { border-top: 1px solid var(--line); }
+.panel-stack > .card, .panel-stack > * > .card { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.panel-stack > .card-accent { background: var(--accent-softer); }
+.panel-stack > .stats { border: 0; border-radius: 0; box-shadow: none; }
+.panel-stack > .fair-note, .panel-stack > .warn-note { border-radius: 0; padding: 16px 22px; }
+.panel-stack > .card-link, .panel-stack > a.card { border-radius: 0; }

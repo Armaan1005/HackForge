@@ -46,7 +46,7 @@ export function Trust() {
             </tbody>
           </table>
         </Card>
-        <div className="stack-lg">
+        <div className="stack-lg panel-stack">
           <Card>
             <div className="row-flex" style={{ marginBottom: 10 }}><h2>Is the forecast honest?</h2><span className="spacer" />
               <Segmented size="sm" label="Look ahead" value={h} onChange={setH} options={[{ value: '30', label: '30d' }, { value: '60', label: '60d' }, { value: '90', label: '90d' }]} /></div>

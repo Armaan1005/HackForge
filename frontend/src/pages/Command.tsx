@@ -68,7 +68,7 @@ export function Command() {
           </Card>
         </div>
 
-        <div className="stack-lg">
+        <div className="stack-lg panel-stack">
           <div className="stats" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="stat"><b>{queue ? inr(queue.expected_recovery_selected) : '…'}</b><span>likely recovered today</span></div>
             <div className="stat"><b>{queue ? inr(queue.recovery_per_hour) : '…'}</b><span>per investigator hour</span></div>

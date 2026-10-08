@@ -26,7 +26,7 @@ export function NetworkTab({ k, highlight, onClearHighlight }: { k: CaseDetail; 
 
   return (
     <div className="cand-bottom">
-      <div className="stack-lg">
+      <div className="stack-lg panel-stack">
         <Card style={{ padding: 0 }}>
           {highlight && <div className="pad row-flex" style={{ paddingBottom: 0 }}><span className="review-pill review-pending">Showing {highlight}</span><Button variant="ghost" size="sm" icon="decline" onClick={onClearHighlight}>Clear</Button></div>}
           {g.data ? <NetworkGraph nodes={g.data.nodes} edges={g.data.edges} visibleIds={visible} highlightEvidence={highlight} onSelect={setSel} /> : <Skeleton h={540} style={{ borderRadius: 0 }} />}
@@ -46,7 +46,7 @@ export function NetworkTab({ k, highlight, onClearHighlight }: { k: CaseDetail; 
         )}
       </div>
 
-      <div className="stack-lg">
+      <div className="stack-lg panel-stack">
         <div className="stats" style={{ gridTemplateColumns: '1fr 1fr' }}>
           <div className="stat"><b>{num(ns.connected_claims)}</b><span>connected claims</span></div>
           <div className="stat"><b>{pct(ns.flagged_neighbor_share)}</b><span>of linked providers already flagged</span></div>
