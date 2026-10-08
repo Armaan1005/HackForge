@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { Mascot, type MascotMood } from '../components/Mascot';
+import { TwinFlow } from '../components/TwinFlow';
 import { NetworkGraph } from '../components/NetworkGraph';
 import { Bar, Button, Card, Chip, Note, PageHeader, Ring, Skeleton } from '../components/ui';
 import { ai, api } from '../lib/api';
@@ -24,6 +25,7 @@ export function Twin() {
   const [hardened, setHardened] = useState<TwinRun | null>(null);
   const scenarios = (wl.data?.scenarios ?? []) as unknown as TwinScenarioSpec[];
   const spec = scenarios.find(s => s.id === parsed?.scenario);
+  const [howOpen, setHowOpen] = useState(true);
   const mood: MascotMood = busy ? 'thinking' : hardened ? 'happy' : run ? 'watching' : 'watching';
 
   const reset = () => { setRun(null); setAdvice(null); setHardened(null); };
@@ -53,6 +55,21 @@ export function Twin() {
   return (
     <>
       <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" subtitle="Describe how a fraudster might change tactics. Axon simulates it on a copy of the data and shows what it catches." actions={<Mascot size={80} mood={mood} />} />
+
+      <Card style={{ marginBottom: 20 }}>
+        <div className="row-flex" style={{ marginBottom: howOpen ? 18 : 0 }}>
+          <h2>How the Fraud Twin works</h2>
+          <span className="small muted">It follows along as you run an attack below.</span>
+          <span className="spacer" />
+          <Button size="sm" variant="ghost" icon={howOpen ? 'less' : 'add'} onClick={() => setHowOpen(v => !v)}>{howOpen ? 'Hide' : 'Show'}</Button>
+        </div>
+        {howOpen && <TwinFlow s={{
+          text, recipes: scenarios.length, busy, run,
+          recipe: parsed && spec ? { name: spec.name, params: Object.entries(parsed.params) } : null,
+          change: advice?.suggested_change ?? null,
+          hardened: hardened && run ? { before: hardened.before?.detection_rate ?? run.detection_rate, after: hardened.after?.detection_rate ?? hardened.detection_rate } : null,
+        }} />}
+      </Card>
 
       <div className="home-grid" style={{ marginBottom: 20 }}>
         <Card>
