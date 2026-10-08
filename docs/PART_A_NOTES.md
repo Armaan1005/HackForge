@@ -53,6 +53,11 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 - **Peer context** is built for the case's top provider: EM5, band share, billed per member, KL, top referral source, case mix, the risk-adjusted ratio (with `raw_ratio`), prior investigations, tenure, nearest competitor (if sole).
 - **Generator tweak:** D2 now bills 80 claims (was 160) so its members-per-claim matches peers; its intensity is explained by case mix.
 
+### M6 (queue, money clock)
+- **Hard-signal risk** = max(fused, `HARD_FLOOR` 85 + `HARD_METHOD_BONUS` 5 × (agreeing methods − 1)), so corroborated hard cases rank above lone ones instead of all sitting at exactly 85.
+- **Queue:** CP-SAT knapsack (1 worker, seeded, 0.2 s cap) over 90% of capacity; exploration fills the rest with the best-fitting eligible case (mixed pattern first, then confidence closest to 0.5). Ranks are by priority (value ÷ effort) over all cases. With seed 42 every case needs ≥ 10 h, so at 40 h the 4 h exploration reserve stays empty.
+- `/api/overview` `selected_today` is filled live from `queue.plan(40, 30)`.
+
 ## Handoff log
 
 ### M0 — fixture server (done)
@@ -96,3 +101,10 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 3. `peer_context[]` and `/api/alerts/cleared` are live (handoff to Armaan).
 4. Next: M6 queue optimizer (OR-Tools CP-SAT knapsack) + money clock.
 5. Gotcha: an alert with a hard signal is never cleared, even if every other signal is explained.
+
+### M6 — queue + money clock (done)
+1. Done: `queue.py` (value/priority per A13, CP-SAT knapsack, exploration, reasons, frontier), hard-signal bonus, 7 queue tests.
+2. Live: `GET /api/queue?capacity_hours=&horizon=` re-plans in ~2 ms.
+3. Demo moment (seed 42): CASE-0001 risk 95 ranked #5, "Not selected: high effort 16 h, ₹6,558 per hour"; the S6 case is #1 with "₹5.34L releases in 1 day".
+4. Next: M7 forecast (monthly snapshots, HistGradientBoosting per horizon, time-based holdout).
+5. Gotcha: `horizon_risk` is still the placeholder until M7 replaces it, so queue values across horizons only differ by that placeholder.
