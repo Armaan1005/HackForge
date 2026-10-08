@@ -22,7 +22,7 @@ const EX_RULE: Record<string, { what: string; rule: string }> = {
 };
 const SIGNAL = (s: string) => {
   const [layer, ...rest] = s.split('.');
-  const name = rest.join(' ').replace(/^R\d+_/, '').replace(/^robust_z /, '').replace(/_/g, ' ');
+  const name = rest.join(' ').replace(/^R\d+_/, '').replace(/^robust_z /, '').replace(/_/g, ' ').replace(/\bem\b/, 'E&M');
   if (s === 'anomaly.isolation_forest') return 'Overall billing profile unusual';
   return `${{ rule: 'Rule', anomaly: 'Unusual vs peers', temporal: 'Timing', graph: 'Network' }[layer] ?? layer}: ${name}`;
 };
