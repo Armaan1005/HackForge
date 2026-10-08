@@ -47,6 +47,12 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 - **Graph "flagged" providers** = rule hits or anomaly ≥ 0.99. Shared owner/facility only becomes evidence with ≥ 2 flagged providers; shared bank across different owners always does. Projection ties: Jaccard ≥ 0.05 with ≥ 3 shared members, referrals, owner, bank, facility (0.5).
 - **Case grouping** no longer unions on shared primary facility (hospitals host many unrelated providers); graph cycles/communities/shared indicators supply links instead.
 
+### M5 (exoneration, peer context)
+- **EX rules by signal:** R01/R02 → EX3 (≥ 50% of flagged claims corrected); R11 dialysis ≤ 14/30 days → EX5, else event/seasonal → EX4; R03 and case-mix-type anomaly drivers → EX2 (adjusted ratio = max(EM5, billed-per-member ratio) ÷ case-mix ratio < 1.5); volume-type anomaly/bursts/ramp → EX4 (region-wide burst, or same-day cluster: ≥ 20 members each seen by ≥ 3 providers in one city) or EX1 (nearest same-type competitor > 60 km and volume per 1k catchment within peer IQR, ×1.25); graph/window signals → EX6 when max billing |z| < 2 and no rule hits.
+- **Cleared only if every incriminating signal is explained and none is hard.** Partial explanations become one exculpatory `exoneration` evidence item per EX code (weight 0, so they inform the Defense without moving confidence).
+- **Peer context** is built for the case's top provider: EM5, band share, billed per member, KL, top referral source, case mix, the risk-adjusted ratio (with `raw_ratio`), prior investigations, tenure, nearest competitor (if sole).
+- **Generator tweak:** D2 now bills 80 claims (was 160) so its members-per-claim matches peers; its intensity is explained by case mix.
+
 ## Handoff log
 
 ### M0 — fixture server (done)
@@ -83,3 +89,10 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 3. Acceptance: S3 + S6 anomaly ≥ 0.98; S3 drift +4.9 pp/month; D5 burst region-wide; S1 4-cycle; S6 one community, 43 connected claims; D7 one community, not flagged.
 4. Next: M5 exoneration (EX1–EX6) + peer context.
 5. Gotcha: graph uses the rule + anomaly signals already in `context["signals"]`; keep layer order rules → anomaly → temporal → graph.
+
+### M5 — exoneration + peer context (done)
+1. Done: `exonerate.py` (EX1–EX6), `peer_context.py`, partial-explanation evidence, 3 tests.
+2. Seed 42: 109 alerts → 27 cleared (EX2 16, EX4 ~9, EX1 2…) → 8 cases = exactly S1–S8; 0 planted fraud cleared; decoys defended ≥ 90%.
+3. `peer_context[]` and `/api/alerts/cleared` are live (handoff to Armaan).
+4. Next: M6 queue optimizer (OR-Tools CP-SAT knapsack) + money clock.
+5. Gotcha: an alert with a hard signal is never cleared, even if every other signal is explained.
