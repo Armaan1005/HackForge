@@ -85,7 +85,7 @@ export function CaseView() {
           {TABS.map(t => (
             <button key={t.value} type="button" role="tab" aria-selected={tab === t.value} className={tab === t.value ? 'on' : ''} onClick={() => setTab(t.value)}>
               {t.label}
-              {tab === t.value && <motion.span layoutId="utab-line" className="utab-line" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+              {tab === t.value && <motion.span layoutId="utab-line" className="utab-line" transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} />}
             </button>
           ))}
         </nav>

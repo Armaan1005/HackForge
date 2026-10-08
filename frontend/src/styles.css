@@ -177,11 +177,12 @@ main.page { padding-top: 26px; padding-bottom: 56px; min-height: calc(100vh - 64
 .row-desc { color: var(--text-2); font-size: .86rem; line-height: 1.4; }
 
 /* ── Segmented ────────────────────────────────────────────────────────────── */
-.segmented { display: inline-flex; background: var(--bg-2); padding: 3px; border-radius: 12px; gap: 2px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.segmented { position: relative; display: inline-flex; background: var(--bg-2); padding: 3px; border-radius: 12px; gap: 2px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .segmented button { position: relative; border: 0; background: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; color: var(--text-2); font-weight: 550; font-size: .9rem; white-space: nowrap; }
 .segmented.seg-sm button { padding: 5px 10px; font-size: .82rem; }
 .segmented button.active { color: var(--text); }
-.seg-pill { position: absolute; inset: 0; background: var(--surface); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.seg-pill { position: absolute; top: 3px; bottom: 3px; left: 0; background: var(--surface); border-radius: 10px; box-shadow: 0 1px 2px rgba(20,20,30,.10), 0 0 0 1px rgba(20,20,30,.04); pointer-events: none; transition: transform .28s var(--ease), width .28s var(--ease); }
+.segmented button { transition: color .2s var(--ease); }
 .seg-content { position: relative; display: flex; align-items: center; gap: 6px; }
 
 /* ── Slider ───────────────────────────────────────────────────────────────── */

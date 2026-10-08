@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { STATUS } from '../lib/format';
 import { fade, spring } from '../lib/theme';
@@ -46,12 +46,26 @@ export function IconButton({ icon, label, active, onClick, size = 18 }: { icon: 
 export function Segmented<T extends string | number>({ value, onChange, options, label, size = 'md' }: {
   value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode; icon?: IconName }[]; label: string; size?: 'sm' | 'md';
 }) {
-  const id = useId();
+  // One indicator that measures the active button and glides to it (position + width, no scaling),
+  // so the rounded corners never stretch mid-animation.
+  const box = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ x: number; w: number } | null>(null);
+  const idx = options.findIndex(o => o.value === value);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const b = box.current?.querySelectorAll<HTMLButtonElement>(':scope > button')[idx];
+      if (b) setPos({ x: b.offsetLeft, w: b.offsetWidth });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (box.current) ro.observe(box.current);
+    return () => ro.disconnect();
+  }, [idx, options.length]);
   return (
-    <div className={`segmented seg-${size}`} role="radiogroup" aria-label={label}>
+    <div ref={box} className={`segmented seg-${size}`} role="radiogroup" aria-label={label}>
+      {pos && <span className="seg-pill" style={{ transform: `translateX(${pos.x}px)`, width: pos.w }} />}
       {options.map(o => (
         <button key={String(o.value)} type="button" role="radio" aria-checked={value === o.value} className={value === o.value ? 'active' : ''} onClick={() => onChange(o.value)}>
-          {value === o.value && <motion.span layoutId={`seg-${id}`} className="seg-pill" transition={spring} />}
           <span className="seg-content">{o.icon && <Icon name={o.icon} size={14} />}{o.label}</span>
         </button>
       ))}
