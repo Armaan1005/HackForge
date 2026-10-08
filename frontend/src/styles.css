@@ -713,3 +713,7 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .graph-slot { position: relative; flex: 1; min-height: 380px; }
 .graph-slot .graph-box { position: absolute; inset: 0; height: auto; border-radius: 0 0 var(--radius) var(--radius); }
 .graph-slot .graph-box > [role="img"] { bottom: 64px !important; }  /* keep nodes clear of the legend in the shorter Twin card */
+
+/* cleared-alert sheet: two columns side by side */
+.alert-cols { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 760px) { .alert-cols { grid-template-columns: 1fr; gap: 20px; } }

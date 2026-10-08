@@ -87,7 +87,7 @@ export function Explained() {
 function AlertSheet({ a, line, onClose }: { a: Alert | null; line?: string; onClose: () => void }) {
   const ex = a ? EX_RULE[a.exoneration_code] : undefined;
   return (
-    <Sheet open={!!a} onClose={onClose} title={a ? a.entity_name : ''}>
+    <Sheet open={!!a} onClose={onClose} title={a ? a.entity_name : ''} wide>
       {a && (
         <div className="stack-lg">
           <div className="row-flex small muted" style={{ gap: 10 }}>
@@ -95,29 +95,29 @@ function AlertSheet({ a, line, onClose }: { a: Alert | null; line?: string; onCl
             <span>{a.alert_id} · {a.entity_type} {a.entity_id}</span>
           </div>
 
-          <div>
-            <p className="eyebrow">Why it was cleared</p>
-            {line && <p style={{ marginTop: 4 }}>{line}</p>}
-            {ex && <p className="small muted" style={{ marginTop: 6 }}>{ex.what}</p>}
-            <dl className="facts" style={{ marginTop: 12 }}>
-              {Object.entries(a.facts).map(([k, v]) => (
-                <div key={k}><dt>{k.replace(/_/g, ' ')}</dt><dd><b>{fact(v)}</b></dd></div>
-              ))}
-            </dl>
-          </div>
+          <div className="alert-cols">
+            <div>
+              <p className="eyebrow">Why it was cleared</p>
+              {line && <p style={{ marginTop: 4 }}>{line}</p>}
+              {ex && <p className="small muted" style={{ marginTop: 6 }}>{ex.what}</p>}
+              <dl className="facts" style={{ marginTop: 12 }}>
+                {Object.entries(a.facts).map(([k, v]) => (
+                  <div key={k}><dt>{k.replace(/_/g, ' ')}</dt><dd><b>{fact(v)}</b></dd></div>
+                ))}
+              </dl>
+            </div>
 
-          <div>
-            <p className="eyebrow">What raised it</p>
-            <p className="small muted" style={{ marginTop: 4 }}>Risk {a.original_risk} before clearing</p>
-            <ul className="list-check" style={{ marginTop: 8 }}>
-              {a.triggered_by.map(s => <li key={s}><Icon name="inspect" size={14} /><span className="small">{SIGNAL(s)}</span></li>)}
-            </ul>
-          </div>
-
-          <div className="row-flex" style={{ gap: 6 }}>
-            {a.evidence_ids.map(id => <Cite key={id} id={id} />)}
-            <span className="spacer" />
-            {ex && <Link to={`/rulebook?rule=${ex.rule}`} className="btn btn-secondary btn-sm"><Icon name="course-book" size={14} />Rule {ex.rule}</Link>}
+            <div className="stack-lg">
+              <div>
+                <p className="eyebrow">What raised it</p>
+                <p className="small muted" style={{ marginTop: 4 }}>Risk {a.original_risk} before clearing</p>
+                <ul className="list-check" style={{ marginTop: 8 }}>
+                  {a.triggered_by.map(s => <li key={s}><Icon name="inspect" size={14} /><span className="small">{SIGNAL(s)}</span></li>)}
+                </ul>
+              </div>
+              <div className="row-flex" style={{ gap: 6 }}>{a.evidence_ids.map(id => <Cite key={id} id={id} />)}</div>
+              {ex && <Link to={`/rulebook?rule=${ex.rule}`} className="btn btn-secondary btn-sm" style={{ justifySelf: 'start', alignSelf: 'flex-start' }}><Icon name="course-book" size={14} />Rule {ex.rule} in the rulebook</Link>}
+            </div>
           </div>
         </div>
       )}
