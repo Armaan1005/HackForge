@@ -12,7 +12,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
-from . import engine_client as engine
+from . import engine_client as engine, ollama
 from .agents.brief import write_brief
 from .agents.court import run_court
 from .agents.explain import ask_case, explain_cleared
@@ -72,7 +72,8 @@ async def _court(case: dict, priority: int, refresh: bool = False, fresh: bool =
 # ── endpoints ────────────────────────────────────────────────────────────────
 @router.get("/status")
 async def status():
-    return {**gateway.status(), "use_fixtures": settings.use_fixtures, "verifier": STATS}
+    local = await ollama.available() if any(m.startswith("ollama/") for m in gateway.models) else []
+    return {**gateway.status(), "chain": gateway.models, "ollama_models": local, "use_fixtures": settings.use_fixtures, "verifier": STATS}
 
 
 @router.post("/court/{case_id}")

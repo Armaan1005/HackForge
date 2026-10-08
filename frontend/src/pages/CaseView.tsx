@@ -43,6 +43,7 @@ export function CaseView() {
         actions={<><Strength value={k.evidence_strength} /><Status value={k.verdict.status} /><Button size="sm" variant="tinted" icon="decision" onClick={() => setTab('court')}>Hear it in court</Button></>} />
 
       <div className="cand-top" style={{ marginBottom: 20 }}>
+        <div className="stack-lg">
         <Card className="card-accent">
           <div className="rec-head">
             <Ring value={k.scores.risk} size={88} label={`Risk ${k.scores.risk} of 100`}>
@@ -60,20 +61,17 @@ export function CaseView() {
             <div className="wtw-col"><h4>Missing before deciding</h4><ul>{k.missing_documents.length ? k.missing_documents.map(m => <li key={m.doc_type}>{titleCase(m.doc_type)} for {m.claim_count} claims</li>) : <li>Nothing</li>}</ul></div>
           </div>
         </Card>
-
-        <div className="stack-lg">
-          <DecisionBox k={k} />
-          <Card>
-            <dl className="facts">
-              <div><dt>At stake</dt><dd><b>{inr(k.money.dollars_at_risk)}</b> <span className="muted small">· {inr(k.money.pending)} not paid yet</span></dd></div>
-              <div><dt>Payment</dt><dd style={{ color: days != null && days <= 3 ? 'var(--bad)' : undefined }}>{days == null ? 'Nothing pending' : `Releases in ${days} days`}</dd></div>
-              <div><dt>Members</dt><dd>{k.member_harm.members_affected} affected · {pct(k.member_harm.vulnerable_share)} vulnerable</dd></div>
-              <div><dt>Repeat risk</dt><dd className="row-flex" style={{ gap: 8 }}><b>{pct(k.horizon_risk[String(horizon)])}</b>
-                <Segmented size="sm" label="Horizon" value={horizon} onChange={setHorizon} options={[{ value: 30, label: '30d' }, { value: 60, label: '60d' }, { value: 90, label: '90d' }]} /></dd></div>
-              <div><dt>Effort</dt><dd>{k.effort_hours} hours</dd></div>
-            </dl>
-          </Card>
+          <div className="stats" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+            <div className="stat"><b>{inr(k.money.dollars_at_risk)}</b><span>at stake · {inr(k.money.pending)} unpaid</span></div>
+            <div className={`stat ${days != null && days <= 3 ? 'warn' : ''}`}><b>{days == null ? '—' : `${days} days`}</b><span>{days == null ? 'nothing pending' : 'until payment releases'}</span></div>
+            <div className="stat"><b>{k.member_harm.members_affected}</b><span>members · {pct(k.member_harm.vulnerable_share)} vulnerable</span></div>
+            <div className="stat"><b>{pct(k.horizon_risk[String(horizon)])}</b>
+              <span className="row-flex" style={{ gap: 6 }}>repeat risk <Segmented size="sm" label="Horizon" value={horizon} onChange={setHorizon} options={[{ value: 30, label: '30d' }, { value: 60, label: '60d' }, { value: 90, label: '90d' }]} /></span></div>
+            <div className="stat"><b>{k.effort_hours}h</b><span>to investigate</span></div>
+          </div>
         </div>
+
+        <DecisionBox k={k} />
       </div>
 
       <div className="no-print" style={{ marginBottom: 18, overflowX: 'auto' }}>

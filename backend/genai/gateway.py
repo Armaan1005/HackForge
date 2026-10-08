@@ -23,7 +23,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from . import trace
+from . import ollama, trace
 from .config import settings
 
 log = logging.getLogger("axon.gateway")
@@ -88,7 +88,7 @@ class LLMGateway:
             return
         self._queue = asyncio.PriorityQueue()
         self._rate_lock = asyncio.Lock()
-        if settings.ai_enabled:
+        if settings.ai_enabled and settings.api_key:
             from google import genai
 
             self._client = genai.Client(api_key=settings.api_key)
@@ -102,7 +102,12 @@ class LLMGateway:
     # ── public API ───────────────────────────────────────────────────────────
     @property
     def models(self) -> list[str]:
-        return [settings.model, *[m for m in settings.fallback_models if m != settings.model]]
+        chain = [settings.model, *[m for m in settings.fallback_models if m != settings.model]]
+        if settings.ollama_model and f"ollama/{settings.ollama_model}" not in chain:
+            chain.append(f"ollama/{settings.ollama_model}")
+        if not settings.api_key:  # no key: only local models can answer
+            chain = [m for m in chain if m.startswith("ollama/")]
+        return chain
 
     def status(self) -> dict:
         now = time.monotonic()
@@ -164,7 +169,8 @@ class LLMGateway:
             trace.skipped(agent, "same request already in flight, sharing it")
         try:
             # shield: on caller timeout the job keeps running and fills the cache for next time
-            return await asyncio.wait_for(asyncio.shield(fut), timeout or settings.timeout_s)
+            local_first = self.models[:1] and self.models[0].startswith("ollama/")
+            return await asyncio.wait_for(asyncio.shield(fut), timeout or (settings.ollama_timeout_s if local_first else settings.timeout_s))
         except asyncio.TimeoutError as e:
             raise AIUnavailable(f"{agent}: timed out, still queued") from e
         except AIUnavailable:
@@ -189,7 +195,7 @@ class LLMGateway:
                     if rest > 0:
                         waits.append(rest)
                         continue
-                    if len(calls) < settings.rpm:
+                    if m.startswith("ollama/") or len(calls) < settings.rpm:  # local model: no quota
                         calls.append(now)
                         return m
                     waits.append(60 - (now - calls[0]))
@@ -230,12 +236,16 @@ class LLMGateway:
             for i in range(attempts):
                 try:
                     self.stats["calls"] += 1
-                    resp = await self._client.aio.models.generate_content(model=model, contents=contents, config=config)
-                    result = job.schema.model_validate_json(resp.text)
+                    if model.startswith("ollama/"):
+                        text, usage = await ollama.generate(model, job.system, job.prompt, job.schema)
+                    else:
+                        resp = await self._client.aio.models.generate_content(model=model, contents=contents, config=config)
+                        text, usage = resp.text, getattr(resp, "usage_metadata", None)
+                    result = job.schema.model_validate_json(text)
                     self.last_model[job.agent] = model
-                    trace.end(span, resp.text, getattr(resp, "usage_metadata", None), model=model)
+                    trace.end(span, text, usage, model=model)
                     return result
-                except errors.APIError as e:
+                except (errors.APIError, ollama.OllamaError) as e:
                     if not (e.code == 429 or e.code >= 500) or i == attempts - 1:
                         raise
                     # rest this model for as long as Google asks (or a short default), then use the next free one

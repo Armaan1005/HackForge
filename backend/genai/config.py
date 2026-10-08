@@ -24,6 +24,12 @@ class Settings:
     fallback_models: tuple[str, ...] = tuple(m.strip() for m in os.environ.get(
         "GEMINI_FALLBACK_MODELS", "gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash-lite").split(",") if m.strip())
     timeout_s: float = float(os.environ.get("LLM_TIMEOUT_S", 25))
+    # local Ollama: OLLAMA_MODEL=qwen2.5:7b adds "ollama/qwen2.5:7b" as the last link of the chain;
+    # GEMINI_MODEL=ollama/qwen2.5:7b makes it the main model (fully offline, no key needed)
+    ollama_model: str = os.environ.get("OLLAMA_MODEL", "qwen2.5:3b").strip()  # set empty to disable
+    ollama_url: str = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
+    ollama_num_ctx: int = int(os.environ.get("OLLAMA_NUM_CTX", 8192))  # fits a 6 GB GPU with the 3B model
+    ollama_timeout_s: float = float(os.environ.get("OLLAMA_TIMEOUT_S", 120))
     # true -> never call Gemini, always use deterministic templates (tests, offline demos)
     ai_offline: bool = _bool("AI_OFFLINE", False)
     use_fixtures: bool = _bool("USE_FIXTURES", True)
@@ -34,7 +40,8 @@ class Settings:
 
     @property
     def ai_enabled(self) -> bool:
-        return bool(self.api_key) and not self.ai_offline
+        uses_ollama = bool(self.ollama_model) or self.model.startswith("ollama/")
+        return (bool(self.api_key) or uses_ollama) and not self.ai_offline
 
 
 settings = Settings()
