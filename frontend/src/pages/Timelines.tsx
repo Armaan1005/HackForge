@@ -218,7 +218,7 @@ export function Timelines() {
   const play = () => { if (t >= END) setT(0); setPlaying(v => !v); };
 
   return (
-    <div className={`tl ${act2 ? 'tl-act2' : ''} ${phase === 'rewind' ? 'tl-rewind' : ''} ${phase === 'strike' || phase === 'cta' ? 'tl-lost' : ''}`}>
+    <div className={`twotl ${act2 ? 'tl-act2' : ''} ${phase === 'rewind' ? 'tl-rewind' : ''} ${phase === 'strike' || phase === 'cta' ? 'tl-lost' : ''}`}>
       <PageHeader eyebrow="Two timelines"
         title={phase === 'cta' ? 'Back to today' : act2 || phase === 'rewind' ? 'The same days, without Axon' : 'With Axon'}
         subtitle={<>One real case from the engine, {k.case_id} ({PATTERN[k.pattern] ?? k.pattern}). Same data, same dates, two outcomes.</>}

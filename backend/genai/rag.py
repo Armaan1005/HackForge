@@ -11,9 +11,9 @@ import re
 from collections import Counter
 from functools import lru_cache
 
-from .config import REPO_DIR
+from pathlib import Path
 
-RULEBOOK = REPO_DIR / "data" / "reference" / "rulebook.json"
+RULEBOOK = Path(__file__).parent / "knowledge" / "rulebook.json"
 _TOKEN = re.compile(r"[a-z0-9]+")
 _STOP = {"the", "a", "an", "of", "to", "and", "or", "in", "on", "for", "is", "are", "be", "by", "with", "as", "at", "it", "this",
          "that", "its", "not", "from", "one", "same", "only", "more", "than", "case", "claim", "claims", "provider", "providers"}
@@ -82,3 +82,7 @@ def rule_refs(arguments: list[dict], case: dict) -> list[dict]:
     out = [{"id": r["id"], "kind": r["kind"], "title": r["title"], "text": r["text"], "source": r["source"],
             "verify": r.get("verify", False), "cited": r["id"] in cited} for r in for_case(case)]
     return sorted(out, key=lambda r: not r["cited"])
+
+
+def entries() -> list[dict]:
+    return _index()[0]

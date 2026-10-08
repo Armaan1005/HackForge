@@ -12,7 +12,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
-from . import engine_client as engine, ollama
+from . import engine_client as engine, ollama, rag
 from .agents.brief import write_brief
 from .agents.court import run_court
 from .agents.explain import ask_case, explain_cleared
@@ -70,6 +70,15 @@ async def _court(case: dict, priority: int, refresh: bool = False, fresh: bool =
 
 
 # ── endpoints ────────────────────────────────────────────────────────────────
+@router.get("/rulebook")
+async def rulebook(case_id: str | None = None):
+    """The whole rulebook (for the book view), plus which rules retrieval picks for a case."""
+    retrieved = []
+    if case_id:
+        retrieved = [{"id": r["id"], "score": r.get("score")} for r in rag.for_case(await _load_case(case_id))]
+    return {"entries": rag.entries(), "case_id": case_id, "retrieved": retrieved}
+
+
 @router.get("/status")
 async def status():
     local = await ollama.available() if any(m.startswith("ollama/") for m in gateway.models) else []

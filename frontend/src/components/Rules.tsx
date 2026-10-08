@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Rule } from '../lib/types';
 import { Icon } from './Icon';
 import { Note, Section, Sheet } from './ui';
@@ -16,6 +17,7 @@ function RuleSheet({ r, onClose }: { r: Rule | null; onClose: () => void }) {
           ? <Note tone="warn" icon="official-service">A short paraphrase of a public law, possibly relevant here. Not legal advice and not a finding: check the official text before relying on it.</Note>
           : <Note icon="course-book">Example payer rule, written for this prototype.</Note>}
         <p className="xs faint">Found by keyword search over the rulebook for this case. Rules give context only; they never change the risk score.</p>
+        <Link to={`/rulebook?rule=${r.id}`} className="btn btn-secondary btn-sm" style={{ justifySelf: 'start' }}><Icon name="course-book" size={14} />Open in the rulebook</Link>
       </div>}
     </Sheet>
   );

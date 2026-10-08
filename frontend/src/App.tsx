@@ -9,7 +9,9 @@ import { Challenge } from './pages/Challenge';
 import { Command } from './pages/Command';
 import { CourtPage } from './pages/Court';
 import { Explained } from './pages/Explained';
+import { Landing } from './pages/Landing';
 import { QueuePage } from './pages/Queue';
+import { Rulebook } from './pages/Rulebook';
 import { Trust } from './pages/Trust';
 import { Timelines } from './pages/Timelines';
 import { Twin } from './pages/Twin';
@@ -30,13 +32,15 @@ export default function App() {
     <BrowserRouter>
         <Toasts />
         <Routes>
-          <Route path="/" element={shell(<Command />)} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/home" element={shell(<Command />)} />
           <Route path="/queue" element={shell(<QueuePage />)} />
           <Route path="/court" element={shell(<CourtPage />)} />
           <Route path="/cases/:id" element={shell(<CaseView />)} />
           <Route path="/explained" element={shell(<Explained />)} />
           <Route path="/twin" element={shell(<Twin />)} />
           <Route path="/timelines" element={shell(<Timelines />)} />
+          <Route path="/rulebook" element={shell(<Rulebook />)} />
           <Route path="/trust" element={shell(<Trust />)} />
           <Route path="/challenge" element={<Challenge />} />
           <Route path="*" element={<Navigate to="/" replace />} />

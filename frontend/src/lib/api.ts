@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { clone, fixtures } from './fixtures';
 import { replanLocal } from './replan';
-import type { AiStatus, CaseDetail, Court, Forensics, Graph, Queue, Rule, TimeMachine, TwinRun } from './types';
+import type { AiStatus, CaseDetail, Claim, RulebookEntry, Court, Forensics, Graph, Queue, Rule, TimeMachine, TwinRun } from './types';
 
 // ── data-source state (shown in the nav: Live engine vs Contract fixtures) ────
 type Source = 'unknown' | 'live' | 'fixture';
@@ -68,6 +68,7 @@ export const api = {
     try { const c = await fetchJson<CaseDetail>(`/api/cases/${id}`); setSource('live'); return c; }
     catch (e) { if ((e as { status?: number }).status === 404 && engineSource === 'live') throw e; setSource('fixture'); return fixtureCase(id); }
   },
+  claims: (id: string) => engine<{ case_id: string; total: number; claims: Claim[] }>(`/api/cases/${id}/claims?limit=500`, () => ({ case_id: id, total: 0, claims: [] })),
   graph: (id: string) => engine<Graph>(`/api/cases/${id}/graph`, () => ({ ...(clone(fixtures.caseGraph) as unknown as Graph), case_id: id })),
   timemachine: (id: string) => engine<TimeMachine>(`/api/cases/${id}/timemachine`, () => ({ ...(clone(fixtures.timemachine) as unknown as TimeMachine), case_id: id })),
   forecast: (entity: string, horizon: number) => engine(`/api/forecast/${entity}?horizon=${horizon}`, () => {
@@ -97,6 +98,7 @@ export const api = {
 // ── Part B: genai ────────────────────────────────────────────────────────────
 export const ai = {
   status: () => fetchJson<AiStatus>('/api/ai/status', undefined, 4000),
+  rulebook: (caseId?: string) => fetchJson<{ entries: RulebookEntry[]; case_id: string | null; retrieved: { id: string; score: number }[] }>(`/api/ai/rulebook${caseId ? `?case_id=${caseId}` : ''}`, undefined, 15000),
   court: (id: string, refresh = false, fresh = false) => fetchJson<Court>(`/api/ai/court/${id}${fresh ? '?fresh=true' : refresh ? '?refresh=true' : ''}`, { method: 'POST' }, 90000),
   brief: (id: string) => fetchJson<{ markdown: string; source: string; note?: string }>(`/api/ai/brief/${id}`, undefined, 90000),
   forensics: (id: string) => fetchJson<Forensics>(`/api/ai/forensics/${id}`, { method: 'POST' }, 90000),

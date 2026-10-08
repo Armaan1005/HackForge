@@ -1,11 +1,21 @@
-import { Card, Cite } from '../../components/ui';
+import { AreaTrend, weekly } from '../../components/AreaTrend';
+import { Card, Cite, Skeleton } from '../../components/ui';
+import { api } from '../../lib/api';
+import { useAsync } from '../../lib/hooks';
 import type { CaseDetail } from '../../lib/types';
 
 const SIM_TODAY = '2026-10-01';
 const fmt = (d: string) => new Date(`${d}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
 export function TimelineTab({ k }: { k: CaseDetail }) {
+  const cl = useAsync(() => api.claims(k.case_id), [k.case_id]);
   return (
+    <div className="stack-lg">
+    {!cl.data ? <Skeleton h={340} /> : cl.data.claims.length > 0 && (
+      <AreaTrend title="Billed per week" today={SIM_TODAY} height={220}
+        description={`${cl.data.total} claims in this case. Amber has been paid out; green is still pending and can be held.`}
+        data={weekly(cl.data.claims)} />
+    )}
     <Card style={{ maxWidth: 820 }}>
       <h2 style={{ marginBottom: 18 }}>How this case unfolded</h2>
       <div className="tl">
@@ -17,5 +27,6 @@ export function TimelineTab({ k }: { k: CaseDetail }) {
         ))}
       </div>
     </Card>
+    </div>
   );
 }

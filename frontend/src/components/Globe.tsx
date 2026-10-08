@@ -1,0 +1,77 @@
+// Port of Magic UI's <Globe /> (magicui.design/docs/components/globe): cobe + a motion spring for drag.
+// Same behaviour (slow spin, drag to rotate with momentum), restyled with Axon's palette and centred on India,
+// where the synthetic data is set.
+import createGlobe, { type COBEOptions } from 'cobe';
+import { useMotionValue, useSpring } from 'motion/react';
+import { useEffect, useRef } from 'react';
+
+const MOVEMENT_DAMPING = 1400;
+const toAngles = (lat: number, lng: number): [number, number] => [Math.PI - ((lng * Math.PI) / 180 - Math.PI / 2), (lat * Math.PI) / 180];
+const [PHI0] = toAngles(21, 78);
+
+export const GLOBE_CONFIG: COBEOptions = {
+  width: 800, height: 800, onRender: () => {}, devicePixelRatio: 2,
+  phi: PHI0, theta: 0.32, dark: 0, diffuse: 0.4, mapSamples: 16000, mapBrightness: 1.2,
+  baseColor: [1, 1, 1],
+  markerColor: [43 / 255, 138 / 255, 99 / 255],   // --series-1
+  glowColor: [0.96, 0.96, 0.94],
+  markers: [
+    { location: [19.076, 72.8777], size: 0.1 },    // Mumbai
+    { location: [28.6139, 77.209], size: 0.09 },   // Delhi
+    { location: [12.9716, 77.5946], size: 0.08 },  // Bengaluru
+    { location: [13.0827, 80.2707], size: 0.07 },  // Chennai
+    { location: [17.385, 78.4867], size: 0.07 },   // Hyderabad
+    { location: [22.5726, 88.3639], size: 0.07 },  // Kolkata
+    { location: [18.5204, 73.8567], size: 0.06 },  // Pune
+    { location: [23.0225, 72.5714], size: 0.06 },  // Ahmedabad
+    { location: [26.9124, 75.7873], size: 0.05 },  // Jaipur
+    { location: [26.8467, 80.9462], size: 0.05 },  // Lucknow
+  ],
+};
+
+export function Globe({ className = '', config = GLOBE_CONFIG }: { className?: string; config?: COBEOptions }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pointerInteracting = useRef<number | null>(null);
+  const r = useMotionValue(0);
+  const rs = useSpring(r, { mass: 1, damping: 30, stiffness: 100 });
+
+  const setPointer = (value: number | null) => {
+    pointerInteracting.current = value;
+    if (canvasRef.current) canvasRef.current.style.cursor = value !== null ? 'grabbing' : 'grab';
+  };
+  const move = (clientX: number) => {
+    if (pointerInteracting.current === null) return;
+    const delta = clientX - pointerInteracting.current;
+    pointerInteracting.current = clientX;
+    r.set(r.get() + delta / (MOVEMENT_DAMPING / 10));
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    let phi = config.phi ?? 0;
+    let width = canvas.offsetWidth;
+    const onResize = () => { width = canvas.offsetWidth; };
+    window.addEventListener('resize', onResize);
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const globe = createGlobe(canvas, {
+      ...config, width: width * 2, height: width * 2,
+      onRender: state => {
+        if (pointerInteracting.current === null && !still) phi += 0.003;
+        state.phi = phi + rs.get();
+        state.width = width * 2;
+        state.height = width * 2;
+      },
+    });
+    const t = setTimeout(() => { canvas.style.opacity = '1'; });
+    return () => { clearTimeout(t); globe.destroy(); window.removeEventListener('resize', onResize); };
+  }, [rs, config]);
+
+  return (
+    <div className={`globe ${className}`}>
+      <canvas ref={canvasRef} aria-label="Globe centred on India"
+        onPointerDown={e => setPointer(e.clientX)} onPointerUp={() => setPointer(null)} onPointerOut={() => setPointer(null)}
+        onMouseMove={e => move(e.clientX)} onTouchMove={e => e.touches[0] && move(e.touches[0].clientX)} />
+    </div>
+  );
+}
