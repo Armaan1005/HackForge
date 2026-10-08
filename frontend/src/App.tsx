@@ -7,6 +7,7 @@ import { fade } from './lib/theme';
 import { CaseView } from './pages/CaseView';
 import { Challenge } from './pages/Challenge';
 import { Command } from './pages/Command';
+import { CourtPage } from './pages/Court';
 import { Explained } from './pages/Explained';
 import { QueuePage } from './pages/Queue';
 import { Trust } from './pages/Trust';
@@ -30,6 +31,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={shell(<Command />)} />
           <Route path="/queue" element={shell(<QueuePage />)} />
+          <Route path="/court" element={shell(<CourtPage />)} />
           <Route path="/cases/:id" element={shell(<CaseView />)} />
           <Route path="/explained" element={shell(<Explained />)} />
           <Route path="/twin" element={shell(<Twin />)} />
