@@ -11,8 +11,8 @@ import type { CaseDetail } from '../lib/types';
 
 // ── Script timing (ms). One clock drives everything, so pause / skip / replay are exact. ──
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
-const ACT1 = [6, 6, 6, 7, 7, 7, 7, 7, 7].map(s => s * 1000);    // ~60 s with Axon
-const ACT2 = [8, 9, 8, 2, 2, 2, 2, 2, 10].map(s => s * 1000);   // ~45 s without: detection steps flash by greyed out
+const ACT1 = [3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 4].map(s => s * 1000);  // ~32 s with Axon
+const ACT2 = [3.5, 3.5, 3.5, 1, 1, 1, 1, 1, 5].map(s => s * 1000);    // ~21 s without: detection steps flash by greyed out
 const REWIND = 3000, STRIKE = 2600;
 const A1_END = sum(ACT1), A2_START = A1_END + REWIND, A2_END = A2_START + sum(ACT2), STRIKE_END = A2_END + STRIKE, END = STRIKE_END + 400;
 const DETECTION = new Set([3, 4, 5, 6, 7]);
@@ -43,7 +43,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 
 const fmtShort = (d: Date) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
 interface Block { icon: IconName; offIcon?: IconName; title: string; a1: string; a2?: string; title2?: string }
-interface Note { block: number; delay: number; app: 'axon' | 'claims'; title: string; body: string }
+interface Note { block: number; delay: number;  /* share of the step's duration */ app: 'axon' | 'claims'; title: string; body: string }
 
 /** Everything shown is read from the engine's case: no figures are typed in here. */
 function story(k: CaseDetail) {
@@ -95,17 +95,17 @@ function story(k: CaseDetail) {
   ];
 
   const notes: Note[] = [
-    { block: 3, delay: 2500, app: 'axon', title: 'Pattern found', body: `${PATTERN[k.pattern] ?? k.pattern} · risk ${k.scores.risk}` },
-    { block: 4, delay: 2500, app: 'axon', title: 'Network linked', body: `${k.network_summary.community_size} providers · ${k.network_summary.connected_claims} claims` },
-    { block: 5, delay: 2500, app: 'axon', title: 'Records flagged', body: `${records} records need a look` },
-    { block: 6, delay: 3000, app: 'axon', title: 'Hearing finished', body: `${k.evidence_strength} evidence · a person decides` },
-    { block: 7, delay: 3000, app: 'axon', title: 'Hold approved by Priya', body: `${clock.pending_claims} claims · ${inr(clock.pending_amount)}` },
-    { block: 8, delay: 2000, app: 'axon', title: 'Payment held', body: `${inr(clock.pending_amount)} stays with you` },
+    { block: 3, delay: 0.55, app: 'axon', title: 'Pattern found', body: `${PATTERN[k.pattern] ?? k.pattern} · risk ${k.scores.risk}` },
+    { block: 4, delay: 0.55, app: 'axon', title: 'Network linked', body: `${k.network_summary.community_size} providers · ${k.network_summary.connected_claims} claims` },
+    { block: 5, delay: 0.55, app: 'axon', title: 'Records flagged', body: `${records} records need a look` },
+    { block: 6, delay: 0.6, app: 'axon', title: 'Hearing finished', body: `${k.evidence_strength} evidence · a person decides` },
+    { block: 7, delay: 0.6, app: 'axon', title: 'Hold approved by Priya', body: `${clock.pending_claims} claims · ${inr(clock.pending_amount)}` },
+    { block: 8, delay: 0.4, app: 'axon', title: 'Payment held', body: `${inr(clock.pending_amount)} stays with you` },
   ];
   const notes2: Note[] = [
-    { block: 2, delay: 3000, app: 'claims', title: 'Claims approved', body: `${cs.claim_count} claims, each under ${limit}` },
-    { block: 7, delay: 500, app: 'claims', title: 'Payments sent', body: `${inr(m.paid)} paid` },
-    { block: 8, delay: 3500, app: 'claims', title: 'Payment run complete', body: `${inr(clock.pending_amount)} paid on ${fmt(end)}` },
+    { block: 2, delay: 0.6, app: 'claims', title: 'Claims approved', body: `${cs.claim_count} claims, each under ${limit}` },
+    { block: 7, delay: 0.3, app: 'claims', title: 'Payments sent', body: `${inr(m.paid)} paid` },
+    { block: 8, delay: 0.55, app: 'claims', title: 'Payment run complete', body: `${inr(clock.pending_amount)} paid on ${fmt(end)}` },
   ];
   return { blocks, dates, say1, say2, notes, notes2, today, end, left };
 }
@@ -118,8 +118,8 @@ function Phone({ k, s, t, phase }: { k: CaseDetail; s: ReturnType<typeof story>;
   const paidOut = total * clamp((t - start2(2)) / (A2_END - start2(2)));
   const act2 = phase === 'act2' || phase === 'strike' || phase === 'cta';
   const struck = phase === 'strike' || phase === 'cta';
-  const notes = phase === 'act1' ? s.notes.filter(n => t >= start1(n.block) + n.delay)
-    : act2 ? s.notes2.filter(n => t >= start2(n.block) + n.delay) : [];
+  const notes = phase === 'act1' ? s.notes.filter(n => t >= start1(n.block) + n.delay * ACT1[n.block])
+    : act2 ? s.notes2.filter(n => t >= start2(n.block) + n.delay * ACT2[n.block]) : [];
   const date = phase === 'cta' ? s.today : s.dates[at(t).i];
 
   return (
@@ -179,7 +179,7 @@ export function Timelines() {
   const [params] = useSearchParams();
   const id = params.get('case') ?? 'CASE-0002';
   const kq = useAsync(() => api.case(id), [id]);
-  const [t, setT] = useState(() => Math.min(END, Math.max(0, Number(params.get('at') ?? 0) * 1000 || 0)));  // ?at=63 starts at Act 2
+  const [t, setT] = useState(() => Math.min(END, Math.max(0, Number(params.get('at') ?? 0) * 1000 || 0)));  // ?at=35 starts at Act 2
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
