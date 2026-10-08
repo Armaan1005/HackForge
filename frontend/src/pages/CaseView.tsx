@@ -74,7 +74,7 @@ export function CaseView() {
         <DecisionBox k={k} />
       </div>
 
-      <div className="no-print" style={{ marginBottom: 18, overflowX: 'auto' }}>
+      <div className="no-print case-tabs" style={{ marginBottom: 18, overflowX: 'auto' }}>
         <Segmented label="Case sections" value={tab} onChange={setTab} options={[
           { value: 'evidence', label: 'Evidence', icon: 'inspection' },
           { value: 'court', label: 'Evidence Court', icon: 'decision' },

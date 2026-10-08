@@ -740,3 +740,8 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .pf-hint { position: absolute; top: 26px; left: 78px; font-size: .7rem; font-weight: 600; letter-spacing: .02em; color: var(--text-3); background: var(--surface-2); padding: 2px 8px; border-radius: 99px; pointer-events: none; }
 .pf-chart .recharts-scatter-symbol { transition: transform .2s var(--ease); transform-box: fill-box; transform-origin: center; }
 .pf-chart .recharts-scatter-symbol:hover { transform: scale(1.12); }
+
+/* case section tabs span the full content width */
+.case-tabs .segmented { display: flex; width: 100%; }
+.case-tabs .segmented > button { flex: 1 0 auto; justify-content: center; }
+.case-tabs .seg-content { justify-content: center; }
