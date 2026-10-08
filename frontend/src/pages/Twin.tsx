@@ -54,12 +54,11 @@ export function Twin() {
 
   return (
     <>
-      <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" subtitle="Describe how a fraudster might change tactics. Axon simulates it on a copy of the data and shows what it catches." actions={<Mascot size={80} mood={mood} />} />
+      <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" subtitle="Describe a new fraud trick. Axon tests it on a copy of the data." actions={<Mascot size={80} mood={mood} />} />
 
       <Card style={{ marginBottom: 20 }}>
         <div className="row-flex" style={{ marginBottom: howOpen ? 18 : 0 }}>
           <h2>How the Fraud Twin works</h2>
-          <span className="small muted">It follows along as you run an attack below.</span>
           <span className="spacer" />
           <Button size="sm" variant="ghost" icon={howOpen ? 'less' : 'add'} onClick={() => setHowOpen(v => !v)}>{howOpen ? 'Hide' : 'Show'}</Button>
         </div>
@@ -106,7 +105,7 @@ export function Twin() {
                   </div>
                 ))}
               </div>
-              <div className="row-flex" style={{ marginTop: 14 }}><Button icon="play" loading={busy === 'run'} onClick={go}>Run it</Button><span className="small muted">Runs on a copy. Your real queue is never touched.</span></div>
+              <div className="row-flex" style={{ marginTop: 14 }}><Button icon="play" loading={busy === 'run'} onClick={go}>Run it</Button></div>
             </motion.div>
           )}
         </Card>

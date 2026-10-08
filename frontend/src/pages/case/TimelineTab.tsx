@@ -13,7 +13,7 @@ export function TimelineTab({ k }: { k: CaseDetail }) {
     <div className="stack-lg">
     {!cl.data ? <Skeleton h={340} /> : cl.data.claims.length > 0 && (
       <AreaTrend title="Billed per week" today={SIM_TODAY} height={220}
-        description={`${cl.data.total} claims in this case. Amber has been paid out; green is still pending and can be held.`}
+        description={`${cl.data.total} claims in this case`}
         data={weekly(cl.data.claims)}
         source={`Axon engine, claims of ${k.case_id} (service_date, billed_amount, payment_status) · synthetic data`} />
     )}

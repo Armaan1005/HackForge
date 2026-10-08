@@ -64,7 +64,7 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
         <Mascot size={80} mood="watching" />
         <div style={{ flex: 1, minWidth: 240 }}>
           <h2>Ready when you are</h2>
-          <p className="muted small" style={{ marginTop: 4 }}>Prosecution and Defense will argue this case live with SAP AI Core. Every request and response is logged in the terminal.</p>
+          <p className="muted small" style={{ marginTop: 4 }}>Prosecution and defense argue this case live. You make the ruling.</p>
         </div>
         <Button size="lg" icon="play" onClick={() => setSession(1)}>Start hearing</Button>
       </div>

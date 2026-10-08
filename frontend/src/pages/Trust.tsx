@@ -9,7 +9,7 @@ import { useAsync } from '../lib/hooks';
 export function Trust() {
   const t = useAsync(() => api.trust(), []);
   const aiStats = useAsync(() => ai.trust().catch(() => null), []);
-  const audit = useAsync(() => api.audit(20), []);
+  const audit = useAsync(() => api.audit(6), []);
   const [h, setH] = useState<'30' | '60' | '90'>('30');
   if (t.error) return <ErrorState error={t.error} onRetry={t.reload} />;
   if (!t.data) return <Skeleton h={400} />;

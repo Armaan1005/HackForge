@@ -37,7 +37,7 @@ export function Command() {
                   <div style={{ flex: 1 }}>
                     <p className="eyebrow" style={{ marginBottom: 2 }}>Your next step</p>
                     <h2>{urgent.title}</h2>
-                    <p className="muted small" style={{ marginTop: 4 }}>{inr(urgent.dollars_at_risk)} at stake · payment releases in {urgent.days_until_release} days</p>
+                    <p className="muted small" style={{ marginTop: 4 }}>{inr(urgent.dollars_at_risk)} at stake · payment releases in {urgent.days_until_release} day{urgent.days_until_release === 1 ? '' : 's'}</p>
                   </div>
                   <Icon name="slim-arrow-right" size={20} className="muted" />
                 </div>

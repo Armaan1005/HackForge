@@ -4,7 +4,19 @@ import { Bar, Button, Card, Segmented } from '../../components/ui';
 import { fmtUnit, inr, METHOD_LABEL, num, pct } from '../../lib/format';
 import type { CaseDetail, Evidence } from '../../lib/types';
 
-function EvidenceItem({ e, onShowOnGraph }: { e: Evidence; onShowOnGraph: (id: string) => void }) {
+/** Same finding repeated once per provider (EV-01, -02, -03...) shows as one row. */
+function groupEvidence(list: Evidence[]): Evidence[][] {
+  const by = new Map<string, Evidence[]>();
+  for (const e of list) {
+    const key = `${e.name}|${fmtUnit(e.value, e.unit)}|${fmtUnit(e.comparison_value, e.unit)}`;
+    by.set(key, [...(by.get(key) ?? []), e]);
+  }
+  return [...by.values()];
+}
+
+function EvidenceItem({ group, onShowOnGraph }: { group: Evidence[]; onShowOnGraph: (id: string) => void }) {
+  const e = group[0];
+  const descs = [...new Set(group.map(g => g.description))];
   return (
     <details className="ev-item">
       <summary>
@@ -13,11 +25,13 @@ function EvidenceItem({ e, onShowOnGraph }: { e: Evidence; onShowOnGraph: (id: s
           <span style={{ fontWeight: 600 }}>{e.name}</span>
           {e.value != null && e.comparison_value != null && <span className="small muted" style={{ display: 'block' }}>{fmtUnit(e.value, e.unit)} vs {fmtUnit(e.comparison_value, e.unit)} {e.comparison_label}</span>}
         </span>
-        <span className="ev-id">{e.evidence_id}</span>
+        {group.length > 1 && <span className="ev-id">×{group.length}</span>}
+        <span className="ev-id">{e.evidence_id}{group.length > 1 ? '…' : ''}</span>
         <Icon name="slim-arrow-right" size={14} className="muted" />
       </summary>
       <div className="stack" style={{ marginTop: 12, paddingLeft: 42 }}>
-        <p className="evidence-quote" style={{ marginTop: 0 }}>{e.description}</p>
+        {descs.map(d => <p key={d} className="evidence-quote" style={{ marginTop: 0 }}>{d}</p>)}
+        {group.length > 1 && <p className="xs faint" style={{ margin: 0 }}>{group.map(g => g.evidence_id).join(' · ')}</p>}
         <div className="row-flex" style={{ gap: 6 }}>
           {e.sources.map(s => <span key={s.table + s.column} className="src">{s.table}.{s.column}</span>)}
           {(e.type === 'graph' || e.entity_ids.length > 1) && <Button variant="ghost" size="sm" icon="org-chart" onClick={() => onShowOnGraph(e.evidence_id)}>Show on the network</Button>}
@@ -29,8 +43,9 @@ function EvidenceItem({ e, onShowOnGraph }: { e: Evidence; onShowOnGraph: (id: s
 
 export function EvidenceTab({ k, onShowOnGraph }: { k: CaseDetail; onShowOnGraph: (id: string) => void }) {
   const [side, setSide] = useState<'for' | 'against'>('for');
-  const list = k.evidence.filter(e => (side === 'for' ? e.direction === 'incriminating' : e.direction !== 'incriminating'));
-  const nFor = k.evidence.filter(e => e.direction === 'incriminating').length;
+  const forList = groupEvidence(k.evidence.filter(e => e.direction === 'incriminating'));
+  const againstList = groupEvidence(k.evidence.filter(e => e.direction !== 'incriminating'));
+  const list = side === 'for' ? forList : againstList;
   const cs = k.claims_summary;
 
   return (
@@ -38,10 +53,10 @@ export function EvidenceTab({ k, onShowOnGraph }: { k: CaseDetail; onShowOnGraph
       <div className="stack-lg">
         <Card style={{ padding: 0 }}>
           <div className="pad row-flex"><h2>Evidence</h2><span className="spacer" />
-            <Segmented size="sm" label="Evidence side" value={side} onChange={setSide} options={[{ value: 'for', label: `Points to review · ${nFor}` }, { value: 'against', label: `Could be legitimate · ${k.evidence.length - nFor}` }]} />
+            <Segmented size="sm" label="Evidence side" value={side} onChange={setSide} options={[{ value: 'for', label: `Points to review · ${forList.length}` }, { value: 'against', label: `Could be legitimate · ${againstList.length}` }]} />
           </div>
           <div className="group-body" style={{ borderRadius: 0, border: 0, boxShadow: 'none', borderTop: '1px solid var(--line)' }}>
-            {list.map(e => <EvidenceItem key={e.evidence_id} e={e} onShowOnGraph={onShowOnGraph} />)}
+            {list.map(g => <EvidenceItem key={g[0].evidence_id} group={g} onShowOnGraph={onShowOnGraph} />)}
           </div>
         </Card>
 

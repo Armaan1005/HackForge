@@ -58,7 +58,7 @@ export function Rulebook() {
   return (
     <>
       <PageHeader eyebrow="Rulebook" title="The book Axon reads from"
-        subtitle={`${pol} payer rules and ${law} law summaries. For each case Axon looks up the pages that apply, and the agents may cite only those.`} />
+        subtitle={`${pol} payer rules and ${law} law summaries. Agents may cite only the pages pulled for their case.`} />
 
       <div className="bk-layout">
         <div className="bk-stage">

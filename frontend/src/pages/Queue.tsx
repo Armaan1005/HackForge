@@ -43,7 +43,7 @@ export function QueuePage() {
       <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.6fr)', marginBottom: 20, alignItems: 'start' }}>
         <Card>
           <div className="slider-head"><b>Investigator hours today</b><span className="slider-val">{capacity}h</span></div>
-          <p className="xs muted" style={{ margin: '-4px 0 8px' }}>{staffing(capacity)} · the team’s total review time today</p>
+          <p className="xs muted" style={{ margin: '-4px 0 8px' }}>{staffing(capacity)}</p>
           <input type="range" min={8} max={120} step={2} value={capacity} aria-label="Investigator hours"
             style={{ ['--pct' as string]: `${((capacity - 8) / 112) * 100}%` }} onChange={e => setCapacity(Number(e.target.value))} />
           <div className="row-flex xs faint" style={{ justifyContent: 'space-between', marginTop: 6 }}><span>8h · 1 investigator</span><span>120h · 15 investigators</span></div>
@@ -84,8 +84,8 @@ export function QueuePage() {
                     <td className="num">{c.effort_hours}h</td>
                     <td className="num"><b>{inr(c.expected_recovery)}</b></td>
                     <td className="nowrap">{c.days_until_release == null ? <span className="faint">—</span>
-                      : c.hold_recommended ? <span className="review-pill review-pending"><Icon name="pending" size={11} />{c.days_until_release} days</span>
-                        : <span className="small muted">{c.days_until_release} days</span>}</td>
+                      : c.hold_recommended ? <span className="review-pill review-pending"><Icon name="pending" size={11} />{c.days_until_release} day{c.days_until_release === 1 ? '' : 's'}</span>
+                        : <span className="small muted">{c.days_until_release} day{c.days_until_release === 1 ? '' : 's'}</span>}</td>
                   </motion.tr>
                 ))}
               </tbody>

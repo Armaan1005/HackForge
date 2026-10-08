@@ -101,7 +101,7 @@ export function Landing() {
         <motion.div {...rise}>
           {claims.data ? (
             <AreaTrend title="Money moving through flagged cases" today={ov.data?.sim_today ?? new Date().toISOString().slice(0, 10)}
-              description={`Billed per week across the ${claims.data.cases} open cases. Amber has already been paid out; green can still be stopped.`}
+              description={`Billed per week across the ${claims.data.cases} open cases`}
               data={claims.data.weeks}
               source={`Axon engine, claims table (service_date, billed_amount, payment_status) · synthetic data${ov.data ? `, seed ${ov.data.seed}` : ''}`} />
           ) : <Skeleton h={360} />}

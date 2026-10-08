@@ -26,7 +26,7 @@ export function Explained() {
   return (
     <>
       <PageHeader eyebrow="Explained" title={cl.data ? `${num(cl.data.total)} alerts you don't need to look at` : '…'}
-        subtitle="Before anything reaches you, Axon tries to explain it away. Each one keeps the facts it was cleared on."
+        subtitle="Cleared before they reached anyone, with the facts behind each."
         actions={<Mascot size={80} mood="happy" />} />
 
       <div className="home-grid">

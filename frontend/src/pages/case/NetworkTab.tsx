@@ -52,8 +52,8 @@ export function NetworkTab({ k, highlight, onClearHighlight }: { k: CaseDetail; 
           <div className="stat"><b>{pct(ns.flagged_neighbor_share)}</b><span>of linked providers already flagged</span></div>
         </div>
         <Card>
-          <h2 style={{ marginBottom: 12 }}>{sel ? sel.label : 'Tap anything in the network'}</h2>
-          {!sel ? <p className="small muted">Providers, owners, bank accounts, facilities, members and claims, and how they connect.</p> : (
+          <h2 style={{ marginBottom: 12 }}>{sel ? sel.label : 'Tap a node for details'}</h2>
+          {!sel ? null : (
             <dl className="facts">
               <div><dt>Type</dt><dd>{sel.type.replace(/_/g, ' ')}</dd></div>
               <div><dt>Risk</dt><dd>{sel.risk ?? '—'}{sel.flagged ? ' · flagged' : ''}</dd></div>

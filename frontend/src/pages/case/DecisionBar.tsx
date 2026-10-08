@@ -10,6 +10,11 @@ const SUGGESTS: Record<string, string> = { needs_siu_review: 'a full SIU review'
 const LABEL: Record<string, string> = { confirm: 'Investigation opened', need_more_info: 'Records requested', clear: 'Provider cleared', hold_payment: 'Payment held' };
 
 /** Human in the loop: the engine's status is a draft until a person acts. */
+/** Engine reasons, minus the codes: "1 critical document type(s) missing: operative_note" -> "Missing: operative note". */
+const readable = (r: string) => r
+  .replace(/^\d+ critical document type\(s\) missing: (.+)$/, (_, d: string) => `Missing: ${d.replace(/_/g, ' ')}`)
+  .replace(/^Confidence ([\d.]+) ≥ ([\d.]+)$/, (_, a: string, b: string) => `Confidence ${Math.round(Number(a) * 100)}% (needs ${Math.round(Number(b) * 100)}%)`);
+
 export function DecisionBox({ k }: { k: CaseDetail }) {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
@@ -40,7 +45,7 @@ export function DecisionBox({ k }: { k: CaseDetail }) {
       <div className="row-nw" style={{ marginBottom: 6 }}><Icon name="shield" size={16} /><h2 style={{ fontSize: '1.1rem' }}>Human review needed</h2></div>
       <p className="small" style={{ marginBottom: 10 }}>Axon suggests <b>{SUGGESTS[k.verdict.status] ?? k.verdict.status.replace(/_/g, ' ')}</b>. Nothing happens until you decide.</p>
       <ul className="list-check" style={{ marginBottom: 12 }}>
-        {k.verdict.reasons.map(r => <li key={r}><Icon name="message-information" size={14} /><span className="small">{r}</span></li>)}
+        {k.verdict.reasons.map(r => <li key={r}><Icon name="message-information" size={14} /><span className="small">{readable(r)}</span></li>)}
       </ul>
       <textarea className="textarea" style={{ minHeight: 64, marginBottom: 10 }} placeholder="Note for the audit trail (optional)" value={note} onChange={e => setNote(e.target.value)} />
       <div className="row-flex">

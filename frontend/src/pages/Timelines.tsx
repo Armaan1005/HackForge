@@ -221,7 +221,7 @@ export function Timelines() {
     <div className={`twotl ${act2 ? 'tl-act2' : ''} ${phase === 'rewind' ? 'tl-rewind' : ''} ${phase === 'strike' || phase === 'cta' ? 'tl-lost' : ''}`}>
       <PageHeader eyebrow="Two timelines"
         title={phase === 'cta' ? 'Back to today' : act2 || phase === 'rewind' ? 'The same days, without Axon' : 'With Axon'}
-        subtitle={<>One real case from the engine, {k.case_id} ({PATTERN[k.pattern] ?? k.pattern}). Same data, same dates, two outcomes.</>}
+        subtitle={<>{k.case_id} · {PATTERN[k.pattern] ?? k.pattern}. Same data, same dates, two outcomes.</>}
         actions={<div className="row-flex">
           <Button icon={playing ? 'pause' : 'play'} onClick={play}>{playing ? 'Pause' : t >= END ? 'Replay' : started ? 'Continue' : 'Play'}</Button>
           {started && <Button variant="ghost" icon="refresh" onClick={() => { setT(0); setPlaying(true); }}>Restart</Button>}

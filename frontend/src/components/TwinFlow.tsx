@@ -46,18 +46,18 @@ export function TwinFlow({ s }: { s: TwinFlowState }) {
   const running = (i: number) => (s.busy === 'parse' && i === 1) || (s.busy === 'run' && (i === 2 || i === 3)) || ((s.busy === 'advise' || s.busy === 'harden') && i === 5);
 
   const steps: { title: string; body: string; live?: ReactNode; visual?: ReactNode }[] = [
-    { title: 'You describe a scheme', body: 'In plain words, the way a fraudster would think about it.',
+    { title: 'You describe a scheme', body: 'In plain words.',
       live: s.text ? <q>{s.text.length > 70 ? `${s.text.slice(0, 70)}…` : s.text}</q> : null },
-    { title: 'AI picks a recipe', body: `It maps your words onto one of ${s.recipes || 6} allowed attack recipes, each with safe limits. Anything else is refused.`,
+    { title: 'AI picks a recipe', body: `Mapped onto 1 of ${s.recipes || 6} allowed recipes. Anything else is refused.`,
       live: s.recipe ? <><b>{s.recipe.name}</b>{s.recipe.params.slice(0, 3).map(([k, v]) => <span key={k}>{k.replace(/_/g, ' ')} {String(v)}</span>)}</> : null },
-    { title: 'Copy and plant fake claims', body: `${claims ? num(claims) : 'All'} real claims are copied. Fake ones are planted in the copy, some deliberately mild.`,
+    { title: 'Copy and plant fake claims', body: `${claims ? num(claims) : 'All'} claims copied; fakes planted, some deliberately mild.`,
       live: r ? <b>{num(r.generated)} fake claims planted</b> : null, visual: <Planted fakes={stage >= 2} /> },
-    { title: 'Run detection again', body: 'The same checks that build the real queue run on the copy.',
+    { title: 'Run detection again', body: 'The same checks as the real queue.',
       live: <span className="tf-layers">{LAYERS.map(l => <span key={l}>{l}</span>)}</span> },
-    { title: 'Score it', body: 'How many fakes were caught or missed, and whether real claims got more false alarms.',
+    { title: 'Score it', body: 'Caught vs missed, and false alarms on real claims.',
       live: r ? <><b>{pct(r.detection_rate, 0)} caught</b><span>{num(r.detected)} of {num(r.generated)}</span><span>false alarms {pct(r.false_positive_rate.baseline, 1)} → {pct(r.false_positive_rate.run, 1)}</span></> : null,
       visual: <Scored rate={r ? r.detection_rate : null} /> },
-    { title: 'Fix the gap, you approve', body: 'AI suggests one setting change. It is re-tested on the same fake claims before anyone accepts it.',
+    { title: 'Fix the gap, you approve', body: 'One setting change, re-tested on the same fakes.',
       live: s.change ? <><b>{s.change.param.replace(/_/g, ' ').toLowerCase()}: {String(s.change.old_value)} → {String(s.change.new_value)}</b>
         {s.hardened && <span>caught {pct(s.hardened.before, 0)} → {pct(s.hardened.after, 0)}</span>}</> : r && r.missed === 0 ? <span>Nothing missed, nothing to fix.</span> : null },
   ];
