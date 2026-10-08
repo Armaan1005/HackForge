@@ -10,6 +10,12 @@ import { useAsync, useDebounced } from '../lib/hooks';
 import { spring } from '../lib/theme';
 import type { Horizon } from '../lib/types';
 
+/** Hours as people, assuming an 8-hour working day: 16h -> "2 investigators × 8h". */
+const staffing = (hours: number) => {
+  const n = hours / 8;
+  return Number.isInteger(n) ? `${n} investigator${n === 1 ? '' : 's'} × 8h` : `about ${n.toFixed(1)} investigators × 8h`;
+};
+
 export function QueuePage() {
   const nav = useNavigate();
   const [capacity, setCapacity] = useState(40);
@@ -37,9 +43,10 @@ export function QueuePage() {
       <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.6fr)', marginBottom: 20, alignItems: 'start' }}>
         <Card>
           <div className="slider-head"><b>Investigator hours today</b><span className="slider-val">{capacity}h</span></div>
+          <p className="xs muted" style={{ margin: '-4px 0 8px' }}>{staffing(capacity)} · the team’s total review time today</p>
           <input type="range" min={8} max={120} step={2} value={capacity} aria-label="Investigator hours"
             style={{ ['--pct' as string]: `${((capacity - 8) / 112) * 100}%` }} onChange={e => setCapacity(Number(e.target.value))} />
-          <div className="row-flex xs faint" style={{ justifyContent: 'space-between', marginTop: 6 }}><span>one person, one day</span><span>the whole team, one week</span></div>
+          <div className="row-flex xs faint" style={{ justifyContent: 'space-between', marginTop: 6 }}><span>8h · 1 investigator</span><span>120h · 15 investigators</span></div>
           <div className="divider" />
           <div className="row-flex" style={{ justifyContent: 'space-between' }}>
             <span className="small strong">Look ahead</span>
