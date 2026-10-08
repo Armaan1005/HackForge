@@ -21,11 +21,13 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
+from . import trace
 from .config import settings
 
 log = logging.getLogger("axon.gateway")
 
 LIVE, PREWARM, BACKGROUND = 0, 1, 2
+_PRIORITY = {LIVE: 'live', PREWARM: 'prewarm', BACKGROUND: 'background'}
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -43,6 +45,7 @@ class Image:
 class _Job:
     priority: int
     seq: int
+    agent: str = field(compare=False)
     prompt: str = field(compare=False)
     system: str = field(compare=False)
     schema: type[BaseModel] = field(compare=False)
@@ -123,14 +126,17 @@ class LLMGateway:
         hit = self.cached(agent, prompt, schema, system, images)
         if hit is not None:
             self.stats["cache_hits"] += 1
+            trace.cache_hit(agent)
             return hit
         if not settings.ai_enabled:
-            raise AIUnavailable("AI disabled" if settings.ai_offline else "GEMINI_API_KEY not set")
+            reason = "AI disabled" if settings.ai_offline else "GEMINI_API_KEY not set"
+            trace.skipped(agent, reason)
+            raise AIUnavailable(reason)
         if self._queue is None:
             self.start()
         path = settings.cache_dir / f"{agent}-{self.cache_key(agent, prompt, system, images)[:40]}.json"
         fut: asyncio.Future = asyncio.get_running_loop().create_future()
-        await self._queue.put(_Job(priority, next(self._seq), prompt, system, schema, images or [], path, fut))
+        await self._queue.put(_Job(priority, next(self._seq), agent, prompt, system, schema, images or [], path, fut))
         try:
             # shield: on caller timeout the job keeps running and fills the cache for next time
             return await asyncio.wait_for(asyncio.shield(fut), timeout or settings.timeout_s)
@@ -182,19 +188,27 @@ class LLMGateway:
             response_schema=job.schema,
             temperature=0.2,
         )
-        for i in range(attempts):
-            await self._throttle()
-            try:
-                self.stats["calls"] += 1
-                resp = await self._client.aio.models.generate_content(model=settings.model, contents=contents, config=config)
-                return job.schema.model_validate_json(resp.text)
-            except errors.APIError as e:
-                if (e.code == 429 or e.code >= 500) and i < attempts - 1:
-                    self.stats["retries"] += 1
-                    await asyncio.sleep(2**i + random.random())
-                    continue
-                raise
-        raise AIUnavailable("exhausted retries")
+        span = trace.start(job.agent, settings.model, job.system, job.prompt, len(job.images), _PRIORITY.get(job.priority, 'live'))
+        try:
+            for i in range(attempts):
+                await self._throttle()
+                try:
+                    self.stats["calls"] += 1
+                    resp = await self._client.aio.models.generate_content(model=settings.model, contents=contents, config=config)
+                    result = job.schema.model_validate_json(resp.text)
+                    trace.end(span, resp.text, getattr(resp, "usage_metadata", None))
+                    return result
+                except errors.APIError as e:
+                    if (e.code == 429 or e.code >= 500) and i < attempts - 1:
+                        self.stats["retries"] += 1
+                        trace.retry(span, i + 1, attempts - 1, e)
+                        await asyncio.sleep(2**i + random.random())
+                        continue
+                    raise
+            raise AIUnavailable("exhausted retries")
+        except Exception as e:
+            trace.fail(span, e)
+            raise
 
 
 gateway = LLMGateway()

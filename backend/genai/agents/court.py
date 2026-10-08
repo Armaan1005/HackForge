@@ -6,7 +6,7 @@ import asyncio
 import json
 from datetime import datetime
 
-from .. import prompts, templates
+from .. import prompts, templates, trace
 from ..config import settings
 from ..evidence import STATUS_LABEL, pool_json
 from ..gateway import LIVE, AIUnavailable, gateway
@@ -33,6 +33,8 @@ async def run_court(case: dict, priority: int = LIVE) -> dict:
     )
     pros_kept, pros_dropped = verify_arguments("prosecutor", pros["arguments"], idx)
     def_kept, def_dropped = verify_arguments("defense", defn["arguments"], idx)
+    trace.verifier("prosecutor", len(pros_kept), pros_dropped)
+    trace.verifier("defense", len(def_kept), def_dropped)
 
     # If the model produced nothing verifiable, fall back to the deterministic side so the panel is never empty.
     if not pros_kept:
