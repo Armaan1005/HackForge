@@ -61,7 +61,9 @@ async def _court(case: dict, priority: int, refresh: bool = False) -> dict:
         result = await _inflight[key]
     finally:
         _inflight.pop(key, None)
-    _court_cache[key] = result
+    # Don't pin a template fallback caused by a slow model: the next request picks up Gemini's answer from the cache.
+    if not any("still queued" in n for n in result["ai"]["notes"]):
+        _court_cache[key] = result
     return result
 
 

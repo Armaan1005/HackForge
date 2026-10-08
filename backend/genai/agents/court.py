@@ -11,7 +11,7 @@ from ..config import settings
 from ..evidence import STATUS_LABEL, pool_json
 from ..gateway import LIVE, AIUnavailable, gateway
 from ..schemas import DefenseOut, ProsecutionOut, VerdictOut
-from ..verifier import index_case, verify_arguments, verify_text
+from ..verifier import index_case, strip_id_refs, verify_arguments, verify_text
 
 
 async def _agent(name: str, prompt: str, schema, fallback: dict, priority: int) -> tuple[dict, str, str | None]:
@@ -73,7 +73,7 @@ async def run_court(case: dict, priority: int = LIVE) -> dict:
             "next_action_text": v.get("next_action_text"),
             "confidence": case.get("confidence"),
             "evidence_strength": case.get("evidence_strength"),
-            "summary": clerk["summary"],
+            "summary": strip_id_refs(clerk["summary"]),
             "human_approval_required": True,
             "source": clerk_src,
         },
@@ -84,7 +84,8 @@ async def run_court(case: dict, priority: int = LIVE) -> dict:
             "dropped_items": dropped,
         },
         "ai": {
-            "model": settings.model,
+            "model": gateway.last_model.get("prosecutor", settings.model),
+            "pending": any("still queued" in n for n in (pros_note, def_note, clerk_note) if n),
             "enabled": settings.ai_enabled,
             "notes": [n for n in (pros_note, def_note, clerk_note) if n],
         },

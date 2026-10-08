@@ -47,6 +47,13 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
   const idx = new Map([...k.evidence.map(e => [e.evidence_id, e.name] as const), ...k.peer_context.map(p => [p.evidence_id, p.metric] as const)]);
 
   useEffect(() => { setShown(0); setPlaying(true); }, [court.data]);
+  // Gemini still working (free tier is slow): play the template hearing now, check back, replay when it's ready.
+  const [polls, setPolls] = useState(0);
+  useEffect(() => {
+    if (!court.data?.ai.pending || polls >= 5) return;
+    const t = setTimeout(() => { setPolls(n => n + 1); court.reload(); }, 12000);
+    return () => clearTimeout(t);
+  }, [court.data, polls]); // eslint-disable-line react-hooks/exhaustive-deps
   useInterval(() => { if (playing && turns.length) setShown(s => { if (s >= turns.length) { setPlaying(false); return s; } return s + 1; }); }, 1500);
 
   if (court.error) return <ErrorState error={new Error(`Couldn't reach the AI service (${court.error.message}).`)} onRetry={court.reload} />;
@@ -107,7 +114,8 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
         <Button size="sm" variant="tinted" icon={playing ? 'pause' : 'play'} onClick={() => { if (!playing && done) setShown(0); setPlaying(p => !p); }}>{playing ? 'Pause' : done ? 'Replay hearing' : 'Continue'}</Button>
         {!done && <Button size="sm" variant="ghost" onClick={() => { setShown(turns.length); setPlaying(false); }}>Skip to the ruling</Button>}
         <span className="spacer" />
-        <span className="engine-pill" title={c.ai.notes[0] ?? c.ai.model}><Icon name="ai" size={13} />{c.prosecution.source === 'llm' ? `Argued by ${c.ai.model}` : 'Argued from templates'}</span>
+        <span className={`engine-pill ${c.prosecution.source === 'llm' ? 'on' : ''}`} title={c.ai.notes[0] ?? c.ai.model}><Icon name="ai" size={13} />
+          {c.prosecution.source === 'llm' ? `Argued by ${c.ai.model}` : c.ai.pending ? 'Gemini is still preparing, showing the quick version' : 'Argued from templates'}</span>
         <Button size="sm" variant="ghost" icon="refresh" loading={court.loading} onClick={() => setRefresh(r => r + 1)}>New hearing</Button>
       </div>
 
