@@ -1,0 +1,9 @@
+{
+  "name": "axon",
+  "private": true,
+  "description": "Axon: one command runs everything (setup on first run, then backend + website)",
+  "scripts": {
+    "start": "node frontend/scripts/dev.mjs",
+    "dev": "node frontend/scripts/dev.mjs"
+  }
+}

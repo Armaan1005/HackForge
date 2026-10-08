@@ -30,6 +30,26 @@ function killTree(child) {
   try { win ? execSync(`taskkill /PID ${child.pid} /T /F`, { stdio: 'ignore' }) : process.kill(-child.pid, 'SIGTERM'); } catch { /* already gone */ }
 }
 
+// ── first-time setup: Python env, Python packages, frontend packages ──
+function run(cmd, args, cwd) {
+  const r = spawnSync(cmd, args, { cwd, stdio: 'inherit', env, shell: win });
+  if (r.status !== 0) { console.error(`
+Setup step failed: ${cmd} ${args.join(' ')}`); process.exit(1); }
+}
+if (!existsSync(py)) {
+  console.log('First run: creating the Python environment (.venv)…');
+  run(win ? 'python' : 'python3', ['-m', 'venv', '.venv'], root);
+  console.log('Installing Python packages (a few minutes, once)…');
+  run(py, ['-m', 'pip', 'install', '-q', '-r', path.join('backend', 'requirements.txt')], root);
+}
+if (!existsSync(path.join(root, 'frontend', 'node_modules'))) {
+  console.log('Installing website packages (once)…');
+  run('npm', ['install', '--no-audit', '--no-fund'], path.join(root, 'frontend'));
+}
+if (!existsSync(path.join(backend, 'aicore-key.json')) && !existsSync(path.join(backend, '.env'))) {
+  console.log('Note: no backend/aicore-key.json (SAP AI Core key): AI agents will use template text.');
+}
+
 freePort(8000);
 freePort(5173);
 

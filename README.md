@@ -54,49 +54,19 @@ HackForge/
 
 ---
 
-## Setup
+## Run it (one command)
+
+From the `HackForge` folder:
 
 ```bash
-python -m venv .venv
+npm start
 ```
 
-```bash
-.venv\Scripts\activate
-```
+Or double-click **`start.bat`** (it also opens the browser).
 
-```bash
-pip install -r backend/requirements.txt
-```
+That's it. The first run sets everything up automatically: Python environment, packages, synthetic data and the detection pipeline (a few minutes, once). Every run after that starts the backend (port 8000, AI logs in the same terminal) and the website (http://localhost:5173), and frees those ports if an old server was left running. Press `Ctrl + C` to stop both.
 
-```bash
-copy .env.example backend\.env
-```
-
-Generate data, run the pipeline, start the API (from `backend/`):
-
-```bash
-python -m engine.generate --seed 42
-```
-
-```bash
-python -m engine.pipeline
-```
-
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-Frontend (from `frontend/`):
-
-```bash
-npm install
-```
-
-```bash
-npm run dev
-```
-
-Open http://localhost:5173. Or launch both from Claude Code with `.claude/launch.json` (`axon-api`, `axon-web`).
+Needs Python 3.11+ and Node 20+ installed. For the AI agents, put the SAP AI Core service key at `backend/aicore-key.json` (git-ignored); without it the agents use template text.
 
 ---
 
