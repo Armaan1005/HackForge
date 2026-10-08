@@ -623,3 +623,6 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .engine-pill { white-space: nowrap; }
 @media (max-width: 1440px) and (min-width: 961px) { .brand small { display: none; } .navlink { padding: 7px 11px; gap: 6px; font-size: .88rem; } }
 @media (max-width: 1180px) and (min-width: 961px) { .navlink span.lbl { display: none; } .navlink { padding: 8px 12px; } }
+
+/* demo scheme being typed on the judge's phone */
+.textarea.is-typing { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); caret-color: var(--accent); }

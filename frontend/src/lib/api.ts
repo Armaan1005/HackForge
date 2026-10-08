@@ -98,6 +98,7 @@ export const api = {
 // ── Part B: genai ────────────────────────────────────────────────────────────
 export const ai = {
   status: () => fetchJson<AiStatus>('/api/ai/status', undefined, 4000),
+  lan: () => fetchJson<{ ip: string | null; candidates: string[] }>('/api/ai/lan', undefined, 4000),
   rulebook: (caseId?: string) => fetchJson<{ entries: RulebookEntry[]; case_id: string | null; retrieved: { id: string; score: number }[] }>(`/api/ai/rulebook${caseId ? `?case_id=${caseId}` : ''}`, undefined, 15000),
   court: (id: string, refresh = false, fresh = false) => fetchJson<Court>(`/api/ai/court/${id}${fresh ? '?fresh=true' : refresh ? '?refresh=true' : ''}`, { method: 'POST' }, 90000),
   brief: (id: string) => fetchJson<{ markdown: string; source: string; note?: string }>(`/api/ai/brief/${id}`, undefined, 90000),

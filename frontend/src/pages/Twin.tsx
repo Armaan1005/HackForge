@@ -159,15 +159,32 @@ function Compare({ before, after }: { before: TwinRun; after: TwinRun }) {
 }
 
 function JudgeQr() {
-  const [url, setUrl] = useState(() => `${window.location.origin}/challenge`);
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+  const at = (host: string) => `${window.location.protocol}//${host}${window.location.port ? `:${window.location.port}` : ''}/challenge`;
+  const [url, setUrl] = useState(() => at(window.location.hostname));
+  const [ips, setIps] = useState<string[]>([]);
   const [svg, setSvg] = useState('');
+  // Opened on this laptop: swap localhost for its Wi-Fi address so a phone on the same network can reach it.
+  useEffect(() => {
+    if (!local) return;
+    ai.lan().then(r => { if (r.ip) setUrl(at(r.ip)); setIps(r.candidates); }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { QRCode.toString(url, { type: 'svg', margin: 1, width: 170, color: { dark: '#1d1d1f', light: '#ffffff' } }).then(setSvg).catch(() => setSvg('')); }, [url]);
+  const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
   return (
     <Card>
       <div className="card-title"><span className="row-icon"><Icon name="qr-code" size={15} /></span><h2>Judges, try it</h2></div>
       <div style={{ display: 'grid', placeItems: 'center', margin: '4px 0 14px' }} dangerouslySetInnerHTML={{ __html: svg }} />
       <input className="input mono" value={url} onChange={e => setUrl(e.target.value)} aria-label="Challenge link" />
-      {/localhost|127\.0\.0\.1/.test(url) && <p className="xs faint" style={{ marginTop: 6 }}>Phones need this laptop's Wi-Fi address instead of localhost.</p>}
+      {ips.length > 1 && (
+        <select className="select" style={{ marginTop: 8 }} value={ips.includes(host) ? host : ''} onChange={e => setUrl(at(e.target.value))} aria-label="Network address">
+          {!ips.includes(host) && <option value="">Custom address</option>}
+          {ips.map((ip, i) => <option key={ip} value={ip}>{ip}{i === 0 ? ' · Wi-Fi (recommended)' : ''}</option>)}
+        </select>
+      )}
+      <p className="xs faint" style={{ marginTop: 6 }}>
+        {/localhost|127\.0\.0\.1/.test(url) ? 'Phones need this laptop’s Wi-Fi address instead of localhost.' : 'Scan with a phone on the same Wi-Fi as this laptop.'}
+      </p>
     </Card>
   );
 }

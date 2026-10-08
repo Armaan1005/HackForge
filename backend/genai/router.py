@@ -6,6 +6,7 @@ import re
 import hashlib
 import json
 import logging
+import socket
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
@@ -70,6 +71,24 @@ async def _court(case: dict, priority: int, refresh: bool = False, fresh: bool =
 
 
 # ── endpoints ────────────────────────────────────────────────────────────────
+@router.get("/lan")
+async def lan():
+    """This laptop's address on the local network, so judges' phones on the same Wi-Fi can open the app (QR code)."""
+    primary = None
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))  # UDP connect sends nothing; it just picks the interface with the default route
+            primary = s.getsockname()[0]
+    except OSError:
+        pass
+    try:
+        found = {a[4][0] for a in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)}
+    except OSError:
+        found = set()
+    others = sorted(ip for ip in found if ip != primary and not ip.startswith(("127.", "169.254.")))
+    return {"ip": primary or (others[0] if others else None), "candidates": ([primary] if primary else []) + others}
+
+
 @router.get("/rulebook")
 async def rulebook(case_id: str | None = None):
     """The whole rulebook (for the book view), plus which rules retrieval picks for a case."""

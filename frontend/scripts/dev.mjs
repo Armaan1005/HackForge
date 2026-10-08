@@ -89,3 +89,9 @@ async function apiReady(ms = 60000) {
 }
 if (!(await apiReady())) console.error('\nThe API is not answering on :8000 yet; starting the website anyway.');
 if (!stopping) web = spawn(win ? 'npx.cmd' : 'npx', ['vite', '--port', '5173', '--strictPort'], { cwd: path.join(root, 'frontend'), stdio: 'inherit', env, shell: win, detached: !win });
+
+// Judges' phones: print the one address that works on this Wi-Fi (Vite also lists virtual adapters, e.g. VMware).
+try {
+  const lan = await (await fetch('http://127.0.0.1:8000/api/ai/lan')).json();
+  if (lan.ip) setTimeout(() => console.log(`\n  \x1b[32m➜\x1b[0m  \x1b[1mJudges' phones\x1b[0m (same Wi-Fi): \x1b[36mhttp://${lan.ip}:5173/challenge\x1b[0m\n`), 1500);
+} catch { /* API not up: Vite's own list still shows */ }
