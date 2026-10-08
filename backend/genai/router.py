@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import hashlib
 import json
 import logging
@@ -32,6 +33,7 @@ async def lifespan(_app):
 
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
+AI_DOCS_PER_CASE = 4  # Gemini reviews the most important records; the rest get code checks only
 
 # Results per (case, evidence hash): court -> brief reuse it, and a changed case invalidates it.
 _court_cache: dict[str, dict] = {}
@@ -93,10 +95,16 @@ async def brief(case_id: str, format: str = "json"):
 async def forensics(case_id: str):
     case = await _load_case(case_id)
     docs = []
-    for d in case.get("documents", []):
+    flagged = {i for e in case.get("evidence", []) if e.get("type") == "document" for i in re.findall(r"DOC-\d+", e.get("description", ""))[:1]}
+    order = sorted(case.get("documents", []), key=lambda d: (d["document_id"] not in flagged, d.get("format") != "scan"))
+    async def one(n: int, d: dict) -> dict:
         doc = await engine.get_document(d["document_id"])
-        scan = await engine.get_scan(d["document_id"]) if d.get("format") == "scan" else None
-        docs.append({"document": doc, **await analyze_document(doc, case, scan, LIVE)})
+        use_ai = n < AI_DOCS_PER_CASE
+        scan = await engine.get_scan(d["document_id"]) if use_ai and d.get("format") == "scan" else None
+        return {"document": doc, **await analyze_document(doc, case, scan, LIVE, use_ai=use_ai)}
+
+    # in parallel, so the page waits for one Gemini timeout at most, not one per record
+    docs = list(await asyncio.gather(*(one(n, d) for n, d in enumerate(order))))
     return {"case_id": case_id, "documents": docs,
             "injection_detected": any(d["injection_detected"] for d in docs), "affects_score": False}
 
