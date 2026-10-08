@@ -470,9 +470,9 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .tl-step.lost .tl-node { background: var(--bad) !important; border-color: var(--bad) !important; color: #fff !important; box-shadow: 0 0 0 6px color-mix(in srgb, var(--bad) 14%, transparent) !important; }
 .tl-step.lost .tl-title { color: var(--bad); }
 
-.tl-rewind .tl-main { animation: tl-rewind 2s linear; }
+.tl-rewind .tl-main { animation: tl-rewind 5s linear; }
 .tl-rewind .tl-main::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(20, 20, 30, .05) 0 2px, transparent 2px 5px); animation: tl-scan .25s linear infinite; }
-@keyframes tl-rewind { 0%, 100% { filter: none; } 15%, 85% { filter: blur(1.2px) saturate(.3) contrast(1.05); transform: skewX(-.6deg); } }
+@keyframes tl-rewind { 0%, 100% { filter: none; } 8%, 92% { filter: saturate(.25) contrast(1.05); transform: skewX(-.5deg); } 50% { filter: blur(.6px) saturate(.2); } }
 @keyframes tl-scan { to { background-position: 0 5px; } }
 .tl-rewind-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3; display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; border-radius: 99px; background: rgba(29, 29, 31, .86); color: #fff; font-weight: 700; font-size: 1.1rem; letter-spacing: .04em; text-transform: uppercase; animation: tl-blink .5s steps(2) infinite; }
 @keyframes tl-blink { 50% { opacity: .55; } }

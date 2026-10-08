@@ -13,7 +13,7 @@ import type { CaseDetail } from '../lib/types';
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
 const ACT1 = [1.4, 1.4, 1.7, 1.6, 1.6, 1.6, 1.6, 1.6, 2].map(s => s * 1000);  // ~15 s with Axon
 const ACT2 = [1.6, 1.6, 1.8, .5, .5, .5, .5, .5, 2.6].map(s => s * 1000);  // ~10 s without: detection steps flash by greyed out
-const REWIND = 2000, STRIKE = 2200;  // whole run ~30 s; ?speed=0.5 halves the pace, ?speed=2 doubles it
+const REWIND = 5000, STRIKE = 2200;  // whole run ~32 s, with a slow 5 s rewind; ?speed=0.5 halves the pace, ?speed=2 doubles it
 const A1_END = sum(ACT1), A2_START = A1_END + REWIND, A2_END = A2_START + sum(ACT2), STRIKE_END = A2_END + STRIKE, END = STRIKE_END + 400;
 const DETECTION = new Set([3, 4, 5, 6, 7]);
 const start1 = (i: number) => sum(ACT1.slice(0, i));
@@ -21,7 +21,7 @@ const start2 = (i: number) => A2_START + sum(ACT2.slice(0, i));
 
 type Phase = 'act1' | 'rewind' | 'act2' | 'strike' | 'cta';
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
-const easeOut = (p: number) => 1 - (1 - p) ** 3;
+const easeInOut = (p: number) => (p < .5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);
 
 function locate(durs: number[], t: number) {
   let acc = 0;
@@ -31,7 +31,7 @@ function locate(durs: number[], t: number) {
 
 function at(t: number): { phase: Phase; i: number; p: number } {
   if (t < A1_END) return { phase: 'act1', ...locate(ACT1, t) };
-  if (t < A2_START) { const p = (t - A1_END) / REWIND; return { phase: 'rewind', i: Math.round(8 * (1 - easeOut(p))), p }; }
+  if (t < A2_START) { const p = (t - A1_END) / REWIND; return { phase: 'rewind', i: Math.round(8 * (1 - easeInOut(p))), p }; }
   if (t < A2_END) return { phase: 'act2', ...locate(ACT2, t - A2_START) };
   if (t < STRIKE_END) return { phase: 'strike', i: 8, p: (t - A2_END) / STRIKE };
   return { phase: 'cta', i: 8, p: 1 };
@@ -179,7 +179,7 @@ export function Timelines() {
   const [params] = useSearchParams();
   const id = params.get('case') ?? 'CASE-0002';
   const kq = useAsync(() => api.case(id), [id]);
-  const [t, setT] = useState(() => Math.min(END, Math.max(0, Number(params.get('at') ?? 0) * 1000 || 0)));  // ?at=16.5 starts at Act 2
+  const [t, setT] = useState(() => Math.min(END, Math.max(0, Number(params.get('at') ?? 0) * 1000 || 0)));  // ?at=19.5 starts at Act 2
   const [playing, setPlaying] = useState(false);
   const speed = Math.min(4, Math.max(.25, Number(params.get('speed')) || 1));
 
@@ -212,7 +212,7 @@ export function Timelines() {
     : phase === 'act1' ? s.say1[i] : phase === 'rewind' ? 'Rewind. Same claims, same dates. This time, without Axon.'
     : phase === 'act2' ? s.say2[i] : phase === 'strike' ? `Without Axon, ${inr(k.claims_summary.amount_total)} is lost.`
     : `Back to today: ${inr(k.payment_clock.pending_amount)} can still be held. It releases in ${s.left} day${s.left === 1 ? '' : 's'}.`;
-  const rewindDate = phase === 'rewind' ? new Date(s.dates[8].getTime() - (s.dates[8].getTime() - s.dates[0].getTime()) * easeOut(p)) : null;
+  const rewindDate = phase === 'rewind' ? new Date(s.dates[8].getTime() - (s.dates[8].getTime() - s.dates[0].getTime()) * easeInOut(p)) : null;
   const date = phase === 'cta' ? s.today : rewindDate ?? s.dates[i];
   const fill = phase === 'rewind' ? (i + .5) / 9 : (i + (phase === 'act1' || phase === 'act2' ? p : 1)) / 9;
   const play = () => { if (t >= END) setT(0); setPlaying(v => !v); };
@@ -231,7 +231,7 @@ export function Timelines() {
       <div className="tl-grid">
         <div className="tl-main card">
           <div className="tl-top">
-            <div className={`tl-act ${act2 ? 'off' : ''}`}>{act2 || phase === 'rewind' ? 'Without Axon' : 'With Axon'}</div>
+            <div className={`tl-act ${act2 || phase === 'rewind' ? 'off' : ''}`}>{phase === 'rewind' ? 'Rewinding' : act2 ? 'Without Axon' : 'With Axon'}</div>
             <div className="tl-date"><Icon name="calendar" size={14} />{fmt(date)}</div>
             <div className="tl-progress" aria-hidden><span style={{ width: `${(t / END) * 100}%` }} /></div>
           </div>
@@ -256,7 +256,7 @@ export function Timelines() {
               );
             })}
           </div>
-          {phase === 'rewind' && <div className="tl-rewind-badge" aria-hidden><Icon name="undo" size={22} /> Rewind</div>}
+          {phase === 'rewind' && <div className="tl-rewind-badge" aria-hidden><Icon name="undo" size={22} /> Rewinding to {fmt(s.dates[0]).replace(/ \d{4}$/, '')}</div>}
         </div>
 
         <div className="tl-side">
