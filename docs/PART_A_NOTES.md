@@ -121,3 +121,8 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 3. Next: M8 Fraud Twin.
 4. Gotcha: `forecast_metrics.json` feeds the Trust panel (M9).
 5. Gotcha: forecast failure is caught; cases then fall back to the placeholder horizon risk with a limitation line.
+
+### M8+M9 — Fraud Twin, time machine, feedback, audit, trust (done)
+1. Twin claim_splitting default: 95% detected (misses TEMPORAL_WINDOW); harden 30->45: 99.6%, FP unchanged; ~7 s/run. Injection city Ahmedabad.
+2. Trust (seed 42): precision 0.97, recall 0.97, decoys defended 10/10, planted fraud wrongly cleared 0.
+3. Tests: 109 passed. All milestones M0-M9 done.

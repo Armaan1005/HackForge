@@ -75,7 +75,12 @@ def run(store: DataStore, cfg: Config, feats: pd.DataFrame, context: dict) -> li
     active = feats[feats.n_claims >= MIN_CLAIMS]
     cols = list(FEATURES)
     z = robust_z(active, cols)
-    model, score = fit_scores(z, cfg.seed)
+    if context.get("anomaly_model_fixed") is not None:  # Fraud Twin: reuse the baseline model
+        model = context["anomaly_model_fixed"]
+        raw = -model.score_samples(z.to_numpy())
+        score = pd.Series(raw, index=z.index).rank(pct=True, method="average")
+    else:
+        model, score = fit_scores(z, cfg.seed)
     context.update({"anomaly_model": model, "anomaly_z": z, "anomaly_score": score, "anomaly_cols": cols,
                     "feats_full": feats})
     out = []

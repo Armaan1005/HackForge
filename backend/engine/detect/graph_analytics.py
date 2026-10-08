@@ -74,6 +74,23 @@ def tie_weight(t: dict, a: str, b: str, members_of: dict[str, set[str]]) -> tupl
     return w, jac
 
 
+def linked_claims(band: pd.DataFrame, window: int) -> tuple[set[str], dict[str, int]]:
+    """Same member at ≥ 2 providers: claims within `window` days of that member's first claim
+    are linked (span-based, so a split spread over 41 days falls outside a 30-day window)."""
+    linked: set[str] = set()
+    spans: dict[str, int] = {}
+    for _, g in band.groupby("member_id"):
+        if g.provider_id.nunique() < 2:
+            continue
+        g = g.sort_values(["service_date", "claim_id"])
+        days = (g.service_date - g.service_date.iloc[0]).dt.days
+        spans.update(zip(g.claim_id, days.astype(int)))
+        within = g[days <= window]
+        if within.provider_id.nunique() >= 2:
+            linked |= set(within.claim_id)
+    return linked, spans
+
+
 def run(store: DataStore, cfg: Config, feats: pd.DataFrame, context: dict) -> list[dict]:
     signals_so_far = context.get("signals", [])
     anomaly = context.get("anomaly_score", pd.Series(dtype=float))
@@ -188,25 +205,28 @@ def run(store: DataStore, cfg: Config, feats: pd.DataFrame, context: dict) -> li
                 extra={"community_id": cid, "community_size": len(c)}))
         links += [(hot[0], x) for x in hot[1:]]
         sub = h[h.provider_id.isin(hot)]
-        band = sub[(sub.billed >= lo) & (sub.billed < hi)].sort_values(["service_date", "claim_id"])
-        if len(band) < 20 or len(band) / len(sub) < 0.4:
+        band_hot = sub[(sub.billed >= lo) & (sub.billed < hi)]
+        if len(band_hot) < 20 or len(band_hot) / len(sub) < 0.4:
             continue
-        d = band.service_date.to_numpy()
-        gaps = np.diff(d) / np.timedelta64(1, "D")
-        linked = int(1 + (gaps <= cfg.TEMPORAL_WINDOW_DAYS).sum())
+        allc = h[h.provider_id.isin(c)]
+        band_all = allc[(allc.billed >= lo) & (allc.billed < hi)]
+        linked, spans = linked_claims(band_all, cfg.TEMPORAL_WINDOW_DAYS)
+        context.setdefault("link_span", {}).update(spans)
+        band = band_all[band_all.claim_id.isin(set(band_hot.claim_id) | linked)].sort_values(["service_date", "claim_id"])
         span = int((band.service_date.max() - band.service_date.min()).days)
+        provs = sorted(set(band.provider_id))
         for pid in hot:
             out.append(signal(
                 layer="graph", method="graph.small_claims_pattern",
                 name=f"{len(band)} connected mid-value claims, none above the threshold individually",
                 description=f"No single claim exceeds {inr(band.billed.max())}, but the {len(band)} connected claims across "
-                            f"{len(hot)} providers total {inr(band.billed.sum())} over {span} days "
-                            f"({linked} within {cfg.TEMPORAL_WINDOW_DAYS} days of the previous one).",
-                entity_type="provider", entity_id=pid, entity_ids=hot, claim_ids=list(band.claim_id),
+                            f"{len(provs)} providers total {inr(band.billed.sum())} over {span} days "
+                            f"({len(linked)} linked to the same member within {cfg.TEMPORAL_WINDOW_DAYS} days).",
+                entity_type="provider", entity_id=pid, entity_ids=provs, claim_ids=list(band.claim_id),
                 value=int(band.billed.sum()), comparison_value=int(band.billed.max()), comparison_label="largest single claim",
-                unit="inr", threshold=None, severity=4, strength=0.85,
-                sources=[("claims", "billed_amount"), ("claims", "service_date")],
-                extra={"connected_claims": len(band), "linked_within_window": linked, "span_days": span}))
+                unit="inr", threshold=cfg.TEMPORAL_WINDOW_DAYS, severity=4, strength=0.85,
+                sources=[("claims", "billed_amount"), ("claims", "service_date"), ("claims", "member_id")],
+                extra={"connected_claims": len(band), "linked_within_window": len(linked), "span_days": span}))
     context["case_links"] = links
     return out
 
