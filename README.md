@@ -86,6 +86,36 @@ python -m engine.pipeline
 uvicorn main:app --reload --port 8000
 ```
 
+Frontend (from `frontend/`):
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+Open http://localhost:5173. Or launch both from Claude Code with `.claude/launch.json` (`axon-api`, `axon-web`).
+
+---
+
+## Part B status (genai + UI)
+
+Works today on the contract fixtures, before the engine exists:
+
+| Piece | Where | Notes |
+|---|---|---|
+| LLM gateway | `backend/genai/gateway.py` | disk cache, concurrency cap, RPM limiter, priority queue, backoff, caller timeout |
+| Citation Verifier | `backend/genai/verifier.py` | drops uncited statements and numbers not in the cited evidence; counts feed the Trust panel |
+| Agents | `backend/genai/agents/` | Prosecutor, Defense, Verdict Clerk, Brief Writer, Document Forensics, Scenario Parser, Hardening Advisor, Exoneration Explainer, Ask-the-Case |
+| Fallbacks | `backend/genai/templates.py` | every agent has a deterministic template; the UI labels which one ran |
+| UI | `frontend/` | Command, SIU Queue, Case (7 tabs), Explained, Fraud Twin (+ QR judge page), Trust |
+
+- Without `GEMINI_API_KEY` in `backend/.env`, everything still runs on templates. With it, the agents use `GEMINI_MODEL`.
+- Before a demo: `POST /api/ai/prewarm` precomputes court, brief and forensics for every queued case so the live demo spends no quota.
+- Tests: `pytest -q tests/genai` from `backend/` (offline, no Gemini calls).
+
 ---
 
 ## Working agreement
