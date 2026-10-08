@@ -1,6 +1,6 @@
 import { Bot, Send } from 'lucide-react';
 import { useState } from 'react';
-import { Banner, Button, Card, Cite, SourceBadge } from '../../components/ui';
+import { Button, Card, Cite, SourceBadge } from '../../components/ui';
 import { ai } from '../../lib/api';
 import type { CaseDetail } from '../../lib/types';
 
@@ -8,7 +8,6 @@ const SUGGESTIONS = [
   'Why is this ranked above other cases?',
   'What would clear this provider?',
   'Which documents should I request first?',
-  'Is shared ownership enough to be suspicious?',
 ];
 
 export function AskTab({ k }: { k: CaseDetail }) {
@@ -27,9 +26,8 @@ export function AskTab({ k }: { k: CaseDetail }) {
     } finally { setBusy(false); }
   };
   return (
-    <Card title="Ask the case" icon={Bot} action={<span className="xs faint">answers only from this case's evidence · verified</span>}>
+    <Card title="Ask the case" icon={Bot} action={<span className="xs faint">answers cite this case only</span>}>
       <div className="stack">
-        {thread.length === 0 && <Banner>Not a general chatbot: answers cite this case's evidence, and the Citation Verifier rejects anything it can't trace.</Banner>}
         {thread.map((t, i) => (
           <div key={i} className="stack-sm">
             <div className="small strong">{t.q}</div>

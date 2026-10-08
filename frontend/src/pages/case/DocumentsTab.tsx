@@ -1,6 +1,6 @@
 import { FileSearch, ShieldAlert } from 'lucide-react';
-import { Fragment, type ReactNode } from 'react';
-import { Banner, Button, Card, Cite, ErrorState, Skeleton, SourceBadge } from '../../components/ui';
+import type { ReactNode } from 'react';
+import { Banner, Card, Cite, ErrorState, Skeleton, SourceBadge } from '../../components/ui';
 import { ai } from '../../lib/api';
 import { pct } from '../../lib/format';
 import { useAsync } from '../../lib/hooks';
@@ -31,7 +31,7 @@ function FlagRow({ f }: { f: Flag }) {
       <div className="small" style={{ flex: 1 }}>
         {f.observation}
         {f.evidence_ids.map(id => <Cite key={id} id={id} />)}
-        <div className="row xs faint" style={{ marginTop: 3, gap: 6 }}><SourceBadge source={f.source} /><span>{f.label}</span>{f.source === 'ai' && <span>· confidence {pct(f.confidence)}</span>}</div>
+        <div className="row xs faint" style={{ marginTop: 3, gap: 6 }}><SourceBadge source={f.source} />{f.source === 'ai' && <span>· confidence {pct(f.confidence)}</span>}</div>
       </div>
     </div>
   );
@@ -40,16 +40,13 @@ function FlagRow({ f }: { f: Flag }) {
 export function DocumentsTab({ k }: { k: CaseDetail }) {
   const fx = useAsync(() => ai.forensics(k.case_id), [k.case_id]);
   if (fx.error) return <ErrorState error={new Error(`Document Forensics needs the Part B backend on :8000 (${fx.error.message}).`)} onRetry={fx.reload} />;
-  if (!fx.data) return <div className="stack"><Banner icon={FileSearch}>Cross-checking records against claims, referrals and timestamps…</Banner><Skeleton h={340} /></div>;
+  if (!fx.data) return <Skeleton h={340} />;
 
   return (
     <div className="stack">
-      <Banner>
-        Generative AI can fabricate or insert content into real records. Axon checks each record against the payer's own data.
-        <b> Code-verified</b> flags are field mismatches; <b>AI-observed</b> flags need a human to verify. <b>Neither changes the risk score.</b>
-      </Banner>
+      <p className="small muted">Records are checked against claims, referrals and timestamps. Flags never change the risk score.</p>
       {fx.data.injection_detected && (
-        <Banner tone="warn" icon={ShieldAlert}><b>Prompt injection detected.</b> A record contains text addressed to an AI reviewer. Axon treated it as data, ignored it, and flagged the record as possibly tampered.</Banner>
+        <Banner tone="warn" icon={ShieldAlert}><b>Prompt injection found and ignored.</b> A record contains instructions aimed at an AI reviewer.</Banner>
       )}
       {fx.data.documents.map(d => {
         const doc = d.document;
@@ -59,13 +56,9 @@ export function DocumentsTab({ k }: { k: CaseDetail }) {
           <Card key={d.document_id} title={<>{d.document_id} · {doc.doc_type.replace(/_/g, ' ')}</>} icon={FileSearch}
             action={<div className="row"><SourceBadge source={d.source} /><span className="chip">{d.integrity_flags.length} flags</span></div>}>
             <div className="kv" style={{ marginBottom: 14 }}>
-              <dt>Record author</dt><dd className="mono">{doc.author_provider_id}</dd>
-              <dt>Member</dt><dd className="mono">{doc.member_id}</dd>
-              <dt>Claims</dt><dd className="mono">{doc.claim_ids.join(', ')}</dd>
-              <dt>Service date</dt><dd>{doc.claim_service_date ?? '—'}</dd>
+              <dt>Author</dt><dd className="mono">{doc.author_provider_id}</dd>
               <dt>Claim submitted</dt><dd>{doc.claim_submitted_at ?? '—'}</dd>
               <dt>Record created</dt><dd style={{ color: doc.claim_submitted_at && doc.created_at.slice(0, 10) > doc.claim_submitted_at ? 'var(--bad-text)' : undefined }}>{doc.created_at.replace('T', ' ')}</dd>
-              {doc.billed_procedures?.map(p => <Fragment key={p.code}><dt>Billed</dt><dd>{p.code} · {p.description}</dd></Fragment>)}
             </div>
             <div className="grid-2" style={{ alignItems: 'start' }}>
               <div className="stack-sm">
@@ -90,13 +83,13 @@ export function DocumentsTab({ k }: { k: CaseDetail }) {
                 ))}
                 {general.length > 0 && <div className="stack-sm"><span className="xs faint strong">Whole record</span>{general.map(f => <FlagRow key={f.flag_id} f={f} />)}</div>}
                 {d.integrity_flags.length === 0 && <p className="small muted">No integrity issues found.</p>}
-                <p className="xs muted">{d.overall_note}</p>
+                
               </div>
             </div>
           </Card>
         );
       })}
-      <div><Button size="sm" variant="ghost" onClick={fx.reload}>Re-run forensics</Button></div>
+      
     </div>
   );
 }

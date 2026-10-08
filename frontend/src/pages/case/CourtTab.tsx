@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
-import { BadgeCheck, Gavel, RefreshCw, Scale, ShieldQuestion, Swords, UserCheck } from 'lucide-react';
+import { BadgeCheck, RefreshCw, Scale, ShieldQuestion, Swords, UserCheck } from 'lucide-react';
 import { useState } from 'react';
-import { Banner, Button, Cite, ErrorState, Skeleton, SourceBadge, StatusPill, StrengthPill } from '../../components/ui';
+import { Button, Cite, ErrorState, Skeleton, SourceBadge, StatusPill, StrengthPill } from '../../components/ui';
 import { ai } from '../../lib/api';
 import { pct } from '../../lib/format';
 import { useAsync } from '../../lib/hooks';
@@ -28,7 +28,7 @@ export function CourtTab({ k }: { k: CaseDetail }) {
   if (court.error) return <ErrorState error={new Error(`Evidence Court needs the Part B backend on :8000 (${court.error.message}).`)} onRetry={court.reload} />;
   if (!court.data) return (
     <div className="stack">
-      <Banner icon={Gavel}>Prosecution and Defense are reading the same evidence pool. The Citation Verifier will check every statement.</Banner>
+      <p className="small muted">Prosecution and Defense are reviewing the evidence…</p>
       <div className="court"><Skeleton h={300} /><Skeleton h={300} /></div><Skeleton h={160} />
     </div>
   );
@@ -38,9 +38,9 @@ export function CourtTab({ k }: { k: CaseDetail }) {
   return (
     <div className="stack">
       <div className="row between">
-        <div className="small muted">Two agents argue opposite sides from the <b>same evidence</b>. The status below was computed by code. The AI only words it.</div>
+        <div className="small muted">Same evidence, two sides.</div>
         <div className="row">
-          <span className="stamp"><BadgeCheck size={14} />{c.verifier.checked} statements checked · {c.verifier.dropped} removed</span>
+          <span className="stamp" title={c.ai.notes[0] ?? `Model ${c.ai.model}`}><BadgeCheck size={14} />{c.verifier.kept} verified · {c.verifier.dropped} removed</span>
           <Button size="sm" variant="ghost" icon={RefreshCw} loading={court.loading} onClick={() => setRefresh(r => r + 1)}>Regenerate</Button>
         </div>
       </div>
@@ -48,12 +48,10 @@ export function CourtTab({ k }: { k: CaseDetail }) {
       <div className="court">
         <div className="court-col prosecution">
           <div className="row between"><h3 className="row-nw" style={{ gap: 8 }}><Swords size={16} style={{ color: 'var(--bad)' }} />Prosecution</h3><SourceBadge source={c.prosecution.source} /></div>
-          <p className="xs muted" style={{ margin: '4px 0 6px' }}>Evidence supporting suspicion</p>
           {c.prosecution.arguments.map((a, i) => <Arg key={i} a={a} i={i} idx={idx} />)}
         </div>
         <div className="court-col defense">
           <div className="row between"><h3 className="row-nw" style={{ gap: 8 }}><ShieldQuestion size={16} style={{ color: 'var(--series-1)' }} />Defense</h3><SourceBadge source={c.defense.source} /></div>
-          <p className="xs muted" style={{ margin: '4px 0 6px' }}>Evidence suggesting legitimate activity</p>
           {c.defense.arguments.map((a, i) => <Arg key={i} a={a} i={i} idx={idx} />)}
           {c.defense.missing_evidence.length > 0 && (
             <div style={{ marginTop: 10 }}>
@@ -75,15 +73,15 @@ export function CourtTab({ k }: { k: CaseDetail }) {
           <StrengthPill strength={v.evidence_strength} />
         </div>
         <p style={{ marginTop: 12 }}>{v.summary}</p>
-        <div className="small" style={{ marginTop: 10 }}><b>Recommended next action:</b> {v.next_action_text}</div>
+        <div className="small" style={{ marginTop: 10 }}><b>Next:</b> {v.next_action_text}</div>
         <div className="divider" />
         <div className="row between">
-          <span className="row-nw small strong" style={{ gap: 6 }}><UserCheck size={15} />No automatic denial. No fraud finding. Human approval required.</span>
+          <span className="row-nw small strong" style={{ gap: 6 }}><UserCheck size={15} />Human approval required</span>
           <span className="xs faint">Model {c.ai.model} · {new Date(c.generated_at).toLocaleTimeString()}</span>
         </div>
       </motion.div>
 
-      {c.ai.notes.length > 0 && <Banner tone="warn">Some agents used deterministic templates: {c.ai.notes[0]}</Banner>}
+      
       {c.verifier.dropped > 0 && (
         <div>
           <Button size="sm" variant="ghost" onClick={() => setShowDropped(s => !s)}>{showDropped ? 'Hide' : 'Show'} {c.verifier.dropped} removed statements</Button>
@@ -96,7 +94,6 @@ export function CourtTab({ k }: { k: CaseDetail }) {
           )}
         </div>
       )}
-      <p className="xs faint">“Axon doesn't automate the verdict. It automates the evidence.”</p>
     </div>
   );
 }

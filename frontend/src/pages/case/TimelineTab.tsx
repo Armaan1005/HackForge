@@ -5,7 +5,7 @@ const SIM_TODAY = '2026-10-01';
 
 export function TimelineTab({ k }: { k: CaseDetail }) {
   return (
-    <Card title="Timeline" action={<span className="xs faint">simulation date {SIM_TODAY} · dashed = upcoming</span>}>
+    <Card title="Timeline" action={<span className="xs faint">dashed = upcoming</span>}>
       <div className="timeline" style={{ marginTop: 6 }}>
         {k.timeline.map(t => (
           <div key={t.date + t.event_type} className={`tl-item ${t.date > SIM_TODAY ? 'future' : ''}`}>

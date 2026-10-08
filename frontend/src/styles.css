@@ -1,78 +1,52 @@
 /* ──────────────────────────────────────────────────────────────────────────
-   Axon design tokens: iOS-style grouped surfaces, glass navigation, SF type.
-   Chart colours follow the dataviz reference palette (validated, CVD-safe for
-   the first three slots); status colours are reserved and always paired with
-   an icon + label.
+   Axon design tokens: warm cream canvas, white cards, deep-green accent.
+   Chart colours validated with the dataviz palette checker (categorical
+   green/violet + a 5-step green ordinal ramp, all checks pass on white).
+   Status colours are reserved and always paired with an icon + label.
    ────────────────────────────────────────────────────────────────────────── */
 :root {
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", system-ui, sans-serif;
-  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
-  --radius: 18px;
-  --radius-sm: 12px;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  --radius: 16px;
+  --radius-sm: 10px;
   --ease: cubic-bezier(.22, 1, .36, 1);
-  --dur: .26s;
+  --dur: .24s;
 
-  --bg: #f2f2f7;
-  --bg-2: #e8e8ed;
+  --bg: #f7f4ec;            /* cream canvas */
+  --bg-2: #eeeadf;          /* tracks, segmented background */
   --surface: #ffffff;
-  --surface-2: #f7f7fa;
-  --glass: rgba(246, 246, 249, .74);
-  --text: #1d1d1f;
-  --text-2: #5e5e66;
-  --text-3: #8e8e93;
-  --line: rgba(60, 60, 67, .11);
-  --line-strong: rgba(60, 60, 67, .2);
-  --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 6px 22px -10px rgba(0, 0, 0, .12);
-  --shadow-lg: 0 2px 6px rgba(0, 0, 0, .05), 0 28px 64px -24px rgba(0, 0, 0, .28);
-
+  --surface-2: #fbf9f4;
+  --glass: rgba(247, 244, 236, .82);
   --pill: #ffffff;
-  --accent: #0a6cff;
-  --accent-soft: rgba(10, 108, 255, .11);
-  --accent-softer: rgba(10, 108, 255, .05);
+  --text: #1c211e;
+  --text-2: #5c635e;
+  --text-3: #959a94;
+  --line: rgba(28, 33, 30, .07);
+  --line-strong: rgba(28, 33, 30, .14);
+  --shadow: 0 1px 2px rgba(60, 50, 20, .04), 0 4px 16px -8px rgba(60, 50, 20, .10);
+  --shadow-lg: 0 2px 6px rgba(60, 50, 20, .05), 0 24px 56px -24px rgba(60, 50, 20, .22);
+
+  --accent: #1f7a4c;        /* deep green: buttons, links, active states */
+  --accent-soft: rgba(31, 122, 76, .10);
+  --accent-softer: rgba(31, 122, 76, .05);
   --on-accent: #ffffff;
 
   /* status (reserved) */
-  --good: #0ca30c;   --good-text: #1a7a2e;
-  --warn: #fab219;   --warn-text: #8f5f00;
-  --serious: #ec835a; --serious-text: #b14b1f;
-  --bad: #d03b3b;    --bad-text: #b52f2f;
+  --good: #2e9d4f;   --good-text: #1e7a3c;
+  --warn: #e9a21a;   --warn-text: #8a5a00;
+  --serious: #e07a4f; --serious-text: #a9461c;
+  --bad: #c9473f;    --bad-text: #a8352e;
 
   /* charts */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --mark-muted: #c3c2b7;
-  --grid: #e7e6e0;
-  --axis: #c3c2b7;
+  --series-1: #1a9a5a;
+  --series-2: #6b5bd6;
+  --mark-muted: #cfcabd;
+  --grid: #eeebe3;
+  --axis: #d6d1c4;
   --chart-surface: #ffffff;
 
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
-    --bg: #000000; --bg-2: #2c2c2e; --surface: #1c1c1e; --surface-2: #242426; --pill: #48484c;
-    --glass: rgba(22, 22, 24, .72); --text: #f5f5f7; --text-2: #aeaeb2; --text-3: #8e8e93;
-    --line: rgba(84, 84, 88, .42); --line-strong: rgba(120, 120, 128, .5);
-    --shadow: 0 1px 2px rgba(0, 0, 0, .5); --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, .8);
-    --accent: #3a8bff; --accent-soft: rgba(58, 139, 255, .18); --accent-softer: rgba(58, 139, 255, .08);
-    --good-text: #3fcf5a; --warn-text: #fab219; --serious-text: #f29a74; --bad-text: #ff6b6b;
-    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --mark-muted: #5a5a57;
-    --grid: #2c2c2a; --axis: #48484a; --chart-surface: #1c1c1e;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #000000; --bg-2: #2c2c2e; --surface: #1c1c1e; --surface-2: #242426; --pill: #48484c;
-  --glass: rgba(22, 22, 24, .72); --text: #f5f5f7; --text-2: #aeaeb2; --text-3: #8e8e93;
-  --line: rgba(84, 84, 88, .42); --line-strong: rgba(120, 120, 128, .5);
-  --shadow: 0 1px 2px rgba(0, 0, 0, .5); --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, .8);
-  --accent: #3a8bff; --accent-soft: rgba(58, 139, 255, .18); --accent-softer: rgba(58, 139, 255, .08);
-  --good-text: #3fcf5a; --warn-text: #fab219; --serious-text: #f29a74; --bad-text: #ff6b6b;
-  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --mark-muted: #5a5a57;
-  --grid: #2c2c2a; --axis: #48484a; --chart-surface: #1c1c1e;
-  color-scheme: dark;
 }
 
 @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
@@ -86,7 +60,7 @@ body {
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; line-height: 1.15; letter-spacing: -.02em; }
-h1 { font-size: 2.05rem; font-weight: 700; }
+h1 { font-size: 1.85rem; font-weight: 700; }
 h2 { font-size: 1.3rem; font-weight: 650; }
 h3 { font-size: 1.02rem; font-weight: 620; letter-spacing: -.01em; }
 p { margin: 0; }
@@ -107,7 +81,7 @@ code, .mono { font-family: var(--mono); font-size: .85em; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 .stack-sm { display: flex; flex-direction: column; gap: 6px; }
-.stack-lg { display: flex; flex-direction: column; gap: 22px; }
+.stack-lg { display: flex; flex-direction: column; gap: 24px; }
 .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .row-nw { display: flex; align-items: center; gap: 10px; }
 .between { justify-content: space-between; }
@@ -139,7 +113,17 @@ main.page { padding-top: 26px; padding-bottom: 64px; min-height: calc(100vh - 60
 .navlink:hover { color: var(--text); }
 .navlink.active { color: var(--text); }
 .nav-pill { position: absolute; inset: 0; background: var(--pill); border-radius: 999px; box-shadow: var(--shadow); z-index: -1; }
-.nav-tools { display: flex; align-items: center; gap: 6px; }
+.nav-tools { display: flex; align-items: center; gap: 4px; }
+.status-dot { width: 34px; height: 34px; display: grid; place-items: center; cursor: help; }
+.step-icon { width: 32px; height: 32px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex: none; }
+.metric { min-width: 0; }
+.metric .k { font-size: .76rem; color: var(--text-3); font-weight: 600; }
+.metric .v { font-family: var(--font-display); font-size: 1.45rem; font-weight: 700; letter-spacing: -.02em; margin-top: 2px; }
+.metric .s { font-size: .76rem; color: var(--text-3); }
+.strip { display: flex; gap: 24px 28px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+details > summary { cursor: pointer; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
 @media (max-width: 1020px) {
   .topnav-inner { height: auto; padding: 10px 0 8px; flex-wrap: wrap; row-gap: 8px; }
   .navlinks { order: 3; width: 100%; overflow-x: auto; margin: 0; scrollbar-width: none; }
@@ -148,9 +132,9 @@ main.page { padding-top: 26px; padding-bottom: 64px; min-height: calc(100vh - 60
 }
 @media (max-width: 560px) { .navlink .lbl { display: none; } .brand small { display: none; } }
 
-.page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 4px; flex-wrap: wrap; }
 .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .7rem; font-weight: 680; color: var(--accent); margin-bottom: 6px; }
-.subtitle { color: var(--text-2); margin-top: 8px; max-width: 70ch; font-size: 1rem; }
+.subtitle { color: var(--text-2); margin-top: 6px; max-width: 60ch; font-size: .95rem; }
 .section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 4px 2px 10px; }
 .section-title h2 { font-size: 1.08rem; }
 

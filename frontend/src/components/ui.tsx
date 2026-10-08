@@ -111,12 +111,12 @@ export function SourceBadge({ source }: { source?: string }) {
 // ── Risk ring ───────────────────────────────────────────────────────────────
 export function RiskRing({ value, size = 64, label }: { value: number; size?: number; label?: string }) {
   const r = (size - 8) / 2, c = 2 * Math.PI * r;
-  const color = value >= 85 ? 'var(--bad)' : value >= 60 ? 'var(--serious)' : value >= 35 ? 'var(--warn)' : 'var(--good)';
+  const color = 'var(--text)'; // magnitude, not status: neutral ink, the number carries the meaning
   return (
     <div className="risk-ring" style={{ width: size, height: size }} role="img" aria-label={`${label ?? 'Risk'} ${value} of 100`}>
       <svg width={size} height={size}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--bg-2)" strokeWidth={6} />
-        <motion.circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={6} strokeLinecap="round"
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--bg-2)" strokeWidth={4} />
+        <motion.circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={4} strokeLinecap="round"
           strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c * (1 - value / 100) }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }} />
       </svg>
       <span className="val" style={{ fontSize: size * 0.3 }}>{value}</span>
