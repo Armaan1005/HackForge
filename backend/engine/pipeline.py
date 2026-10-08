@@ -166,12 +166,23 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
     except ModuleNotFoundError:
         pass
     risk = {e: v["risk"] for e, v in entities.items()}
+    t_fc = time.perf_counter()
+    fc = None
+    try:
+        from . import forecast as forecast_mod
+
+        fc = forecast_mod.run(store, cfg, signals, context)
+    except Exception:  # noqa: BLE001 - fail safe: cases keep the placeholder horizon risk
+        log.exception("forecast failed")
+    stage("forecast", t_fc)
     if out.exists():
         shutil.rmtree(out)
     case_docs, index = [], []
     for case in cases:
         missing = missing_documents(store, case)
-        horizon = context.get("horizon", {}).get(case["primary"])
+        horizon = None
+        if fc is not None and case["providers"]:
+            horizon = {h: round(float(max(fc["probs"][h].get(pid, 0.0) for pid in case["providers"])), 2) for h in ("30", "60", "90")}
         sc = score_case(store, cfg, case, layers, missing, horizon)
         graph = case_graph(store, cfg, case, risk)
         network = {"node_count": graph.pop("total_nodes"), "edge_count": graph.pop("total_edges"),
@@ -195,6 +206,15 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
 
     t = time.perf_counter()
     dump(out / "cases_index.json", index)
+    if fc is not None:
+        ff = context.get("feats_full", feats)
+        docs = forecast_mod.entity_docs(ff, fc, sorted(ff.index[ff.n_claims > 0]))
+        for k, (pid, doc) in enumerate(docs.items()):
+            if k < 3:
+                S.Forecast.model_validate({kk: v for kk, v in doc.items() if kk != "by_horizon"})
+            dump(out / "forecast" / f"{pid}.json", doc)
+        dump(out / "forecast_metrics.json", fc["metrics"])
+        context["forecast"] = fc
     if "anomaly_model" in context:  # fitted once on the baseline; Fraud Twin reuses it
         import joblib
 
