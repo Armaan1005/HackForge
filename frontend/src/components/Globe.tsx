@@ -28,6 +28,42 @@ const INDIA_DOTS: { location: [number, number]; size: number }[] = [];
 // cobe draws at most 64 markers (its shader has 64 slots): a 2.5° grid gives 46 dots, leaving room for the 10 cities.
 for (let lat = 8.2; lat <= 36; lat += 2.5) for (let lng = 68.5; lng <= 97.5; lng += 2.5) if (inside(lat, lng)) INDIA_DOTS.push({ location: [lat, lng], size: 0.04 });
 
+// India's border (lat, lng), clockwise from the north-west, following the official map.
+const BORDER: [number, number][] = [
+  [35.1, 72.9], [36.9, 74.7], [37.1, 75.6], [36.0, 77.8], [35.5, 80.2], [34.8, 79.6], [33.2, 79.4], [32.4, 79.3], [31.3, 79.0], [30.9, 80.2],
+  [30.2, 81.0], [28.8, 80.3], [28.4, 81.3], [27.6, 83.3], [27.4, 84.6], [26.6, 86.0], [26.4, 87.4], [26.4, 88.1], [27.8, 88.1], [28.1, 88.9],
+  [27.2, 89.0], [26.8, 89.8], [26.9, 92.1], [27.8, 92.0], [28.2, 93.0], [29.3, 94.6], [28.6, 96.4], [27.8, 97.1], [27.1, 96.2], [26.2, 95.2],
+  [25.1, 94.6], [24.0, 94.2], [23.2, 93.4], [22.0, 93.0], [22.0, 92.5], [23.6, 91.9], [24.1, 92.2], [24.9, 92.4], [25.2, 91.0], [25.2, 89.9],
+  [26.1, 89.8], [26.0, 88.6], [25.2, 88.4], [24.6, 88.0], [24.0, 88.6], [22.9, 88.9], [21.6, 88.9], [21.5, 87.4], [20.7, 86.9], [19.9, 86.0],
+  [19.2, 84.8], [18.2, 83.9], [17.0, 82.3], [16.3, 81.3], [15.8, 80.3], [14.5, 80.1], [13.4, 80.3], [12.0, 79.9], [10.8, 79.8], [10.3, 79.3],
+  [9.3, 79.0], [8.1, 77.5], [8.6, 76.8], [10.0, 76.2], [11.4, 75.7], [12.8, 74.9], [14.6, 74.2], [15.8, 73.6], [17.5, 73.1], [19.0, 72.8],
+  [20.4, 72.8], [21.2, 72.6], [22.2, 72.5], [21.6, 72.2], [20.9, 71.0], [21.0, 70.0], [21.8, 69.2], [22.4, 69.3], [22.8, 70.4], [23.0, 68.4],
+  [23.6, 68.2], [24.3, 68.8], [24.4, 71.0], [25.2, 70.6], [25.7, 70.2], [26.5, 70.1], [27.6, 70.6], [28.0, 71.9], [29.0, 73.0], [30.0, 73.4],
+  [31.0, 74.6], [32.1, 74.7], [32.8, 74.0], [33.8, 74.0], [34.3, 73.5],
+];
+// Same maths as cobe's shader: unit-sphere point from lat/lng, rotated by J(theta, phi), sphere drawn at 0.8 of the canvas.
+function project(lat: number, lng: number, phi: number, theta: number, size: number): [number, number] | null {
+  const t = (lat * Math.PI) / 180, n = (lng * Math.PI) / 180 - Math.PI;
+  const p0 = -Math.cos(t) * Math.cos(n), p1 = Math.sin(t), p2 = Math.cos(t) * Math.sin(n);
+  const c = Math.cos(theta), d = Math.cos(phi), e = Math.sin(theta), f = Math.sin(phi);
+  const lx = d * p0 + f * p2, ly = f * e * p0 + c * p1 - d * e * p2, lz = -f * c * p0 + e * p1 + d * c * p2;
+  if (lz < 0.02) return null;  // behind the globe
+  return [((0.8 * lx + 1) / 2) * size, ((1 - 0.8 * ly) / 2) * size];
+}
+function borderPath(phi: number, theta: number, size: number) {
+  let d = '', pen = false;
+  for (let i = 0; i <= BORDER.length; i++) {
+    const [a, b] = BORDER[i % BORDER.length], [pa, pb] = BORDER[(i + BORDER.length - 1) % BORDER.length];
+    for (let k = i === 0 ? 3 : 1; k <= 3; k++) {  // 3 steps per edge so lines follow the curve of the globe
+      const q = project(pa + ((a - pa) * k) / 3, pb + ((b - pb) * k) / 3, phi, theta, size);
+      if (!q) { pen = false; continue; }
+      d += `${pen ? 'L' : 'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`;
+      pen = true;
+    }
+  }
+  return d;
+}
+
 export const GLOBE_CONFIG: COBEOptions = {
   width: 800, height: 800, onRender: () => {}, devicePixelRatio: 2,
   phi: PHI0, theta: 0.32, dark: 0, diffuse: 0.4, mapSamples: 16000, mapBrightness: 1.2,
@@ -51,6 +87,8 @@ export const GLOBE_CONFIG: COBEOptions = {
 
 export function Globe({ className = '', config = GLOBE_CONFIG }: { className?: string; config?: COBEOptions }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const borderRef = useRef<SVGPathElement>(null);
   const pointerInteracting = useRef<number | null>(null);
   const r = useMotionValue(0);
   const rs = useSpring(r, { mass: 1, damping: 30, stiffness: 100 });
@@ -79,6 +117,10 @@ export function Globe({ className = '', config = GLOBE_CONFIG }: { className?: s
       onRender: state => {
         if (pointerInteracting.current === null && !still) phi += 0.003;
         state.phi = phi + rs.get();
+        if (borderRef.current && svgRef.current) {
+          svgRef.current.setAttribute('viewBox', `0 0 ${width} ${width}`);
+          borderRef.current.setAttribute('d', borderPath(state.phi, config.theta ?? 0, width));
+        }
         state.width = width * 2;
         state.height = width * 2;
       },
@@ -92,6 +134,7 @@ export function Globe({ className = '', config = GLOBE_CONFIG }: { className?: s
       <canvas ref={canvasRef} aria-label="Globe centred on India"
         onPointerDown={e => setPointer(e.clientX)} onPointerUp={() => setPointer(null)} onPointerOut={() => setPointer(null)}
         onMouseMove={e => move(e.clientX)} onTouchMove={e => e.touches[0] && move(e.touches[0].clientX)} />
+      <svg ref={svgRef} className="globe-border" aria-hidden><path ref={borderRef} /></svg>
     </div>
   );
 }

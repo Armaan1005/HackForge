@@ -823,3 +823,7 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .explore-row { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px; }
 @media (max-width: 1000px) { .explore-row { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .explore-row { grid-template-columns: 1fr; } }
+
+/* India's border drawn over the globe (projected each frame with the globe's own rotation) */
+.globe-border { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.globe-border path { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3px hsl(var(--ah) 50% 45% / .55)); }
