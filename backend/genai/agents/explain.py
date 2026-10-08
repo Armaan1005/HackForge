@@ -8,7 +8,7 @@ from ..rag import for_case, rule_refs
 from ..evidence import pool_json
 from ..gateway import LIVE, AIUnavailable, gateway
 from ..schemas import AskOut, ClearedOut
-from ..verifier import allowed_numbers, check_statement, index_case, number_ok, numbers_in, verify_text
+from ..verifier import allowed_numbers, check_statement, strip_citations, index_case, number_ok, numbers_in, verify_text
 
 
 async def explain_cleared(alerts: list[dict], priority: int = LIVE) -> dict:
@@ -44,7 +44,7 @@ async def ask_case(case: dict, question: str, priority: int = LIVE) -> dict:
         ok = reason is None
         if ok:
             ids = [i for i in out.evidence_ids if i in idx]
-            return {"answer": out.answer, "evidence_ids": ids, "grounded": True, "source": "llm",
+            return {"answer": strip_citations(out.answer), "evidence_ids": ids, "grounded": True, "source": "llm",
                     "rules": [r for r in rule_refs([{"evidence_ids": ids}], case) if r["cited"]]}
         return {"answer": f"I couldn't produce a fully grounded answer ({reason}). Check the evidence list directly.",
                 "evidence_ids": [], "grounded": False, "source": "verifier"}

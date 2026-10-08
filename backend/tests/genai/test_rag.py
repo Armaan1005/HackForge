@@ -20,3 +20,10 @@ def test_verifier_rule_citations():
     ], idx)
     assert [k["evidence_ids"] for k in kept] == [["EV-1", "POL-014"], ["EV-1"]]
     assert len(dropped) == 2
+
+
+def test_strip_citations_keeps_entities_drops_ids_and_fields():
+    from genai.verifier import strip_citations
+    t = "Loop (PRV-00037, PRV-00351) (EV-0005-01, EV-0005-02). Paid (money.paid, money.pending). Peers [PC-0005-01]."
+    assert strip_citations(t) == "Loop (PRV-00037, PRV-00351). Paid. Peers."
+    assert strip_citations("Owners differ (EV-0005-07) , and share a bank .") == "Owners differ, and share a bank."

@@ -857,3 +857,9 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
   -webkit-mask-image: radial-gradient(ellipse 60% 70% at 30% 45%, #000 15%, transparent 70%); mask-image: radial-gradient(ellipse 60% 70% at 30% 45%, #000 15%, transparent 70%); }
 
 @media (prefers-reduced-motion: reduce) { .border-beam, .btn-shimmer::after, .text-sheen { animation: none; } .border-beam { display: none; } }
+
+/* Phone-width fixes: grid columns may shrink below their longest one-line text; wide tables scroll inside themselves */
+.home-grid > * { min-width: 0; }
+@media (max-width: 1000px) { .home-grid { grid-template-columns: minmax(0, 1fr); } }
+.plain-section { overflow-x: auto; }
+.landing { overflow-x: clip; }

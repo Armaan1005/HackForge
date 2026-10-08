@@ -79,6 +79,16 @@ def number_ok(n: float, allowed: set[float]) -> bool:
 _ID_REFS = re.compile(r"\s*[\[(](?:\s*[A-Z]{2,6}(?:-[A-Z0-9]+)+\s*[,;]?)+[\])]")
 
 
+_EV_REFS = re.compile(r"\s*[\[(](?:\s*(?:EV|PC)-[A-Z0-9-]+\s*[,;]?)+[\])]")
+_FIELD_REFS = re.compile(r"\s*\((?:\s*[a-z_]+\.[a-z_.]+\s*[,;]?)+\)")
+
+
+def strip_citations(text: str) -> str:
+    """For answers shown with citation chips: drop inline evidence-ID lists and internal field paths
+    ("(EV-0005-01, EV-0005-02)", "(money.paid, money.pending)") but keep entity names like (PRV-00037, PRV-00351)."""
+    return re.sub(r"\s+([.,;])", r"\1", _FIELD_REFS.sub("", _EV_REFS.sub("", text or ""))).strip()
+
+
 def strip_id_refs(text: str) -> str:
     """Remove inline "[EV-0001-01, PC-0001-03]" lists: the UI renders citations as chips."""
     return re.sub(r"\s+([.,;])", r"\1", _ID_REFS.sub("", text or "")).strip()
