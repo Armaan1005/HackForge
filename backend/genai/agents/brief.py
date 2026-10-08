@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import json
 
-from .. import prompts, templates
+from .. import prompts, templates, trace
+from ..rag import for_case, rule_refs
 from ..evidence import STATUS_LABEL, fmt_value, pool_json
 from ..gateway import LIVE, AIUnavailable, gateway
 from ..schemas import BriefOut
@@ -21,6 +22,7 @@ def _verified_points(points: list[dict], idx: dict) -> list[dict]:
 
 async def write_brief(case: dict, court: dict, priority: int = LIVE) -> dict:
     idx = index_case(case)
+    trace.retrieval("brief_writer", for_case(case))
     pros, defn = court["prosecution"]["arguments"], court["defense"]["arguments"]
     fallback = templates.brief(case, pros, defn)
     source, note = "llm", None
@@ -45,6 +47,7 @@ async def write_brief(case: dict, court: dict, priority: int = LIVE) -> dict:
     except AIUnavailable as e:
         b, source, note = fallback, "template", str(e)
 
+    b["rules"] = rule_refs(pros + defn + b.get("key_findings", []) + b.get("alternative_explanations", []), case)
     return {"case_id": case["case_id"], "sections": b, "markdown": render_markdown(case, court, b), "source": source, "note": note}
 
 
@@ -96,6 +99,10 @@ def render_markdown(case: dict, court: dict, b: dict) -> str:
         f"({case.get('scores', {}).get('methods_agreeing')} detection methods agree).",
         *[f"- {lim}" for lim in case.get("limitations", [])],
         f"- Citation Verifier: {court['verifier']['kept']} statements kept, {court['verifier']['dropped']} unsupported statements removed.",
+        "",
+        "## Policy and legal references (retrieved, for human review)",
+        *[f"- `{r['id']}` **{r['title']}**: {r['text']} *({r['source']}{'; verify against the official text before use' if r['verify'] else ''})*"
+          for r in b.get("rules", []) if r["cited"] or r["kind"] == "law"],
         "",
         "## Recommended human-review action",
         b["recommended_action"],

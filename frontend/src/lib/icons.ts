@@ -1,5 +1,7 @@
 // SAP icons (Horizon / v5 set from @ui5/webcomponents-icons), rendered as plain SVG paths.
 // Same approach as the SAP Hackathon app. Add a name here to use it with <Icon name="…" />.
+import { pathData as i_courseBook } from '@ui5/webcomponents-icons/dist/v5/course-book.js';
+import { pathData as i_officialService } from '@ui5/webcomponents-icons/dist/v5/official-service.js';
 import { pathData as i_home } from '@ui5/webcomponents-icons/dist/v5/home.js';
 import { pathData as i_group } from '@ui5/webcomponents-icons/dist/v5/group.js';
 import { pathData as i_shield } from '@ui5/webcomponents-icons/dist/v5/shield.js';
@@ -131,6 +133,8 @@ export const icons = {
   'document': i_document,
   'documents': i_documents,
   'document-text': i_documentText,
+  'course-book': i_courseBook,
+  'official-service': i_officialService,
   'org-chart': i_orgChart,
   'chain-link': i_chainLink,
   'connected': i_connected,

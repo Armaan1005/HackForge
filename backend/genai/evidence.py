@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 
+from .rag import for_case
+
 STATUS_LABEL = {
     "needs_siu_review": "Needs SIU review",
     "request_documentation": "Request documentation",
@@ -47,6 +49,7 @@ def compact_case(case: dict) -> dict:
         "missing_documents": [{k: m.get(k) for k in ("doc_type", "claim_count", "critical", "why")} for m in case.get("missing_documents", [])],
         "network_summary": case.get("network_summary"),
         "limitations": case.get("limitations", []),
+        "rulebook": [{"evidence_id": r["id"], "kind": r["kind"], "title": r["title"], "text": r["text"]} for r in for_case(case)],
     }
 
 

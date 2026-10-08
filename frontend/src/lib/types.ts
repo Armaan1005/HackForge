@@ -71,6 +71,7 @@ export interface Argument {
   point: string; evidence_ids: string[]; metric: string; case_value: number; comparison_value: number;
   comparison_label: string; strength: Strength; verified?: boolean;
 }
+export interface Rule { id: string; kind: 'payer_rule' | 'law'; title: string; text: string; source: string; verify: boolean; cited: boolean }
 export interface Court {
   case_id: string;
   prosecution: { arguments: Argument[]; source: string };
@@ -78,6 +79,7 @@ export interface Court {
   verdict: { status: Status; status_label: string; next_action: string; next_action_text: string; confidence: number; evidence_strength: Strength; summary: string; human_approval_required: boolean; source: string };
   verifier: { checked: number; kept: number; dropped: number; dropped_items: { agent: string; point: string; reason: string }[] };
   ai: { model: string; enabled: boolean; notes: string[]; pending?: boolean };
+  rules?: Rule[];
   generated_at: string;
 }
 

@@ -57,6 +57,8 @@ def allowed_numbers(items: Iterable[dict]) -> set[float]:
     """All numbers in the cited items plus their percent/scale variants."""
     allowed: set[float] = set()
     for item in items:
+        if isinstance(item, dict) and item.get("type") == "rulebook":
+            continue  # rule text is context, never a source of case facts
         for v in _walk_numbers(item):
             allowed.update({v, round(v, 2), round(v, 1), round(v)})
             if abs(v) <= 1:
@@ -86,7 +88,14 @@ def index_case(case: dict) -> dict[str, dict]:
     """evidence_id -> item, across evidence, peer context and documents."""
     idx = {e["evidence_id"]: e for e in case.get("evidence", [])}
     idx.update({p["evidence_id"]: p for p in case.get("peer_context", [])})
+    # rulebook entries retrieved for THIS case are citable; any other POL-/LAW- ID is unknown
+    from .rag import as_evidence, for_case
+    idx.update({r["evidence_id"]: r for r in as_evidence(for_case(case))})
     return idx
+
+
+def is_rule(item: dict) -> bool:
+    return item.get("type") == "rulebook"
 
 
 # ── stats (feeds the Trust panel "AI statements" block) ─────────────────────
@@ -123,6 +132,8 @@ def check_statement(text: str, cited_ids: list[str], idx: dict[str, dict], extra
     ids = [i for i in dict.fromkeys(cited_ids) if i in idx]
     if not ids:
         return [], "uncited" if not cited_ids else f"cites unknown evidence {', '.join(cited_ids[:3])}"
+    if all(is_rule(idx[i]) for i in ids):
+        return [], "cites only a rule, no case evidence"
     allowed = allowed_numbers(idx[i] for i in ids)
     allowed.update(extra_numbers)
     bad = [n for n in numbers_in(text) if not number_ok(n, allowed)]
@@ -146,8 +157,8 @@ def verify_arguments(agent: str, arguments: list[dict], idx: dict[str, dict], ca
                     reason = f"{label} {v:g} not in cited evidence"
                     break
         if reason:
-            uncited += reason.startswith(("uncited", "cites unknown"))
-            numbers += not reason.startswith(("uncited", "cites unknown"))
+            uncited += reason.startswith(("uncited", "cites"))
+            numbers += not reason.startswith(("uncited", "cites"))
             dropped.append({"agent": agent, "point": a.get("point", ""), "reason": reason})
         else:
             kept.append({**a, "point": strip_id_refs(a.get("point", "")), "evidence_ids": ids, "verified": True})

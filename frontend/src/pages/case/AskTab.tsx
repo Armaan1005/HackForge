@@ -1,6 +1,8 @@
+import type { Rule } from '../../lib/types';
 import { useState } from 'react';
 import { Icon } from '../../components/Icon';
 import { Mascot } from '../../components/Mascot';
+import { RuleChip } from '../../components/Rules';
 import { Button, Card, Chip, Cite } from '../../components/ui';
 import { ai } from '../../lib/api';
 import type { CaseDetail } from '../../lib/types';
@@ -10,13 +12,13 @@ const SUGGESTIONS = ['Why is this case ranked so high?', 'What would clear this 
 export function AskTab({ k }: { k: CaseDetail }) {
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);
-  const [thread, setThread] = useState<{ q: string; a: string; ids: string[]; grounded: boolean }[]>([]);
+  const [thread, setThread] = useState<{ q: string; a: string; ids: string[]; grounded: boolean; rules?: Rule[] }[]>([]);
   const ask = async (question: string) => {
     if (!question.trim()) return;
     setBusy(true);
     try {
       const r = await ai.ask(k.case_id, question);
-      setThread(t => [...t, { q: question, a: r.answer, ids: r.evidence_ids, grounded: r.grounded }]);
+      setThread(t => [...t, { q: question, a: r.answer, ids: r.evidence_ids, grounded: r.grounded, rules: r.rules ?? [] }]);
       setQ('');
     } catch (e) {
       setThread(t => [...t, { q: question, a: `I couldn't reach the AI service (${(e as Error).message}).`, ids: [], grounded: false }]);
@@ -33,7 +35,7 @@ export function AskTab({ k }: { k: CaseDetail }) {
           <div key={i} className="stack-sm">
             <b>{t.q}</b>
             <div className="help-panel">
-              <p>{t.a}{t.ids.map(id => <Cite key={id} id={id} />)}</p>
+              <p>{t.a}{t.ids.map(id => /^(POL|LAW)-/.test(id) ? <RuleChip key={id} id={id} rules={t.rules ?? []} /> : <Cite key={id} id={id} />)}</p>
               {!t.grounded && <p className="xs faint" style={{ marginTop: 6 }}>Not fully backed by evidence. Check the evidence list.</p>}
             </div>
           </div>

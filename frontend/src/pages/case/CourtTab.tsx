@@ -8,6 +8,7 @@ import { useAsync, useInterval } from '../../lib/hooks';
 import { spring } from '../../lib/theme';
 import type { CaseDetail, Court } from '../../lib/types';
 import { DecisionBox } from './DecisionBar';
+import { RuleChip, RulesPanel } from '../../components/Rules';
 
 type Turn =
   | { kind: 'banner'; text: string }
@@ -63,7 +64,7 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
         <Mascot size={80} mood="watching" />
         <div style={{ flex: 1, minWidth: 240 }}>
           <h2>Ready when you are</h2>
-          <p className="muted small" style={{ marginTop: 4 }}>Prosecution and Defense will argue this case live with Gemini. Every request and response is logged in the terminal.</p>
+          <p className="muted small" style={{ marginTop: 4 }}>Prosecution and Defense will argue this case live with SAP AI Core. Every request and response is logged in the terminal.</p>
         </div>
         <Button size="lg" icon="play" onClick={() => setSession(1)}>Start hearing</Button>
       </div>
@@ -84,7 +85,7 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
             <span className={`speaker ${t.side}`}><Icon name={s.icon} size={18} /></span>
             <div className="bubble-turn">
               <div className="turn-who">{s.name}</div>
-              {t.lead && <b>{t.lead} </b>}{t.text}{t.ids.map(id => <Cite key={id} id={id} title={idx.get(id)} />)}
+              {t.lead && <b>{t.lead} </b>}{t.text}{t.ids.map(id => /^(POL|LAW)-/.test(id) ? <RuleChip key={id} id={id} rules={c.rules ?? []} /> : <Cite key={id} id={id} title={idx.get(id)} />)}
             </div>
           </motion.div>
         );
@@ -128,7 +129,7 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
         {!done && <Button size="sm" variant="ghost" onClick={() => { setShown(turns.length); setPlaying(false); }}>Skip to the ruling</Button>}
         <span className="spacer" />
         <span className={`engine-pill ${c.prosecution.source === 'llm' ? 'on' : ''}`} title={c.ai.notes[0] ?? c.ai.model}><Icon name="ai" size={13} />
-          {c.prosecution.source === 'llm' ? `Argued by ${c.ai.model}` : c.ai.pending ? 'Gemini is still preparing, showing the quick version' : 'Argued from templates'}</span>
+          {c.prosecution.source === 'llm' ? `Argued by ${c.ai.model}` : c.ai.pending ? 'AI is still preparing, showing the quick version' : 'Argued from templates'}</span>
         <Button size="sm" variant="ghost" icon="refresh" loading={court.loading} onClick={() => { setRefresh(0); setSession(n => n + 1); }}>New hearing</Button>
       </div>
 
@@ -146,6 +147,8 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
         </div>
       </Card>
 
+      {done && <RulesPanel rules={c.rules ?? []} />}
+
       {done && (
         <Card>
           <div className="row-flex"><h2>How this hearing was run</h2><span className="spacer" /><Button variant="ghost" size="sm" icon={steps ? 'less' : 'add'} onClick={() => setSteps(s => !s)}>{steps ? 'Hide' : 'Show'} steps</Button></div>
@@ -158,16 +161,17 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
 
 function Steps({ c }: { c: Court }) {
   const steps: { icon: IconName; who: string; what: string; detail?: string }[] = [
-    { icon: 'inspect', who: 'Prosecution agent', what: `${c.prosecution.arguments.length} points, each citing evidence`, detail: c.prosecution.source === 'llm' ? 'Gemini' : 'Template' },
-    { icon: 'shield', who: 'Defense agent', what: `${c.defense.arguments.length} legitimate explanations from the same evidence`, detail: c.defense.source === 'llm' ? 'Gemini' : 'Template' },
+    { icon: 'inspect', who: 'Prosecution agent', what: `${c.prosecution.arguments.length} points, each citing evidence`, detail: c.prosecution.source === 'llm' ? 'AI (SAP AI Core)' : 'Template' },
+    { icon: 'shield', who: 'Defense agent', what: `${c.defense.arguments.length} legitimate explanations from the same evidence`, detail: c.defense.source === 'llm' ? 'AI (SAP AI Core)' : 'Template' },
     { icon: 'complete', who: 'Citation check', what: `${c.verifier.kept} kept, ${c.verifier.dropped} struck`, detail: 'Plain code. Drops any statement that cites missing evidence or uses a number the engine never produced.' },
-    { icon: 'decision', who: 'Clerk', what: 'Words the status the engine computed', detail: c.verdict.source === 'llm' ? 'Gemini' : 'Template' },
+    { icon: 'course-book', who: 'Rulebook search', what: `${c.rules?.length ?? 0} policies and laws retrieved for this case`, detail: 'Keyword search (BM25) over payer rules and law summaries. Agents may cite only these; they add context, never change the score.' },
+    { icon: 'decision', who: 'Clerk', what: 'Words the status the engine computed', detail: c.verdict.source === 'llm' ? 'AI (SAP AI Core)' : 'Template' },
     { icon: 'employee', who: 'You', what: 'Make the ruling' },
   ];
   return (
     <div className="trace">
       {steps.map((s, i) => (
-        <div key={s.who} className={`trace-step ${i < 4 ? 'done' : 'running'}`}>
+        <div key={s.who} className={`trace-step ${i < steps.length - 1 ? 'done' : 'running'}`}>
           <span className="trace-node"><Icon name={s.icon} size={18} /></span>
           <div><div className="trace-head"><span className="trace-agent">{s.who}</span><span className="small muted">{s.what}</span></div>{s.detail && <p className="trace-detail">{s.detail}</p>}</div>
         </div>

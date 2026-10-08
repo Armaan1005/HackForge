@@ -111,6 +111,11 @@ def skipped(agent: str, reason: str) -> None:
         _out(f"{C['dim']}○ {agent} · template ({reason}){C['reset']}")
 
 
+def retrieval(agent: str, rules: list[dict]) -> None:
+    if TRACE != "off":
+        _out(f"{C['magenta']}◆ Retrieval · {agent}: {', '.join(r['id'] for r in rules)}{C['reset']}")
+
+
 def verifier(agent: str, kept: int, dropped: list[dict]) -> None:
     if TRACE == "off":
         return

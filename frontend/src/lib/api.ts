@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { clone, fixtures } from './fixtures';
 import { replanLocal } from './replan';
-import type { AiStatus, CaseDetail, Court, Forensics, Graph, Queue, TimeMachine, TwinRun } from './types';
+import type { AiStatus, CaseDetail, Court, Forensics, Graph, Queue, Rule, TimeMachine, TwinRun } from './types';
 
 // ── data-source state (shown in the nav: Live engine vs Contract fixtures) ────
 type Source = 'unknown' | 'live' | 'fixture';
@@ -103,7 +103,7 @@ export const ai = {
   explainCleared: (limit = 20) => fetchJson<{ items: { alert_id: string; text: string; source: string }[]; note?: string }>('/api/ai/explain_cleared', { method: 'POST', body: JSON.stringify({ limit }) }, 60000),
   twinParse: (text: string) => fetchJson<{ supported: boolean; scenario?: string; scenario_name?: string; params?: Record<string, unknown>; adjustments?: string[]; source: string; reason?: string }>('/api/ai/twin/parse', { method: 'POST', body: JSON.stringify({ text }) }, 45000),
   twinAdvise: (run: TwinRun) => fetchJson<{ suggested_change: { param: string; old_value: number; new_value: number } | null; explanation: string; source: string }>('/api/ai/twin/advise', { method: 'POST', body: JSON.stringify({ run }) }, 45000),
-  ask: (id: string, question: string) => fetchJson<{ answer: string; evidence_ids: string[]; grounded: boolean; source: string }>(`/api/ai/ask/${id}`, { method: 'POST', body: JSON.stringify({ question }) }, 45000),
+  ask: (id: string, question: string) => fetchJson<{ answer: string; evidence_ids: string[]; grounded: boolean; source: string; rules?: Rule[] }>(`/api/ai/ask/${id}`, { method: 'POST', body: JSON.stringify({ question }) }, 45000),
   trust: () => fetchJson<{ statements_checked: number; kept: number; uncited_blocked: number; numbers_blocked: number; model: string; enabled: boolean }>('/api/ai/trust', undefined, 4000),
   prewarm: () => fetchJson<{ queued_cases: string[] }>('/api/ai/prewarm', { method: 'POST' }),
 };

@@ -9,6 +9,7 @@ from datetime import datetime
 from .. import prompts, templates, trace
 from ..config import settings
 from ..evidence import STATUS_LABEL, pool_json
+from ..rag import for_case, rule_refs
 from ..gateway import LIVE, AIUnavailable, gateway
 from ..schemas import DefenseOut, ProsecutionOut, VerdictOut
 from ..verifier import index_case, strip_id_refs, verify_arguments, verify_text
@@ -26,6 +27,7 @@ async def _agent(name: str, prompt: str, schema, fallback: dict, priority: int, 
 async def run_court(case: dict, priority: int = LIVE, fresh: bool = False) -> dict:
     idx = index_case(case)
     pool = pool_json(case)
+    trace.retrieval("court", for_case(case))
 
     (pros, pros_src, pros_note), (defn, def_src, def_note) = await asyncio.gather(
         _agent("prosecutor", prompts.PROSECUTOR.format(pool=pool), ProsecutionOut, templates.prosecution(case), priority, fresh),
@@ -77,6 +79,7 @@ async def run_court(case: dict, priority: int = LIVE, fresh: bool = False) -> di
             "human_approval_required": True,
             "source": clerk_src,
         },
+        "rules": rule_refs(pros_kept + def_kept, case),
         "verifier": {
             "checked": len(pros_kept) + len(def_kept) + len(dropped),
             "kept": len(pros_kept) + len(def_kept),
