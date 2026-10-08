@@ -1,0 +1,27 @@
+# secrets
+.env
+*.env
+!.env.example
+
+# python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# generated data (regenerate with: python -m engine.generate --seed 42)
+data/raw/
+data/processed/
+data/state/
+data/llm_cache/
+
+# frontend
+node_modules/
+dist/
+
+# os / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

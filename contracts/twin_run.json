@@ -1,0 +1,35 @@
+{
+  "run_id": "TWIN-20261001-0007",
+  "scenario": "claim_splitting",
+  "params": { "parent_amount": 200000, "splits": 4, "providers": 3, "spread_days": 30, "count": 60 },
+  "seed": 7,
+  "runtime_ms": 14210,
+  "sandbox": true,
+  "generated": 240,
+  "detected": 219,
+  "missed": 21,
+  "detection_rate": 0.913,
+  "by_layer": { "rules": 38, "anomaly": 112, "temporal": 64, "graph": 219 },
+  "false_positive_rate": { "baseline": 0.018, "run": 0.019 },
+  "injected_case_ids": ["CASE-T007-01"],
+  "missed_claims": [
+    { "claim_id": "CLM-T007-0193", "reason_code": "TEMPORAL_WINDOW", "param_key": "TEMPORAL_WINDOW_DAYS", "threshold": 30, "value": 41, "description": "Linked claims spread over 41 days, beyond the 30-day linking window" },
+    { "claim_id": "CLM-T007-0207", "reason_code": "BELOW_HUG_SHARE", "param_key": "THRESHOLD_HUG_SHARE", "threshold": 0.35, "value": 0.29, "description": "Provider's share of claims in the band was 29%, under the 35% flag level" }
+  ],
+  "miss_reason_summary": [
+    { "reason_code": "TEMPORAL_WINDOW", "param_key": "TEMPORAL_WINDOW_DAYS", "count": 17, "threshold": 30, "typical_value": 38 },
+    { "reason_code": "BELOW_HUG_SHARE", "param_key": "THRESHOLD_HUG_SHARE", "count": 4, "threshold": 0.35, "typical_value": 0.3 }
+  ],
+  "injected_graph": {
+    "nodes": [
+      { "id": "PRV-T007-1", "type": "provider", "label": "Injected provider 1", "risk": 82, "flagged": true, "in_case": true, "first_seen_month": "2026-09", "attrs": { "injected": true } },
+      { "id": "PRV-T007-2", "type": "provider", "label": "Injected provider 2", "risk": 77, "flagged": true, "in_case": true, "first_seen_month": "2026-09", "attrs": { "injected": true } },
+      { "id": "PRV-T007-3", "type": "provider", "label": "Injected provider 3", "risk": 44, "flagged": false, "in_case": false, "first_seen_month": "2026-09", "attrs": { "injected": true } }
+    ],
+    "edges": [
+      { "id": "TE-1", "source": "PRV-T007-1", "target": "PRV-T007-2", "type": "referral", "weight": 22, "first_seen_month": "2026-09", "evidence_ids": [] },
+      { "id": "TE-2", "source": "PRV-T007-2", "target": "PRV-T007-3", "type": "referral", "weight": 9, "first_seen_month": "2026-09", "evidence_ids": [] }
+    ]
+  },
+  "limitations": ["We designed both the attack and the detector, so these results are optimistic. Red-team investigators should write real scenarios."]
+}

@@ -1,0 +1,22 @@
+{
+  "request_example": {
+    "action": "confirm",
+    "user": "priya",
+    "note": "Operative notes requested; shared owner confirmed in registry"
+  },
+  "response": {
+    "decision_id": "DEC-00004",
+    "case_id": "CASE-0001",
+    "action": "confirm",
+    "user": "priya",
+    "recorded_at": "2026-10-01T11:42:10",
+    "weight_changes": [
+      { "method": "rules", "before": 0.35, "after": 0.3675 },
+      { "method": "anomaly", "before": 0.25, "after": 0.2625 },
+      { "method": "graph", "before": 0.25, "after": 0.2625 }
+    ],
+    "queue_changed": true,
+    "hold_status": "none",
+    "audit_id": "AUD-000219"
+  }
+}

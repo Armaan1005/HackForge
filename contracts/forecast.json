@@ -1,0 +1,20 @@
+{
+  "entity_id": "PRV-00412",
+  "horizon": 30,
+  "probability": 0.58,
+  "label_definition": "New incriminating signal, or fused risk up by 10+ points, within the next 30 days",
+  "top_drivers": [
+    { "feature": "threshold_hug_share", "label": "Share of claims just under ₹50k", "value": 0.94, "peer_median": 0.11, "contribution": 0.21 },
+    { "feature": "network_exposure", "label": "Share of linked providers already flagged", "value": 0.43, "peer_median": 0.02, "contribution": 0.14 },
+    { "feature": "volume_slope_3m", "label": "Monthly claim growth (last 3 months)", "value": 5.0, "peer_median": 0.1, "contribution": 0.09 }
+  ],
+  "all_horizons": { "30": 0.58, "60": 0.71, "90": 0.79 },
+  "model": {
+    "type": "HistGradientBoostingClassifier",
+    "trained_through": "2026-06-30",
+    "holdout": "2026-07..2026-09 (time-based)",
+    "auc_holdout": 0.86,
+    "brier_holdout": 0.11
+  },
+  "limitations": ["Trained on synthetic data; calibration is shown in the Trust panel."]
+}

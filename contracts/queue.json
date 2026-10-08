@@ -1,0 +1,186 @@
+{
+  "capacity_hours": 40,
+  "horizon": 30,
+  "currency": "INR",
+  "total_cases": 18,
+  "eligible_cases": 15,
+  "selected_count": 4,
+  "hours_used": 39,
+  "exploration_hours_reserved": 4,
+  "expected_recovery_selected": 2119000,
+  "recovery_per_hour": 54333,
+  "weights": {
+    "rules": 0.35,
+    "anomaly": 0.25,
+    "temporal": 0.15,
+    "graph": 0.25
+  },
+  "cases": [
+    {
+      "rank": 1,
+      "case_id": "CASE-0001",
+      "title": "Claim-splitting network across 3 providers sharing one owner",
+      "pattern": "claim_splitting_network",
+      "status": "needs_siu_review",
+      "risk": 91,
+      "dollars_at_risk": 2184000,
+      "expected_recovery": 1100000,
+      "member_harm": 0.46,
+      "severity": 4,
+      "evidence_strength": "strong",
+      "confidence": 0.84,
+      "effort_hours": 14,
+      "dead_end_risk": 0.16,
+      "recovery_per_hour": 78571,
+      "priority_score": 182400,
+      "horizon_risk": {
+        "30": 0.58,
+        "60": 0.71,
+        "90": 0.79
+      },
+      "days_until_release": 3,
+      "hold_recommended": true,
+      "selected": true,
+      "exploration": false,
+      "selection_reason": "Selected: ₹78,571 expected recovery per hour; ₹5.3L releases in 3 days"
+    },
+    {
+      "rank": 2,
+      "case_id": "CASE-0002",
+      "title": "Referral loop among 4 providers with shared bank account",
+      "pattern": "referral_ring",
+      "status": "needs_siu_review",
+      "risk": 88,
+      "dollars_at_risk": 1460000,
+      "expected_recovery": 710000,
+      "member_harm": 0.38,
+      "severity": 4,
+      "evidence_strength": "strong",
+      "confidence": 0.81,
+      "effort_hours": 12,
+      "dead_end_risk": 0.19,
+      "recovery_per_hour": 59167,
+      "priority_score": 131300,
+      "horizon_risk": {
+        "30": 0.49,
+        "60": 0.63,
+        "90": 0.74
+      },
+      "days_until_release": 9,
+      "hold_recommended": false,
+      "selected": true,
+      "exploration": false,
+      "selection_reason": "Selected: ₹59,167 expected recovery per hour"
+    },
+    {
+      "rank": 3,
+      "case_id": "CASE-0004",
+      "title": "Ambulance miles billed at 2.4x map distance",
+      "pattern": "phantom_services",
+      "status": "needs_siu_review",
+      "risk": 93,
+      "dollars_at_risk": 412000,
+      "expected_recovery": 216000,
+      "member_harm": 0.71,
+      "severity": 5,
+      "evidence_strength": "strong",
+      "confidence": 0.88,
+      "effort_hours": 9,
+      "dead_end_risk": 0.12,
+      "recovery_per_hour": 24000,
+      "priority_score": 96400,
+      "horizon_risk": {
+        "30": 0.66,
+        "60": 0.75,
+        "90": 0.81
+      },
+      "days_until_release": 5,
+      "hold_recommended": true,
+      "selected": true,
+      "exploration": false,
+      "selection_reason": "Selected: high member harm (0.71) and severity 5"
+    },
+    {
+      "rank": 9,
+      "case_id": "CASE-0014",
+      "title": "New DME supplier with rapid ramp and no rule hits",
+      "pattern": "mixed",
+      "status": "request_documentation",
+      "risk": 61,
+      "dollars_at_risk": 290000,
+      "expected_recovery": 93000,
+      "member_harm": 0.22,
+      "severity": 2,
+      "evidence_strength": "moderate",
+      "confidence": 0.53,
+      "effort_hours": 4,
+      "dead_end_risk": 0.47,
+      "recovery_per_hour": 23250,
+      "priority_score": 15900,
+      "horizon_risk": {
+        "30": 0.44,
+        "60": 0.52,
+        "90": 0.58
+      },
+      "days_until_release": 12,
+      "hold_recommended": false,
+      "selected": true,
+      "exploration": true,
+      "selection_reason": "Exploration: anomaly-only pattern unlike past confirmed fraud"
+    },
+    {
+      "rank": 17,
+      "case_id": "CASE-0011",
+      "title": "Unusual code mix at single orthopedic clinic",
+      "pattern": "mixed",
+      "status": "request_documentation",
+      "risk": 96,
+      "dollars_at_risk": 110000,
+      "expected_recovery": 26000,
+      "member_harm": 0.12,
+      "severity": 3,
+      "evidence_strength": "weak",
+      "confidence": 0.42,
+      "effort_hours": 22,
+      "dead_end_risk": 0.68,
+      "recovery_per_hour": 1182,
+      "priority_score": 610,
+      "horizon_risk": {
+        "30": 0.21,
+        "60": 0.27,
+        "90": 0.33
+      },
+      "days_until_release": null,
+      "hold_recommended": false,
+      "selected": false,
+      "exploration": false,
+      "selection_reason": "Not selected: weak evidence (1 method), 22 h effort, ₹1,182 per hour"
+    }
+  ],
+  "frontier": [
+    {
+      "hours": 0,
+      "cumulative_recovery": 0
+    },
+    {
+      "hours": 14,
+      "cumulative_recovery": 1100000
+    },
+    {
+      "hours": 26,
+      "cumulative_recovery": 1810000
+    },
+    {
+      "hours": 35,
+      "cumulative_recovery": 2026000
+    },
+    {
+      "hours": 39,
+      "cumulative_recovery": 2119000
+    },
+    {
+      "hours": 61,
+      "cumulative_recovery": 2145000
+    }
+  ]
+}

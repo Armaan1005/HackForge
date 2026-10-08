@@ -1,0 +1,39 @@
+{
+  "case_id": "CASE-0001",
+  "truncated": true,
+  "node_cap": 150,
+  "nodes": [
+    { "id": "PRV-00412", "type": "provider", "label": "Sunrise Ortho Clinic", "risk": 91, "flagged": true, "in_case": true, "first_seen_month": "2025-11", "attrs": { "specialty": "orthopedics", "city": "Pune" } },
+    { "id": "PRV-00413", "type": "provider", "label": "Sunrise Physio Centre", "risk": 84, "flagged": true, "in_case": true, "first_seen_month": "2025-11", "attrs": { "specialty": "physiotherapy", "city": "Pune" } },
+    { "id": "PRV-00419", "type": "provider", "label": "Vardhan Bone & Joint", "risk": 79, "flagged": true, "in_case": true, "first_seen_month": "2026-05", "attrs": { "specialty": "orthopedics", "city": "Pune" } },
+    { "id": "PRV-01377", "type": "provider", "label": "Dr. A. Menon (Cardiology)", "risk": 22, "flagged": false, "in_case": false, "first_seen_month": "2026-09", "attrs": { "specialty": "cardiology", "city": "Mumbai", "note": "appears only as document author" } },
+    { "id": "OWN-00233", "type": "owner", "label": "R. Vardhan Healthcare LLP", "risk": null, "flagged": false, "in_case": true, "first_seen_month": "2025-11", "attrs": {} },
+    { "id": "BNK-7f3a", "type": "bank", "label": "Bank acct ••7f3a", "risk": null, "flagged": false, "in_case": true, "first_seen_month": "2025-11", "attrs": {} },
+    { "id": "FAC-0117", "type": "facility", "label": "Sunrise Day Surgery, Pune", "risk": null, "flagged": false, "in_case": true, "first_seen_month": "2025-11", "attrs": { "facility_type": "clinic" } },
+    { "id": "LOC-411045", "type": "location", "label": "Pune 411045", "risk": null, "flagged": false, "in_case": false, "first_seen_month": "2025-11", "attrs": {} },
+    { "id": "MEM-004512", "type": "member", "label": "Member 004512", "risk": 30, "flagged": false, "in_case": true, "first_seen_month": "2026-07", "attrs": { "age": 67 } },
+    { "id": "MGRP-0001-A", "type": "member_group", "label": "37 other members", "risk": null, "flagged": false, "in_case": true, "first_seen_month": "2026-07", "attrs": { "count": 37 } },
+    { "id": "CLM-0041207", "type": "claim", "label": "₹48,900 · ORT-214", "risk": null, "flagged": true, "in_case": true, "first_seen_month": "2026-09", "attrs": { "paid_amount": 48900, "service_date": "2026-09-14" } },
+    { "id": "CGRP-0001-A", "type": "claim_group", "label": "46 more claims (₹21.35L)", "risk": null, "flagged": true, "in_case": true, "first_seen_month": "2026-07", "attrs": { "count": 46, "amount": 2135100 } }
+  ],
+  "edges": [
+    { "id": "E-001", "source": "PRV-00412", "target": "OWN-00233", "type": "owned_by", "weight": 1, "first_seen_month": "2025-11", "evidence_ids": ["EV-0001-02"] },
+    { "id": "E-002", "source": "PRV-00413", "target": "OWN-00233", "type": "owned_by", "weight": 1, "first_seen_month": "2025-11", "evidence_ids": ["EV-0001-02"] },
+    { "id": "E-003", "source": "PRV-00419", "target": "OWN-00233", "type": "owned_by", "weight": 1, "first_seen_month": "2026-05", "evidence_ids": ["EV-0001-02"] },
+    { "id": "E-004", "source": "OWN-00233", "target": "BNK-7f3a", "type": "uses_bank", "weight": 1, "first_seen_month": "2025-11", "evidence_ids": [] },
+    { "id": "E-005", "source": "PRV-00412", "target": "FAC-0117", "type": "practices_at", "weight": 1, "first_seen_month": "2025-11", "evidence_ids": ["EV-0001-02"] },
+    { "id": "E-006", "source": "PRV-00413", "target": "FAC-0117", "type": "practices_at", "weight": 1, "first_seen_month": "2025-11", "evidence_ids": ["EV-0001-02"] },
+    { "id": "E-007", "source": "PRV-00419", "target": "FAC-0117", "type": "practices_at", "weight": 1, "first_seen_month": "2026-05", "evidence_ids": ["EV-0001-02"] },
+    { "id": "E-008", "source": "FAC-0117", "target": "LOC-411045", "type": "located_at", "weight": 1, "first_seen_month": "2025-11", "evidence_ids": [] },
+    { "id": "E-009", "source": "PRV-00412", "target": "PRV-00413", "type": "referral", "weight": 14, "first_seen_month": "2026-07", "evidence_ids": [] },
+    { "id": "E-010", "source": "PRV-00413", "target": "PRV-00419", "type": "referral", "weight": 9, "first_seen_month": "2026-07", "evidence_ids": [] },
+    { "id": "E-011", "source": "MEM-004512", "target": "PRV-00412", "type": "treated", "weight": 3, "first_seen_month": "2026-07", "evidence_ids": [] },
+    { "id": "E-012", "source": "MGRP-0001-A", "target": "PRV-00412", "type": "treated", "weight": 26, "first_seen_month": "2026-07", "evidence_ids": [] },
+    { "id": "E-013", "source": "MGRP-0001-A", "target": "PRV-00413", "type": "treated", "weight": 11, "first_seen_month": "2026-07", "evidence_ids": [] },
+    { "id": "E-014", "source": "MGRP-0001-A", "target": "PRV-00419", "type": "treated", "weight": 7, "first_seen_month": "2026-07", "evidence_ids": [] },
+    { "id": "E-015", "source": "CLM-0041207", "target": "PRV-00412", "type": "billed", "weight": 1, "first_seen_month": "2026-09", "evidence_ids": ["EV-0001-01", "EV-0001-08"] },
+    { "id": "E-016", "source": "CLM-0041207", "target": "MEM-004512", "type": "billed", "weight": 1, "first_seen_month": "2026-09", "evidence_ids": [] },
+    { "id": "E-017", "source": "CGRP-0001-A", "target": "PRV-00412", "type": "billed", "weight": 28, "first_seen_month": "2026-07", "evidence_ids": ["EV-0001-01", "EV-0001-03"] },
+    { "id": "E-018", "source": "PRV-01377", "target": "MEM-004512", "type": "treated", "weight": 0, "first_seen_month": "2026-09", "evidence_ids": ["EV-0001-07"] }
+  ]
+}

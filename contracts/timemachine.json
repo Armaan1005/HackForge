@@ -1,0 +1,17 @@
+{
+  "case_id": "CASE-0001",
+  "months": ["2025-11", "2026-05", "2026-07", "2026-08", "2026-09"],
+  "snapshots": [
+    { "month": "2025-11", "node_ids": ["PRV-00412", "PRV-00413", "OWN-00233", "BNK-7f3a", "FAC-0117", "LOC-411045"], "edge_ids": ["E-001", "E-002", "E-004", "E-005", "E-006", "E-008"], "claims_count": 1, "amount": 12000, "risk": 8 },
+    { "month": "2026-05", "node_ids": ["PRV-00412", "PRV-00413", "PRV-00419", "OWN-00233", "BNK-7f3a", "FAC-0117", "LOC-411045"], "edge_ids": ["E-001", "E-002", "E-003", "E-004", "E-005", "E-006", "E-007", "E-008"], "claims_count": 2, "amount": 41000, "risk": 19 },
+    { "month": "2026-07", "node_ids": ["PRV-00412", "PRV-00413", "PRV-00419", "OWN-00233", "BNK-7f3a", "FAC-0117", "LOC-411045", "MEM-004512", "MGRP-0001-A", "CGRP-0001-A"], "edge_ids": ["E-001", "E-002", "E-003", "E-004", "E-005", "E-006", "E-007", "E-008", "E-009", "E-010", "E-011", "E-012", "E-013", "E-014", "E-017"], "claims_count": 11, "amount": 486000, "risk": 52 },
+    { "month": "2026-08", "node_ids": ["PRV-00412", "PRV-00413", "PRV-00419", "OWN-00233", "BNK-7f3a", "FAC-0117", "LOC-411045", "MEM-004512", "MGRP-0001-A", "CGRP-0001-A"], "edge_ids": ["E-001", "E-002", "E-003", "E-004", "E-005", "E-006", "E-007", "E-008", "E-009", "E-010", "E-011", "E-012", "E-013", "E-014", "E-017"], "claims_count": 17, "amount": 781000, "risk": 77 },
+    { "month": "2026-09", "node_ids": ["PRV-00412", "PRV-00413", "PRV-00419", "PRV-01377", "OWN-00233", "BNK-7f3a", "FAC-0117", "LOC-411045", "MEM-004512", "MGRP-0001-A", "CLM-0041207", "CGRP-0001-A"], "edge_ids": ["E-001", "E-002", "E-003", "E-004", "E-005", "E-006", "E-007", "E-008", "E-009", "E-010", "E-011", "E-012", "E-013", "E-014", "E-015", "E-016", "E-017", "E-018"], "claims_count": 19, "amount": 917000, "risk": 91 }
+  ],
+  "projection": {
+    "30": [ { "entity_id": "PRV-00419", "probability": 0.52 }, { "entity_id": "PRV-00588", "probability": 0.31, "label": "Pune physio clinic sharing 6 members" } ],
+    "60": [ { "entity_id": "PRV-00419", "probability": 0.64 }, { "entity_id": "PRV-00588", "probability": 0.42 } ],
+    "90": [ { "entity_id": "PRV-00419", "probability": 0.73 }, { "entity_id": "PRV-00588", "probability": 0.5 } ]
+  },
+  "fallback": false
+}

@@ -1,0 +1,81 @@
+{
+  "scenarios": [
+    {
+      "id": "claim_splitting",
+      "name": "Claim splitting",
+      "description": "Large claims split into several smaller ones to stay under the review threshold",
+      "params": {
+        "parent_amount": { "type": "int", "min": 50000, "max": 1000000, "default": 200000, "unit": "inr" },
+        "splits": { "type": "int", "min": 2, "max": 10, "default": 4 },
+        "providers": { "type": "int", "min": 1, "max": 6, "default": 3 },
+        "spread_days": { "type": "int", "min": 1, "max": 90, "default": 30 },
+        "count": { "type": "int", "min": 10, "max": 100, "default": 60, "description": "number of parent claims" }
+      },
+      "examples": ["What if fraudsters split ₹2 lakh claims into four ₹50,000 claims?"]
+    },
+    {
+      "id": "referral_collusion",
+      "name": "Referral collusion",
+      "description": "Providers refer members to each other in a closed loop",
+      "params": {
+        "providers": { "type": "int", "min": 2, "max": 8, "default": 3 },
+        "referrals_per_month": { "type": "int", "min": 5, "max": 100, "default": 20 },
+        "months": { "type": "int", "min": 1, "max": 12, "default": 4 },
+        "shared_owner": { "type": "bool", "default": false },
+        "shared_bank": { "type": "bool", "default": true }
+      },
+      "examples": ["What if three providers coordinate through one referral facility?"]
+    },
+    {
+      "id": "phantom_services",
+      "name": "Phantom services",
+      "description": "Services billed that could not have happened",
+      "params": {
+        "kind": { "type": "enum", "values": ["deceased", "inpatient", "ambulance_miles"], "default": "inpatient" },
+        "count": { "type": "int", "min": 5, "max": 200, "default": 40 }
+      },
+      "examples": ["What if a home health agency bills visits while patients are admitted elsewhere?"]
+    },
+    {
+      "id": "upcoding_drift",
+      "name": "Upcoding drift",
+      "description": "Visit level creeps up gradually to avoid sudden-change alerts",
+      "params": {
+        "start_share": { "type": "float", "min": 0.05, "max": 0.5, "default": 0.1 },
+        "end_share": { "type": "float", "min": 0.1, "max": 0.9, "default": 0.4 },
+        "months": { "type": "int", "min": 2, "max": 12, "default": 8 }
+      },
+      "examples": ["What if a clinic slowly raises its level-5 visits over a year?"]
+    },
+    {
+      "id": "identity_cluster",
+      "name": "Identity cluster",
+      "description": "Fake or borrowed member identities sharing contact details",
+      "params": {
+        "members": { "type": "int", "min": 3, "max": 60, "default": 15 },
+        "providers": { "type": "int", "min": 1, "max": 5, "default": 2 },
+        "share": { "type": "enum", "values": ["phone", "address", "both"], "default": "phone" }
+      },
+      "examples": ["What if 15 fake cards share one phone number?"]
+    },
+    {
+      "id": "duplicate_billing",
+      "name": "Duplicate billing",
+      "description": "The same service billed more than once",
+      "params": {
+        "count": { "type": "int", "min": 5, "max": 200, "default": 50 },
+        "near_duplicate": { "type": "bool", "default": true },
+        "day_offset": { "type": "int", "min": 0, "max": 5, "default": 1 }
+      },
+      "examples": ["What if duplicates are resubmitted 3 days later with a small price change?"]
+    }
+  ],
+  "tunable_params": [
+    { "key": "TEMPORAL_WINDOW_DAYS", "current": 30, "min": 7, "max": 90, "description": "Window for linking claims across providers", "affects": ["graph", "temporal"] },
+    { "key": "THRESHOLD_HUG_LOW", "current": 0.8, "min": 0.5, "max": 0.95, "description": "Lower edge of the just-under-threshold band", "affects": ["rules"] },
+    { "key": "THRESHOLD_HUG_SHARE", "current": 0.35, "min": 0.1, "max": 0.6, "description": "Share in band needed to flag", "affects": ["rules"] },
+    { "key": "DUP_NEAR_DAYS", "current": 1, "min": 0, "max": 7, "description": "Days apart that still count as near-duplicate", "affects": ["rules"] },
+    { "key": "REFERRAL_CONCENTRATION", "current": 0.5, "min": 0.2, "max": 0.9, "description": "Referral share from one source needed to flag", "affects": ["rules", "graph"] },
+    { "key": "IDENTITY_SHARE_MIN", "current": 5, "min": 2, "max": 20, "description": "Members sharing phone/address needed to flag", "affects": ["rules"] }
+  ]
+}
