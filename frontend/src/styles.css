@@ -542,7 +542,7 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .landing-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: center; min-height: calc(100vh - 160px); padding-bottom: 24px; }
 @media (max-width: 920px) { .landing-hero { grid-template-columns: 1fr; min-height: 0; padding-top: 24px; } }
 .hero-pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 99px; background: var(--surface); box-shadow: var(--shadow); font-size: .8rem; font-weight: 600; color: var(--accent); }
-.hero-title { font-family: var(--font-display); font-size: clamp(2.4rem, 5.4vw, 4.4rem); line-height: 1.04; letter-spacing: -.035em; margin: 20px 0 0; }
+.hero-title { font-family: var(--font-display); font-size: clamp(2.4rem, 5.4vw, 4.4rem); line-height: 1.04; letter-spacing: -.035em; margin: 0; }
 .hero-sub { font-size: 1.12rem; color: var(--text-2); max-width: 520px; margin-top: 18px; }
 .hero-globe { position: relative; width: 100%; max-width: 600px; aspect-ratio: 1; justify-self: center; }
 .globe { position: absolute; inset: 0; }

@@ -52,9 +52,8 @@ export function Landing() {
 
       <section className="landing-hero container">
         <motion.div className="hero-copy" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .6, ease: [.22, 1, .36, 1] }}>
-          <span className="hero-pill"><Icon name="shield" size={13} />Fraud, waste & abuse · for SIU teams</span>
-          <h1 className="hero-title">Catch the network,<br />not just the claim.</h1>
-          <p className="hero-sub">Axon reads every claim line, finds the groups of providers working together, argues both sides of each case, and hands a person a short list worth their time.</p>
+          <h1 className="hero-title">ClaimShield Nexus</h1>
+          <p className="hero-sub">A unified platform that identifies suspicious claims and coordinated networks, predicts future risk, explains the evidence, and prioritizes cases for Special Investigations Unit review.</p>
           <div className="row-flex" style={{ gap: 10, marginTop: 26 }}>
             <Link to="/home" className="btn btn-primary btn-md">Open workspace<Icon name="arrow-right" size={15} /></Link>
             <Link to="/timelines" className="btn btn-secondary btn-md"><Icon name="play" size={14} />Watch two timelines</Link>
