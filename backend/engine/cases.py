@@ -67,7 +67,7 @@ def group_alerts(store: DataStore, entities: dict, signals: list[dict], open_ids
                     uf.union(eid, other)
     provs = [e for e in open_ids if e.startswith("PRV-")]
     pidx = store.provider_index
-    for col in ("owner_id", "primary_facility_id"):
+    for col in ("owner_id",):
         by: dict[str, list[str]] = defaultdict(list)
         for pid in sorted(provs):
             by[pidx.loc[pid, col]].append(pid)
@@ -203,8 +203,9 @@ def build_cases(store: DataStore, cfg: Config, entities: dict, signals: list[dic
                 ev_by_kind["ownership"].append(ev["evidence_id"])
             if s["method"] == "graph.shared_bank":
                 ev_by_kind["bank"].append(ev["evidence_id"])
-        for ev in (extra_evidence or {}).get(primary, []):
-            evidence.append({**ev, "evidence_id": next_id()})
+        for e in sorted(comp):
+            for ev in (extra_evidence or {}).get(e, []):
+                evidence.append({**ev, "evidence_id": next_id()})
         # document cross-checks on the case's claims
         case_docs, consult_authors = [], []
         seen_docs = set()
@@ -246,7 +247,7 @@ def build_cases(store: DataStore, cfg: Config, entities: dict, signals: list[dic
                     "unit": "count", "threshold": None, "severity": 2, "hard": False, "weight": 0.0,
                     "sources": [{"table": "investigations", "column": "outcome"}]})
             else:
-                who = "None of the " + str(len(provs)) + " providers has" if len(provs) > 1 else f"{provs[0]} has no"
+                who = f"None of the {len(provs)} providers has a" if len(provs) > 1 else f"{provs[0]} has no"
                 evidence.append({
                     "evidence_id": next_id(), "type": "history", "method": "history.prior_investigations",
                     "name": "No prior confirmed SIU investigations",

@@ -97,20 +97,13 @@ def optional_layer(name: str):
         return None
 
 
-def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None = None) -> dict:
-    t_all = time.perf_counter()
-    durations: dict[str, int] = {}
-    out = Path(out_dir or cfg.processed_dir)
-
-    def stage(name: str, t0: float) -> None:
-        durations[name] = int((time.perf_counter() - t0) * 1000)
-
+def detect(store: DataStore, cfg: Config, context: dict | None = None, stage=None) -> dict:
+    """Detection only (features → layers → fusion → exoneration). Reused by Fraud Twin."""
+    stage = stage or (lambda name, t0: None)
     t = time.perf_counter()
-    store = DataStore(raw_dir or cfg.raw_dir)
     _ = store.claims, store.hdr
     feats = build_provider_features(store, cfg)
     stage("load_features", t)
-
     layers = {m: "unavailable" for m in LAYERS}
     signals: list[dict] = []
     t = time.perf_counter()
@@ -118,7 +111,7 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
     signals += rule_signals
     layers["rules"] = "ok" if len(failed) < 16 else "unavailable"
     stage("rules", t)
-    context: dict = {"feats": feats}
+    context = {**(context or {}), "feats": feats, "signals": signals}
     for name in ("anomaly", "temporal", "graph"):
         t = time.perf_counter()
         mod = optional_layer(name)
@@ -131,24 +124,44 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
         except Exception:  # noqa: BLE001 - fail safe by design
             log.exception("layer %s failed", name)
         stage(name, t)
-
     t = time.perf_counter()
-    weights = current_weights(cfg)
-    entities = {k[1]: v for k, v in fuse(signals, layers, weights).items()}
+    entities = {k[1]: v for k, v in fuse(signals, layers, current_weights(cfg), cfg.HARD_FLOOR, cfg.HARD_METHOD_BONUS).items()}
     alerts = {e for e, v in entities.items() if v["risk"] >= cfg.ALERT_MIN_RISK}
     stage("fuse", t)
-
     t = time.perf_counter()
     cleared: list[dict] = []
-    exo = None
     try:
         exo = importlib.import_module("engine.exonerate")
+        cleared = exo.run(store, cfg, feats, entities, signals, alerts, context)
     except ModuleNotFoundError:
         pass
-    if exo is not None:
-        cleared = exo.run(store, cfg, feats, entities, signals, alerts, context)
     open_ids = alerts - {c["entity_id"] for c in cleared}
     stage("exonerate", t)
+    return {"feats": feats, "signals": signals, "layers": layers, "failed": failed, "entities": entities,
+            "alerts": alerts, "cleared": cleared, "open_ids": open_ids, "context": context}
+
+
+def flagged_claims(signals: list[dict], entities: dict, open_ids: set[str], cfg: Config) -> set[str]:
+    """Claims the engine would put in front of a human: in a signal of an open alerted entity."""
+    out: set[str] = set()
+    for s in signals:
+        if s["direction"] == "incriminating" and s["entity_id"] in open_ids and entities[s["entity_id"]]["risk"] >= cfg.ALERT_MIN_RISK:
+            out.update(s["claim_ids"])
+    return out
+
+
+def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None = None) -> dict:
+    t_all = time.perf_counter()
+    durations: dict[str, int] = {}
+    out = Path(out_dir or cfg.processed_dir)
+
+    def stage(name: str, t0: float) -> None:
+        durations[name] = int((time.perf_counter() - t0) * 1000)
+
+    store = DataStore(raw_dir or cfg.raw_dir)
+    d = detect(store, cfg, stage=stage)
+    feats, signals, layers, failed = d["feats"], d["signals"], d["layers"], d["failed"]
+    entities, alerts, cleared, open_ids, context = d["entities"], d["alerts"], d["cleared"], d["open_ids"], d["context"]
 
     t = time.perf_counter()
     flags = document_flags(store)
@@ -166,25 +179,40 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
     except ModuleNotFoundError:
         pass
     risk = {e: v["risk"] for e, v in entities.items()}
+    t_fc = time.perf_counter()
+    fc = None
+    try:
+        from . import forecast as forecast_mod
+
+        fc = forecast_mod.run(store, cfg, signals, context)
+    except Exception:  # noqa: BLE001 - fail safe: cases keep the placeholder horizon risk
+        log.exception("forecast failed")
+    stage("forecast", t_fc)
     if out.exists():
         shutil.rmtree(out)
     case_docs, index = [], []
     for case in cases:
         missing = missing_documents(store, case)
-        horizon = context.get("horizon", {}).get(case["primary"])
+        horizon = None
+        if fc is not None and case["providers"]:
+            horizon = {h: round(float(max(fc["probs"][h].get(pid, 0.0) for pid in case["providers"])), 2) for h in ("30", "60", "90")}
         sc = score_case(store, cfg, case, layers, missing, horizon)
         graph = case_graph(store, cfg, case, risk)
         network = {"node_count": graph.pop("total_nodes"), "edge_count": graph.pop("total_edges"),
                    "community_id": context.get("community_of", {}).get(case["primary"]),
                    "community_size": context.get("community_size", {}).get(case["primary"], 0),
                    "flagged_neighbor_share": case["flagged_neighbor_share"], "connected_claims": len(case["claim_ids"])}
-        peer = pc_mod.build(store, cfg, feats, case) if pc_mod else []
+        peer = pc_mod.build(store, cfg, context.get("feats_full", feats), case, context) if pc_mod else []
         tl = timeline(store, cfg, case, flags)
         doc = serialize_case(store, cfg, case, sc, layers, peer, tl, network, missing)
         S.CaseDetail.model_validate(doc)
         S.CaseGraph.model_validate(graph)
         dump(out / "cases" / f"{case['case_id']}.json", doc)
         dump(out / "graphs" / f"{case['case_id']}.json", graph)
+        from . import timemachine
+        tm = timemachine.build(case, graph, fc, context)
+        S.TimeMachine.model_validate(tm)
+        dump(out / "timemachine" / f"{case['case_id']}.json", tm)
         rows = store.claims[store.claims.claim_id.isin(case["claim_ids"])]
         dump(out / "claims" / f"{case['case_id']}.json",
              json.loads(rows.astype(object).where(rows.notna(), None).to_json(orient="records", date_format="iso")))
@@ -195,6 +223,20 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
 
     t = time.perf_counter()
     dump(out / "cases_index.json", index)
+    dump(out / "flagged_claims.json", sorted(flagged_claims(signals, entities, open_ids, cfg)))
+    if fc is not None:
+        ff = context.get("feats_full", feats)
+        docs = forecast_mod.entity_docs(ff, fc, sorted(ff.index[ff.n_claims > 0]))
+        for k, (pid, doc) in enumerate(docs.items()):
+            if k < 3:
+                S.Forecast.model_validate({kk: v for kk, v in doc.items() if kk != "by_horizon"})
+            dump(out / "forecast" / f"{pid}.json", doc)
+        dump(out / "forecast_metrics.json", fc["metrics"])
+        context["forecast"] = fc
+    if "anomaly_model" in context:  # fitted once on the baseline; Fraud Twin reuses it
+        import joblib
+
+        joblib.dump({"model": context["anomaly_model"], "cols": context["anomaly_cols"]}, out / "anomaly_model.joblib")
     dump(out / "peer_stats.json", peer_stats_table(feats))
     dump(out / "entities.json", {e: {k: v[k] for k in ("entity_type", "risk", "by_method", "methods_agreeing", "hard")}
                                  for e, v in sorted(entities.items())})
@@ -218,6 +260,14 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
         "generated_at": f"{cfg.sim_today}T08:00:00",
     }
     S.Overview.model_validate(overview)
+    try:
+        from . import audit, trust
+
+        tr = trust.build(store, cfg, case_docs, cleared, fc["metrics"] if fc else None, open_ids, audit.count())
+        S.Trust.model_validate(tr)
+        dump(out / "trust.json", tr)
+    except Exception:  # noqa: BLE001
+        log.exception("trust failed")
     dump(out / "overview.json", overview)
     stage("write", t)
     meta = {"seed": cfg.seed, "engine_version": ENGINE_VERSION, "layers": layers, "failed_rules": failed,

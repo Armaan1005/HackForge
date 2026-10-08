@@ -178,4 +178,6 @@ def flagged_neighbor_share(store: DataStore, providers: list[str], flagged: set[
     return round(len(neigh & flagged) / len(neigh), 2)
 
 
-__all__ = ["CaseGraphBuilder", "flagged_neighbor_share", "month", "defaultdict"]
+from .graph_analytics import neighbors, run  # noqa: E402  (analytics live in their own module)
+
+__all__ = ["CaseGraphBuilder", "flagged_neighbor_share", "month", "neighbors", "run"]

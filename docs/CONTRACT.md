@@ -41,16 +41,20 @@ Errors: `{"error": {"code": "not_found" | "invalid_param" | "unsupported_scenari
 
 ## Part B endpoints (`/api/ai`) — for reference
 
+Part B reads Part A only through `/api/cases/{id}`, `/api/documents/{id}`, `/api/files/scans/{id}.png`, `/api/alerts/cleared`, `/api/twin/scenarios` and `/api/queue`.
+
 | Method | Path | Returns |
 |---|---|---|
-| POST | `/api/ai/forensics/{case_id}` | `{integrity_flags:[{flag_id, document_id, section_id, check, label:"AI-observed, human to verify", confidence, evidence_ids}], injection_detected:[...]}` |
-| POST | `/api/ai/court/{case_id}` | `{prosecution:{arguments[]}, defense:{arguments[], missing_evidence[]}, verdict:{status, next_action, summary}, verifier:{checked, dropped, dropped_items[]}}` — `status`/`next_action` copied from Part A |
-| GET | `/api/ai/brief/{case_id}` | markdown / pdf |
-| POST | `/api/ai/explain_cleared` | one-line explanations for cleared alerts |
-| POST | `/api/ai/twin/parse` | `{scenario, params}` validated against `/api/twin/scenarios`, or `{error:"unsupported"}` |
-| POST | `/api/ai/twin/advise` | `{suggested_change:{param, new_value}, explanation}` from Part A's `miss_reason_summary` |
-| POST | `/api/ai/ask/{case_id}` | grounded answer + tool calls made |
-| GET | `/api/ai/status` | `{queue_depth, calls_this_minute, model, cache_hits}` |
+| POST | `/api/ai/court/{case_id}?refresh=` | `{prosecution:{arguments[], source}, defense:{arguments[], missing_evidence[], source}, verdict:{status, status_label, next_action, next_action_text, confidence, evidence_strength, summary, human_approval_required, source}, verifier:{checked, kept, dropped, dropped_items[]}, ai:{model, enabled, notes[]}}` (status and next action are copied from Part A) |
+| GET | `/api/ai/brief/{case_id}?format=json\|md` | `{sections, markdown, source}`, or a Markdown download |
+| POST | `/api/ai/forensics/{case_id}` | `{documents:[{document, integrity_flags:[{flag_id, section_id, check, observation, confidence, evidence_ids, source:"code"\|"ai", label}], injection_detected, overall_note, source}], injection_detected, affects_score:false}` |
+| POST | `/api/ai/explain_cleared` `{limit}` | `{items:[{alert_id, text, source}]}` |
+| POST | `/api/ai/twin/parse` `{text}` | `{supported, scenario, scenario_name, params, adjustments[], source}` validated against `/api/twin/scenarios`, or `{supported:false, reason}` |
+| POST | `/api/ai/twin/advise` `{run}` | `{suggested_change:{param, old_value, new_value}, explanation, source, requires_approval:true}` |
+| POST | `/api/ai/ask/{case_id}` `{question}` | `{answer, evidence_ids, grounded, source}` |
+| GET | `/api/ai/status` | `{enabled, mode, model, queue_depth, calls_this_minute, rpm_limit, calls, cache_hits, failures, use_fixtures, verifier}` |
+| GET | `/api/ai/trust` | verifier counters for the Trust panel's `ai` block |
+| POST | `/api/ai/prewarm` | precomputes court, brief and forensics for all queued cases at low priority |
 
 ---
 

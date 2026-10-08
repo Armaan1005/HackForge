@@ -41,6 +41,29 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 - **Horizon risk** is a labelled placeholder (from current risk) until the M7 forecast; the limitation line says so.
 - **Live API:** a feature whose milestone hasn't landed answers 503 `layer_unavailable`; unknown IDs 404. `/cases/{id}/claims` serves precomputed rows from `processed/claims/`.
 
+### M4 (anomaly, temporal, graph)
+- **Anomaly:** Isolation Forest (200 trees, seed) on robust z (median/MAD, MeanAD fallback, clip ±8) of 14 features for providers with ≥ 10 claims; signal at percentile ≥ 0.9 plus top-3 |z| drivers. Model saved to `processed/anomaly_model.joblib` for Fraud Twin. **Member-level anomaly cut** (spec's first cut item).
+- **Temporal:** EM5 drift = OLS over the trailing 9 months (months with ≥ 5 E&M), slope > 3 pp/month and p < 0.05. Bursts: ≥ 12 claims, > median + 3·MAD *and* ≥ 3× the prior-6-month median; **region-wide** if ≥ 5 providers in the same city are elevated that month (looser test) → neutral signal (feeds EX4). Rapid ramp: tenure < 9 months and > 2× peer p90. Window clusters: same member, linked providers (shared owner/facility), mid/high-value claims, within `TEMPORAL_WINDOW_DAYS`.
+- **Graph "flagged" providers** = rule hits or anomaly ≥ 0.99. Shared owner/facility only becomes evidence with ≥ 2 flagged providers; shared bank across different owners always does. Projection ties: Jaccard ≥ 0.05 with ≥ 3 shared members, referrals, owner, bank, facility (0.5).
+- **Case grouping** no longer unions on shared primary facility (hospitals host many unrelated providers); graph cycles/communities/shared indicators supply links instead.
+
+### M5 (exoneration, peer context)
+- **EX rules by signal:** R01/R02 → EX3 (≥ 50% of flagged claims corrected); R11 dialysis ≤ 14/30 days → EX5, else event/seasonal → EX4; R03 and case-mix-type anomaly drivers → EX2 (adjusted ratio = max(EM5, billed-per-member ratio) ÷ case-mix ratio < 1.5); volume-type anomaly/bursts/ramp → EX4 (region-wide burst, or same-day cluster: ≥ 20 members each seen by ≥ 3 providers in one city) or EX1 (nearest same-type competitor > 60 km and volume per 1k catchment within peer IQR, ×1.25); graph/window signals → EX6 when max billing |z| < 2 and no rule hits.
+- **Cleared only if every incriminating signal is explained and none is hard.** Partial explanations become one exculpatory `exoneration` evidence item per EX code (weight 0, so they inform the Defense without moving confidence).
+- **Peer context** is built for the case's top provider: EM5, band share, billed per member, KL, top referral source, case mix, the risk-adjusted ratio (with `raw_ratio`), prior investigations, tenure, nearest competitor (if sole).
+- **Generator tweak:** D2 now bills 80 claims (was 160) so its members-per-claim matches peers; its intensity is explained by case mix.
+
+### M6 (queue, money clock)
+- **Hard-signal risk** = max(fused, `HARD_FLOOR` 85 + `HARD_METHOD_BONUS` 5 × (agreeing methods − 1)), so corroborated hard cases rank above lone ones instead of all sitting at exactly 85.
+- **Queue:** CP-SAT knapsack (1 worker, seeded, 0.2 s cap) over 90% of capacity; exploration fills the rest with the best-fitting eligible case (mixed pattern first, then confidence closest to 0.5). Ranks are by priority (value ÷ effort) over all cases. With seed 42 every case needs ≥ 10 h, so at 40 h the 4 h exploration reserve stays empty.
+- `/api/overview` `selected_today` is filled live from `queue.plan(40, 30)`.
+
+### M7 (forecast)
+- **Label proxy:** "provider gets newly flagged claims (claims named in its final incriminating signals) in (t, t+H]". Re-running every layer per monthly snapshot would break the 30 s budget. Because the label comes from the detectors themselves, holdout AUC is ~0.99; every forecast says so in `limitations`.
+- **Features at t** are computed from claims ≤ t; `network_exposure` is the current graph value (static, a known leak noted here).
+- **Case `horizon_risk`** = max over the case's providers. Forecast files are written for every provider with claims (`processed/forecast/PRV-*.json`, with `by_horizon`; the router picks the requested horizon).
+- Survival model (lifelines) not built (spec "optional", and on the cut list).
+
 ## Handoff log
 
 ### M0 — fixture server (done)
@@ -70,3 +93,36 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 3. Seed 42 (rules only): 14 cases; all of S1–S8 are in cases; decoys D2 (oncologist) and D6 (dialysis) are cases until M5 exoneration; 3 cases are innocent noise.
 4. Next: M4: anomaly (IsolationForest + robust z + KL), temporal (drift, bursts, ramp), graph analytics (cycles, shared indicators, Louvain, exposure, small-claims pattern).
 5. Gotcha: every M3 status is `monitor` by design (one method); don't tune thresholds to "fix" that before M4.
+
+### M4 — four detection layers (done)
+1. Done: `detect/anomaly.py`, `detect/temporal.py`, `detect/graph_analytics.py` (+ re-export in `graph.py`, `neighbors()` for the tool endpoint), pipeline context sharing, 3 acceptance tests.
+2. Seed 42: 109 alerts → 9 cases (~8 s pipeline). Every S1–S8 is a case, all `needs_siu_review` or `request_documentation`; D2 is the only decoy case (cleared in M5 by EX2).
+3. Acceptance: S3 + S6 anomaly ≥ 0.98; S3 drift +4.9 pp/month; D5 burst region-wide; S1 4-cycle; S6 one community, 43 connected claims; D7 one community, not flagged.
+4. Next: M5 exoneration (EX1–EX6) + peer context.
+5. Gotcha: graph uses the rule + anomaly signals already in `context["signals"]`; keep layer order rules → anomaly → temporal → graph.
+
+### M5 — exoneration + peer context (done)
+1. Done: `exonerate.py` (EX1–EX6), `peer_context.py`, partial-explanation evidence, 3 tests.
+2. Seed 42: 109 alerts → 27 cleared (EX2 16, EX4 ~9, EX1 2…) → 8 cases = exactly S1–S8; 0 planted fraud cleared; decoys defended ≥ 90%.
+3. `peer_context[]` and `/api/alerts/cleared` are live (handoff to Armaan).
+4. Next: M6 queue optimizer (OR-Tools CP-SAT knapsack) + money clock.
+5. Gotcha: an alert with a hard signal is never cleared, even if every other signal is explained.
+
+### M6 — queue + money clock (done)
+1. Done: `queue.py` (value/priority per A13, CP-SAT knapsack, exploration, reasons, frontier), hard-signal bonus, 7 queue tests.
+2. Live: `GET /api/queue?capacity_hours=&horizon=` re-plans in ~2 ms.
+3. Demo moment (seed 42): CASE-0001 risk 95 ranked #5, "Not selected: high effort 16 h, ₹6,558 per hour"; the S6 case is #1 with "₹5.34L releases in 1 day".
+4. Next: M7 forecast (monthly snapshots, HistGradientBoosting per horizon, time-based holdout).
+5. Gotcha: `horizon_risk` is still the placeholder until M7 replaces it, so queue values across horizons only differ by that placeholder.
+
+### M7 — forecast (done)
+1. Done: `forecast.py` (monthly snapshots, HistGradientBoosting × 3 horizons, time-based holdout, calibration, permutation-importance drivers), `/api/forecast/{id}?horizon=` live, case horizon risk from the model.
+2. Seed 42 holdout: AUC 0.994/0.995/0.994, Brier 0.007/0.005/0.007 (30/60/90). Pipeline ~15 s.
+3. Next: M8 Fraud Twin.
+4. Gotcha: `forecast_metrics.json` feeds the Trust panel (M9).
+5. Gotcha: forecast failure is caught; cases then fall back to the placeholder horizon risk with a limitation line.
+
+### M8+M9 — Fraud Twin, time machine, feedback, audit, trust (done)
+1. Twin claim_splitting default: 95% detected (misses TEMPORAL_WINDOW); harden 30->45: 99.6%, FP unchanged; ~7 s/run. Injection city Ahmedabad.
+2. Trust (seed 42): precision 0.97, recall 0.97, decoys defended 10/10, planted fraud wrongly cleared 0.
+3. Tests: 109 passed. All milestones M0-M9 done.
