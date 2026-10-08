@@ -52,7 +52,7 @@ Open the `HackForge` folder in Claude Code and paste the prompt below. The repo'
 ## 4. The prompt
 
 ````text
-You are helping me (Vaibhav) build Part A of ClaimShield Nexus, a hackathon project.
+You are helping me (Vaibhav) build Part A of Axon, a hackathon project.
 My teammate Armaan is building Part B (Gemini agents + React UI) at the same time.
 Repo: https://github.com/Armaan1005/HackForge (already cloned; this is the working directory).
 
