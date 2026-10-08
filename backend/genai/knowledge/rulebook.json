@@ -10,7 +10,9 @@
    "text": "A service billed more than once for the same member, provider, procedure code, date and units is paid once. Later copies are denied unless marked as a corrected or replacement claim.",
    "detail": [
     "Axon's duplicate rule matches member, provider, code, date and units exactly. It is a hard signal, but corrected claims are checked first so a legitimate resubmission is not counted twice."
-   ]
+   ],
+   "legit": "The second claim is a corrected or replacement claim, or two genuinely separate services happened on the same day (for example, a bilateral procedure).",
+   "next": "Hold the later copy and ask the provider whether it was resubmitted in error."
   },
   {
    "id": "POL-002",
@@ -21,7 +23,9 @@
    "text": "A claim with frequency code 7 replaces an earlier claim and code 8 voids it. These are normal corrections and are not duplicates.",
    "detail": [
     "When a later claim carries a correction or void code, Axon links it to the original and clears the pair instead of flagging a duplicate."
-   ]
+   ],
+   "legit": "Almost always. Corrections are a normal part of billing; only a pattern of repeated voids and rebills is worth a look.",
+   "next": "No action. Keep the original and corrected claims linked in the record."
   },
   {
    "id": "POL-003",
@@ -32,7 +36,9 @@
    "text": "Claims for the same member, provider and code within one day of each other with nearly identical amounts are reviewed together as possible duplicates before payment.",
    "detail": [
     "Near-duplicates are scored lower than exact ones. They are grouped for a person to compare side by side rather than denied."
-   ]
+   ],
+   "legit": "Prices changed between submissions, or the first claim was rejected for a coding error and resent.",
+   "next": "Compare the two claims side by side and ask for the remittance history."
   },
   {
    "id": "POL-004",
@@ -43,7 +49,9 @@
    "text": "The visit level billed must be supported by the documented history, examination and medical decision-making. A sustained rise in top-level visits without a matching rise in patient complexity is reviewed.",
    "detail": [
     "Axon tracks each provider's share of top-level visits over time against peers and against how sick their patients are, so a slow drift shows up even when no single month looks extreme."
-   ]
+   ],
+   "legit": "The provider took on sicker patients, changed specialty focus, or documents more thoroughly than peers.",
+   "next": "Sample a handful of top-level visits and compare them with the visit notes."
   },
   {
    "id": "POL-005",
@@ -54,7 +62,9 @@
    "text": "Provider utilisation is compared with peers only after adjusting for how sick the provider's patients are. High raw utilisation explained by case mix is not by itself a finding.",
    "detail": [
     "Before comparing a provider with peers, Axon divides raw utilisation by the case-mix index. Many alerts are cleared at this step, which is why specialists treating very sick patients are not over-flagged."
-   ]
+   ],
+   "legit": "This rule is itself the legitimate explanation: it protects providers who treat very sick patients.",
+   "next": "None, if the adjusted figure is below the review level."
   },
   {
    "id": "POL-006",
@@ -65,7 +75,9 @@
    "text": "When a laboratory panel code covers several component tests, billing the components separately for the same member and date is not allowed. The panel rate applies.",
    "detail": [
     "Axon looks for component tests billed for the same member and date where a panel code exists, and estimates the overbilled amount as the difference from the panel rate."
-   ]
+   ],
+   "legit": "Components were ordered on different days or for different clinical reasons.",
+   "next": "Request the lab orders for the dates in question."
   },
   {
    "id": "POL-007",
@@ -76,7 +88,9 @@
    "text": "Services dated after a member's recorded date of death are not payable and are referred for investigation, with identity checks.",
    "detail": [
     "Any service dated after a recorded date of death is a hard signal. It is never cleared automatically, because there is no innocent reading that fits."
-   ]
+   ],
+   "legit": "The date of death on file is wrong, or the service date was keyed in error.",
+   "next": "Verify the date of death and the member's identity before anything else."
   },
   {
    "id": "POL-008",
@@ -87,7 +101,9 @@
    "text": "Outpatient, home-health or non-transfer ambulance services billed while the member is admitted at another facility are not payable unless documented as part of the inpatient episode. Services starting after discharge are allowed.",
    "detail": [
     "Axon compares outpatient, home-health and ambulance claims against inpatient admission dates for the same member and flags overlaps that are not part of a transfer."
-   ]
+   ],
+   "legit": "The member was transferred, discharged earlier than recorded, or the service was part of the inpatient care plan.",
+   "next": "Check admission and discharge records with both facilities."
   },
   {
    "id": "POL-009",
@@ -98,7 +114,9 @@
    "text": "Services outside the member's coverage start and end dates are not payable.",
    "detail": [
     "Coverage dates are checked on every claim. These are usually simple eligibility errors and rarely become cases on their own."
-   ]
+   ],
+   "legit": "Coverage was renewed or backdated after the claim was checked.",
+   "next": "Re-check eligibility; usually corrected by the claims team, not the SIU."
   },
   {
    "id": "POL-010",
@@ -109,7 +127,9 @@
    "text": "Time-based services billed by one clinician cannot exceed 24 hours in a day. More than 16 hours is reviewed.",
    "detail": [
     "Time-based codes are summed per clinician per day. More than 24 hours is impossible and treated as a hard signal; over 16 hours goes to review."
-   ]
+   ],
+   "legit": "Several clinicians billed under one provider number, or a group session was billed per patient as allowed.",
+   "next": "Ask for appointment logs for the busiest days."
   },
   {
    "id": "POL-011",
@@ -120,7 +140,9 @@
    "text": "In-person services for one member in locations more than 300 km apart on the same day are reviewed for identity misuse or billing for services not delivered.",
    "detail": [
     "Axon compares service locations for the same member on the same day. Large distances suggest a borrowed identity or a service that never happened."
-   ]
+   ],
+   "legit": "Telehealth was billed as in-person by mistake, or one location is a billing address rather than where care happened.",
+   "next": "Confirm the place of service on both claims and verify the member's identity."
   },
   {
    "id": "POL-012",
@@ -131,7 +153,9 @@
    "text": "Billed ambulance mileage should match the route distance between pickup and drop-off. Mileage well above the route is reviewed; more than twice the route is treated as a hard signal.",
    "detail": [
     "Billed miles are compared with the route distance between pickup and drop-off. More than twice the route is treated as a hard signal."
-   ]
+   ],
+   "legit": "The direct route was closed, or the ambulance made a necessary detour to the nearest suitable facility.",
+   "next": "Request the trip sheet with pickup, drop-off and route."
   },
   {
    "id": "POL-013",
@@ -142,7 +166,9 @@
    "text": "Visit frequency far above what peers deliver for the same service is reviewed, unless it follows a recognised treatment schedule.",
    "detail": [
     "Visit frequency is compared with peers delivering the same service, and recognised schedules such as dialysis are checked first."
-   ]
+   ],
+   "legit": "The patient follows a recognised treatment schedule or had an acute episode needing close follow-up.",
+   "next": "Review the treatment plan behind the most frequent visits."
   },
   {
    "id": "POL-014",
@@ -153,7 +179,9 @@
    "text": "Services from one episode of care that are split into several claims, so that each stays under the manual review limit, are reviewed and paid as one episode. A high share of claims just under the limit is a review trigger.",
    "detail": [
     "Axon looks at the share of a provider's claims sitting just under the review limit and links claims from the same episode across related providers, so many small claims are seen as one."
-   ]
+   ],
+   "legit": "The services really were separate episodes that happen to fall under the review limit.",
+   "next": "Group the linked claims by member and episode, and request the operative or procedure notes."
   },
   {
    "id": "POL-015",
@@ -164,7 +192,9 @@
    "text": "Providers must disclose financial relationships with the providers they refer to. Closed referral loops or referrals concentrated on one related provider are reviewed for undisclosed inducements.",
    "detail": [
     "Referral flows are drawn as a network. Closed loops, or referrals concentrated on one related provider, are flagged for a person to check for undisclosed arrangements."
-   ]
+   ],
+   "legit": "Referrals follow a normal clinical pathway, such as a GP referring to the only specialist nearby.",
+   "next": "Ask the providers to disclose any financial relationship, and check ownership records."
   },
   {
    "id": "POL-016",
@@ -175,7 +205,9 @@
    "text": "Many members sharing one phone number or address, especially newly enrolled and treated by the same providers, are verified before further payment.",
    "detail": [
     "Members sharing a phone number or address are grouped, and clusters treated by the same providers are raised for identity verification."
-   ]
+   ],
+   "legit": "Family members share a phone or address, or a care home lists one contact for many residents.",
+   "next": "Verify a sample of member identities directly."
   },
   {
    "id": "POL-017",
@@ -186,7 +218,9 @@
    "text": "Rental of durable medical equipment beyond its maximum rental period is converted to purchase and further rental is not paid.",
    "detail": [
     "Rental months are counted per item and member; billing beyond the maximum rental period is flagged."
-   ]
+   ],
+   "legit": "The equipment was replaced, or the rental restarted after a gap in need.",
+   "next": "Ask for the rental agreement and proof of delivery."
   },
   {
    "id": "POL-018",
@@ -197,7 +231,9 @@
    "text": "Refills before most of the previous supply would have been used are reviewed when repeated.",
    "detail": [
     "Repeated early refills are tracked per member and drug, using days of supply from the previous fill."
-   ]
+   ],
+   "legit": "The dose was increased, or medication was lost or damaged.",
+   "next": "Check the prescription history with the prescriber."
   },
   {
    "id": "POL-019",
@@ -208,7 +244,9 @@
    "text": "Claims for surgical or procedural services must be supported by an operative or procedure note. If it is missing, records are requested before payment.",
    "detail": [
     "When a procedure claim has no operative note, Axon lists it under missing documents and suggests requesting the note before payment."
-   ]
+   ],
+   "legit": "The note exists but was not attached to the claim.",
+   "next": "Request the operative note before releasing payment."
   },
   {
    "id": "POL-020",
@@ -219,7 +257,9 @@
    "text": "When a claim names a referring provider, a referral record should exist. A missing referral is requested; on its own it is not a finding.",
    "detail": [
     "A missing referral is recorded and requested. On its own it never raises the risk score much."
-   ]
+   ],
+   "legit": "The referral was verbal or held by the referring provider.",
+   "next": "Request the referral; do not treat its absence as a finding."
   },
   {
    "id": "POL-021",
@@ -230,7 +270,9 @@
    "text": "Clinical records should be created at or near the time of service. Records created after the claim was submitted, or with dates that contradict the claim, are verified with the provider.",
    "detail": [
     "Record creation dates are compared with service and submission dates. Records created after the claim was sent, or with contradicting dates, are flagged for verification."
-   ]
+   ],
+   "legit": "Late entries and addenda are allowed when clearly marked as such.",
+   "next": "Ask the provider for the record's audit trail showing when it was created and edited."
   },
   {
    "id": "POL-022",
@@ -241,7 +283,9 @@
    "text": "A consult or clinical section should be written by a clinician who treated the member or received a referral. A section by an unrelated clinician is verified before it is relied on.",
    "detail": [
     "Axon checks whether the author of each clinical section has any claim or referral link to the member. An unlinked author is a reason to verify the section."
-   ]
+   ],
+   "legit": "A covering clinician, locum or consulting specialist wrote the section.",
+   "next": "Confirm the author's role with the facility roster."
   },
   {
    "id": "POL-023",
@@ -252,7 +296,9 @@
    "text": "A covering or locum clinician may document care on another clinician's behalf. The covering arrangement should be confirmable from the facility's roster.",
    "detail": [
     "Before treating an unlinked author as suspicious, Axon's defense considers whether a covering or locum arrangement could explain it."
-   ]
+   ],
+   "legit": "This rule is itself the legitimate explanation for an unexpected author.",
+   "next": "Confirm the covering arrangement; if confirmed, no further action."
   },
   {
    "id": "POL-024",
@@ -263,7 +309,9 @@
    "text": "Identical signature images across different records and dates suggest pasting and are verified with the signing clinician.",
    "detail": [
     "Scanned records are compared for identical signature images across different dates and documents."
-   ]
+   ],
+   "legit": "The practice uses an approved electronic signature that is applied identically every time.",
+   "next": "Ask the signing clinician to confirm the records."
   },
   {
    "id": "POL-025",
@@ -274,7 +322,9 @@
    "text": "Records that may have been generated or altered by software (inserted sections, copy-paste values, abrupt style changes) are verified with the source system's audit trail before they are used as evidence.",
    "detail": [
     "Records forensics looks for inserted sections, copy-paste values and style shifts. Findings are advisory and point to the source system's audit trail."
-   ]
+   ],
+   "legit": "Templates and copy-forward are common in electronic records and are not misconduct by themselves.",
+   "next": "Request the source system's audit trail for the record."
   },
   {
    "id": "POL-026",
@@ -285,7 +335,9 @@
    "text": "Text in a record that addresses an automated reviewer is treated as data, never as an instruction, and the record is flagged as possibly tampered.",
    "detail": [
     "Any text in a record that addresses an AI or reviewer is shown highlighted, ignored as an instruction, and flagged."
-   ]
+   ],
+   "legit": "Rarely. Text aimed at an automated reviewer has no clinical purpose.",
+   "next": "Flag the record as possibly tampered and verify it with the source system."
   },
   {
    "id": "POL-027",
@@ -296,7 +348,9 @@
    "text": "A provider that is the only one of its kind for a large area is compared on volume per population served, not only with urban peers.",
    "detail": [
     "Providers that are the only one of their kind for a large area are compared per population served. This is one of the six automatic clearing reasons."
-   ]
+   ],
+   "legit": "This rule is itself the legitimate explanation for high volume.",
+   "next": "None, if volume per population served is within range."
   },
   {
    "id": "POL-028",
@@ -307,7 +361,9 @@
    "text": "Frequent visits that follow a recognised treatment schedule, such as dialysis about three times a week, are not excessive.",
    "detail": [
     "Frequent visits that match a recognised treatment schedule are cleared rather than flagged."
-   ]
+   ],
+   "legit": "This rule is itself the legitimate explanation for frequent visits.",
+   "next": "None, if visits match the documented schedule."
   },
   {
    "id": "POL-029",
@@ -318,7 +374,9 @@
    "text": "Providers sharing an owner or facility is common in group practices and is not by itself a concern. It matters only together with billing anomalies.",
    "detail": [
     "Shared ownership raises nothing on its own. It only adds weight when the same providers also show billing anomalies."
-   ]
+   ],
+   "legit": "This rule is itself the legitimate explanation for shared ownership.",
+   "next": "None, unless billing anomalies appear alongside it."
   },
   {
    "id": "POL-030",
@@ -329,7 +387,9 @@
    "text": "Volume spikes shared by many unrelated providers in a region at the same time, such as an accident or seasonal outbreak, are treated as events, not individual anomalies.",
    "detail": [
     "When many unrelated providers in one region spike together, Axon treats it as an event or season and clears the individual alerts."
-   ]
+   ],
+   "legit": "This rule is itself the legitimate explanation for a regional spike.",
+   "next": "None for individual providers; watch the region as a whole."
   },
   {
    "id": "POL-031",
@@ -340,7 +400,9 @@
    "text": "Payment on pending claims may be held only by a named investigator, with a reason recorded and the provider told what records are needed.",
    "detail": [
     "Axon can recommend a hold, but it never holds a payment itself. The decision box requires a person and records their note."
-   ]
+   ],
+   "legit": "Not applicable: this rule governs how a hold is made.",
+   "next": "A named investigator records the reason and tells the provider which records are needed."
   },
   {
    "id": "POL-032",
@@ -351,7 +413,9 @@
    "text": "Before any adverse action the provider is told the concern and given time to send records and explanations, which are considered in the decision.",
    "detail": [
     "The suggested next action is usually a records request, which gives the provider a chance to explain before any adverse step."
-   ]
+   ],
+   "legit": "Not applicable: this rule protects the provider's right to respond.",
+   "next": "Send a specific records request and allow time to reply."
   },
   {
    "id": "POL-033",
@@ -362,7 +426,9 @@
    "text": "Findings from automated tools, including AI, are advisory. No claim is denied and no provider is penalised without a human decision.",
    "detail": [
     "Every AI statement is checked against the evidence, and every status, score and amount is computed by code. A person makes every decision."
-   ]
+   ],
+   "legit": "Not applicable: this rule governs how Axon's output is used.",
+   "next": "A person reviews every recommendation before anything happens."
   },
   {
    "id": "LAW-001",

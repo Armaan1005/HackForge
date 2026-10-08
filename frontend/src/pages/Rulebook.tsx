@@ -107,6 +107,8 @@ export function Rulebook() {
                   {e.kind === 'law'
                     ? e.detail?.map(d => <p key={d.slice(0, 20)} className="bk-text">{d}</p>)
                     : e.detail?.map(d => <p key={d.slice(0, 20)} className="bk-text"><span className="bk-label">In practice</span>{d}</p>)}
+                  {e.legit && <p className="bk-text"><span className="bk-label">Could be legitimate when</span>{e.legit}</p>}
+                  {e.next && <p className="bk-text"><span className="bk-label">Usual next step</span>{e.next}</p>}
                   {e.kind === 'law' && <div className="bk-note warn"><Icon name="alert" size={14} /><span>Paraphrase, not legal advice. Check the official text.</span></div>}
                   <div className="bk-meta"><span className="bk-label">Source</span>{e.source}</div>
                   {hit && <div className="bk-meta"><span className="bk-label">Match for {caseId}</span>rank {hit.rank} of {retrieved.size} · BM25 score {hit.score}</div>}
