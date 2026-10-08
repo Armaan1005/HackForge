@@ -9,20 +9,9 @@ import pytest
 from engine.config import REPO_DIR
 from engine.generate.__main__ import run
 
-TABLES = ["owners", "facilities", "providers", "members", "admissions", "referrals", "claims",
-          "investigations", "ground_truth"]
-
-
-@pytest.fixture(scope="session")
-def gen(tmp_path_factory):
-    out = tmp_path_factory.mktemp("raw")
-    meta = run(42, 50_000, out, ref_dir=tmp_path_factory.mktemp("ref"))
-    t = {name: pd.read_csv(out / f"{name}.csv", dtype=str, keep_default_na=False) for name in TABLES}
-    return out, meta, t
-
-
 def digest(folder):
-    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(folder.iterdir())}
+    return {p.relative_to(folder).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(folder.rglob("*")) if p.is_file()}
 
 
 def test_runtime_under_budget(gen):
