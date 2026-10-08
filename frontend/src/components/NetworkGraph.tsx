@@ -1,6 +1,5 @@
 import cytoscape, { type Core, type ElementDefinition } from 'cytoscape';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTheme } from '../lib/theme';
 import type { GEdge, GNode } from '../lib/types';
 
 // Identity by SHAPE + label first, colour second (3 categorical slots max), so it survives colour-blindness.
@@ -10,13 +9,10 @@ const SHAPE: Record<string, string> = {
 };
 const GROUP: Record<string, 1 | 2 | 3 | 0> = { provider: 1, owner: 2, bank: 2, facility: 3, location: 3, address: 3 };
 
-function palette(dark: boolean) {
-  return {
-    s1: dark ? '#3987e5' : '#2a78d6', s2: dark ? '#d95926' : '#eb6834', s3: dark ? '#199e70' : '#1baf7a',
-    neutral: dark ? '#5a5a57' : '#c3c2b7', text: dark ? '#f5f5f7' : '#1d1d1f', edge: dark ? '#48484a' : '#c7c7cc',
-    bad: '#d03b3b', surface: dark ? '#1c1c1e' : '#ffffff', hi: dark ? '#fab219' : '#e08a00',
-  };
-}
+const C = {
+  s1: '#1a9a5a', s2: '#6b5bd6', s3: '#a39e8f', neutral: '#d6d1c4', text: '#1c211e', edge: '#d6d1c4',
+  bad: '#c9473f', surface: '#ffffff', hi: '#e9a21a',
+};
 
 export function NetworkGraph({ nodes, edges, visibleIds, highlightEvidence, onSelect, injectedIds }: {
   nodes: GNode[]; edges: GEdge[]; visibleIds?: Set<string>; highlightEvidence?: string | null;
@@ -24,9 +20,8 @@ export function NetworkGraph({ nodes, edges, visibleIds, highlightEvidence, onSe
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const cy = useRef<Core | null>(null);
-  const { theme } = useTheme();
   const [ready, setReady] = useState(false);
-  const c = palette(theme === 'dark');
+  const c = C;
 
   const elements = useMemo<ElementDefinition[]>(() => [
     ...nodes.map(n => ({ data: { id: n.id, label: n.label, type: n.type, risk: n.risk ?? 0, flagged: n.flagged ? 1 : 0, inCase: n.in_case ? 1 : 0, group: GROUP[n.type] ?? 0, injected: injectedIds?.has(n.id) ? 1 : 0, raw: n } })),
@@ -69,7 +64,7 @@ export function NetworkGraph({ nodes, edges, visibleIds, highlightEvidence, onSe
     cy.current = inst;
     setReady(true);
     return () => { inst.destroy(); cy.current = null; };
-  }, [elements, theme]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [elements]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Time Machine: hide anything not present yet
   useEffect(() => {

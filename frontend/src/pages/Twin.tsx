@@ -53,9 +53,9 @@ export function Twin() {
     <div className="stack-lg">
       <div className="page-header">
         <div>
-          <div className="eyebrow">Fraud Twin · detection stress test</div>
-          <h1>Can our detection survive tomorrow's fraud?</h1>
-          <p className="subtitle">Describe how a fraudster might adapt. Axon turns it into a whitelisted synthetic attack, injects it into a sandbox copy of the data, reruns every detector, and reports what was caught, what was missed, and why.</p>
+          <div className="eyebrow">Fraud Twin</div>
+          <h1>Can detection survive tomorrow's fraud?</h1>
+          <p className="subtitle">Describe an attack. Axon simulates it in a sandbox and shows what it catches.</p>
         </div>
       </div>
 
@@ -64,18 +64,20 @@ export function Twin() {
           <div className="stack">
             <textarea className="textarea" value={text} onChange={e => setText(e.target.value)} maxLength={600} aria-label="Describe a fraud scheme" />
             <div className="row">
-              {scenarios.flatMap(s => s.examples.slice(0, 1)).map(ex => <button key={ex} className="chip chip-outline" style={{ cursor: 'pointer', border: 0 }} onClick={() => setText(ex)}>{ex}</button>)}
+              {scenarios.slice(0, 3).flatMap(s => s.examples.slice(0, 1)).map(ex => <button key={ex} className="chip chip-outline" style={{ cursor: 'pointer', border: 0 }} onClick={() => setText(ex)}>{ex}</button>)}
             </div>
             <div className="row">
               <Button icon={Sparkles} loading={busy === 'parse'} onClick={doParse}>Build attack</Button>
-              <span className="xs faint">or pick:</span>
-              {scenarios.map(s => <Button key={s.id} size="sm" variant={parsed?.scenario === s.id ? 'tinted' : 'ghost'} onClick={() => pick(s)}>{s.name}</Button>)}
+              <select className="input" style={{ width: 'auto' }} value={parsed?.scenario ?? ''} onChange={e => { const sc = scenarios.find(x => x.id === e.target.value); if (sc) pick(sc); }} aria-label="Pick a scenario">
+                <option value="" disabled>or pick a scenario</option>
+                {scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
             </div>
             {parseMsg && <Banner tone="warn">{parseMsg}</Banner>}
             {parsed && spec && (
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card" style={{ background: 'var(--surface-2)', boxShadow: 'none' }}>
                 <div className="row between"><b>{spec.name}</b><SourceBadge source={parsed.source === 'manual' ? undefined : parsed.source} /></div>
-                <p className="xs muted" style={{ margin: '4px 0 10px' }}>{spec.description}</p>
+                <div style={{ height: 10 }} />
                 <div className="grid-3">
                   {Object.entries(spec.params).map(([k, p]) => (
                     <label key={k} className="stack-sm">
@@ -92,7 +94,7 @@ export function Twin() {
                   ))}
                 </div>
                 {!!parsed.adjustments?.length && <p className="xs faint" style={{ marginTop: 8 }}>Adjusted: {parsed.adjustments.join('; ')}</p>}
-                <div className="row" style={{ marginTop: 12 }}><Button icon={FlaskConical} loading={busy === 'run'} onClick={doRun}>Run stress test</Button><span className="xs faint">sandbox only · never touches the live queue</span></div>
+                <div className="row" style={{ marginTop: 12 }}><Button icon={FlaskConical} loading={busy === 'run'} onClick={doRun}>Run stress test</Button><span className="xs faint">sandbox only</span></div>
               </motion.div>
             )}
           </div>
@@ -110,7 +112,7 @@ export function Twin() {
               <p className="small">{advice.explanation}</p>
               <div className="row">
                 <Button icon={Wrench} loading={busy === 'harden'} onClick={doHarden} disabled={!!hardened}>Approve and rerun in sandbox</Button>
-                <span className="xs faint">The analyst decides. Applying it to live detection is a separate human decision.</span>
+                <span className="xs faint">sandbox only · you approve</span>
               </div>
               {hardened && <Compare before={run} after={hardened} />}
             </div>
@@ -125,25 +127,23 @@ function Results({ run }: { run: TwinRun }) {
   const g = run.injected_graph;
   return (
     <div className="stack">
-      <div className="grid-4">
+      <div className="grid-3">
         <Card tight><div className="stat-label">Detection rate</div><div className="stat-value" style={{ fontSize: '2.4rem' }}>{pct(run.detection_rate, 1)}</div><div className="stat-sub">{num(run.detected)} of {num(run.generated)} injected claims</div></Card>
         <Card tight><div className="stat-label">Missed</div><div className="stat-value" style={{ color: run.missed ? 'var(--warn-text)' : 'var(--good-text)' }}>{num(run.missed)}</div><div className="stat-sub">reasons below</div></Card>
         <Card tight><div className="stat-label">False-positive rate</div><div className="stat-value">{pct(run.false_positive_rate.run, 1)}</div><div className="stat-sub">baseline {pct(run.false_positive_rate.baseline, 1)} on clean claims</div></Card>
-        <Card tight><div className="stat-label">Run</div><div className="stat-value" style={{ fontSize: '1.1rem' }}>{run.run_id}</div><div className="stat-sub">seed {run.seed} · {(run.runtime_ms / 1000).toFixed(1)}s · sandbox</div></Card>
       </div>
       <div className="grid-main">
-        <Card title="Which detector caught it">
+        <Card title="Caught by">
           <BarList rows={Object.entries(run.by_layer).map(([k, v]) => ({ label: METHOD_LABEL[k] ?? k, value: v, hint: `${pct(v / run.generated)} of injected claims` }))} max={run.generated} />
-          <p className="xs muted" style={{ marginTop: 8 }}>Layers overlap. A claim counts as detected if any layer flags it into an open case. Rules alone would have caught {pct((run.by_layer.rules ?? 0) / run.generated)}.</p>
+          <p className="xs faint" style={{ marginTop: 6 }}>Rules alone: {pct((run.by_layer.rules ?? 0) / run.generated)}</p>
           <div className="divider" />
-          <h3 style={{ marginBottom: 8 }}>Why claims were missed</h3>
+          <h3 style={{ marginBottom: 8 }}>Why some were missed</h3>
           {run.miss_reason_summary.map(m => (
             <div key={m.reason_code} className="row-nw between small" style={{ padding: '4px 0' }}>
               <span><b>{m.count}</b> · {m.reason_code.replace(/_/g, ' ').toLowerCase()} <span className="mono xs faint">{m.param_key}</span></span>
               <span className="muted nowrap">threshold {m.threshold} · typical {m.typical_value}</span>
             </div>
           ))}
-          {run.missed_claims.slice(0, 3).map(m => <div key={m.claim_id} className="xs muted">• <span className="mono">{m.claim_id}</span>: {m.description}</div>)}
         </Card>
         <Card title="Injected network" className="card-flush">
           {g.nodes.length ? <NetworkGraph nodes={g.nodes} edges={g.edges} injectedIds={new Set(g.nodes.map(n => n.id))} /> : <p className="small muted" style={{ padding: 16 }}>No graph for this run.</p>}
@@ -174,10 +174,10 @@ function JudgeQr() {
   const local = /localhost|127\.0\.0\.1/.test(url);
   return (
     <Card title="Judge challenge" icon={QrCode}>
-      <p className="small muted">Judges scan, type a scheme on their phone, and watch Axon try to catch it live.</p>
+      <p className="small muted">Judges scan and try to beat the detector.</p>
       <div style={{ display: 'grid', placeItems: 'center', margin: '14px 0', background: '#fff', borderRadius: 14, padding: 10 }} dangerouslySetInnerHTML={{ __html: svg }} />
       <input className="input mono xs" value={url} onChange={e => setUrl(e.target.value)} aria-label="Challenge URL" />
-      {local && <p className="xs faint" style={{ marginTop: 6 }}>Phones can't open localhost. Replace it with this laptop's Wi-Fi IP (the dev server listens on the LAN) or a tunnel URL.</p>}
+      {local && <p className="xs faint" style={{ marginTop: 6 }}>Use this laptop's Wi-Fi IP instead of localhost.</p>}
     </Card>
   );
 }

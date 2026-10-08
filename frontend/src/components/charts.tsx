@@ -8,8 +8,8 @@ import { useWidth } from '../lib/hooks';
 import type { QueueCase } from '../lib/types';
 import { useTooltip } from './ui';
 
-// Ordinal blue ramp (reference palette steps 250 -> 550) for funnel stages.
-const ORDINAL = ['#86b6ef', '#6da7ec', '#5598e7', '#3987e5', '#2a78d6', '#1c5cab'];
+// Ordinal green ramp for funnel stages (validated: monotone, light end >= 2:1 on white).
+const ORDINAL = ['#7cc59c', '#56b07f', '#349563', '#1f7a4c', '#145c38'];
 
 export function Funnel({ stages }: { stages: { label: string; value: number; note?: string }[] }) {
   const tip = useTooltip();
@@ -30,7 +30,6 @@ export function Funnel({ stages }: { stages: { label: string; value: number; not
           </div>
         );
       })}
-      <div className="xs faint" style={{ marginTop: 6 }}>Bar length on a log scale; numbers are exact.</div>
       {tip.node}
     </div>
   );
@@ -71,7 +70,7 @@ export function PortfolioScatter({ cases, capacity, onPick }: { cases: QueueCase
     <div ref={box}>
       <div className="row" style={{ gap: 14, marginBottom: 6 }} aria-label="Legend">
         <span className="xs muted"><span className="legend-swatch" style={{ background: 'var(--series-1)', borderRadius: '50%' }} />Selected</span>
-        <span className="xs muted"><span className="legend-swatch" style={{ background: 'var(--series-2)', borderRadius: '50%' }} />Exploration (10% reserve)</span>
+        <span className="xs muted"><span className="legend-swatch" style={{ background: 'var(--series-2)', borderRadius: '50%' }} />Exploration</span>
         <span className="xs muted"><span className="legend-swatch" style={{ background: 'var(--mark-muted)', borderRadius: '50%' }} />Not selected</span>
         <span className="xs muted"><span className="legend-swatch" style={{ borderLeft: '2px dashed var(--bad)', width: 0, height: 12 }} />Capacity</span>
       </div>
@@ -91,13 +90,12 @@ export function PortfolioScatter({ cases, capacity, onPick }: { cases: QueueCase
           <g key={c.case_id} style={{ cursor: onPick ? 'pointer' : 'default' }} onClick={() => onPick?.(c.case_id)}
             {...tip.bind(<><b>{c.case_id}</b> · rank #{c.rank}<br />{c.title}<br />Effort {c.effort_hours}h · Expected {inr(c.expected_recovery)}<br />Risk {c.risk} · {c.evidence_strength} evidence<br /><span className="muted">{c.selection_reason}</span></>)}>
             <circle cx={x(c.effort_hours)} cy={y(c.expected_recovery)} r={16} fill="transparent" />
-            <motion.circle cx={x(c.effort_hours)} cy={y(c.expected_recovery)} r={5 + c.risk / 25} fill={color(c)} stroke="var(--chart-surface)" strokeWidth={2}
-              initial={false} animate={{ cx: x(c.effort_hours), cy: y(c.expected_recovery) }} />
+            <circle cx={x(c.effort_hours)} cy={y(c.expected_recovery)} r={5 + c.risk / 25} fill={color(c)} stroke="var(--chart-surface)" strokeWidth={2} />
             {c.selected && <text x={x(c.effort_hours) + 10} y={y(c.expected_recovery) - 8} fontSize="10.5" fill="var(--text-2)">{c.case_id.replace('CASE-', '#')}</text>}
           </g>
         ))}
       </svg>
-      <div className="xs faint">Dot size = risk. A high-risk dot can sit outside the plan when its evidence is weak or effort is high.</div>
+      <div className="xs faint">Dot size = risk</div>
       {tip.node}
     </div>
   );
@@ -126,7 +124,7 @@ export function Calibration({ bins }: { bins: { bin: string; predicted: number; 
           </g>
         ))}
       </svg>
-      <div className="xs faint">x = predicted probability, y = observed rate. On the dashed line = well calibrated.</div>
+      <div className="xs faint">Predicted vs observed · dashed = perfect</div>
       {tip.node}
     </div>
   );

@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { TopNav } from './components/TopNav';
-import { fade, ThemeProvider } from './lib/theme';
+import { fade } from './lib/theme';
 import { CaseView } from './pages/CaseView';
 import { Challenge } from './pages/Challenge';
 import { Command } from './pages/Command';
@@ -24,8 +24,7 @@ const shell = (el: ReactNode) => <><TopNav /><Page>{el}</Page></>;
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
+    <BrowserRouter>
         <Routes>
           <Route path="/" element={shell(<Command />)} />
           <Route path="/queue" element={shell(<QueuePage />)} />
@@ -36,7 +35,6 @@ export default function App() {
           <Route path="/challenge" element={<Challenge />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+    </BrowserRouter>
   );
 }

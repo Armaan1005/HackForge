@@ -24,35 +24,32 @@ export function Trust() {
     <div className="stack-lg">
       <div className="page-header">
         <div>
-          <div className="eyebrow">Trust panel · measured on synthetic ground truth (seed {d.seed})</div>
-          <h1>Why you can believe these numbers.</h1>
-          <p className="subtitle">Precision and recall on planted schemes, how honest look-alikes were treated, whether forecasts are calibrated, whether small or rural providers are penalized, and how many AI statements the verifier blocked.</p>
+          <div className="eyebrow">Trust · synthetic ground truth</div>
+          <h1>How well Axon performs</h1>
         </div>
       </div>
 
       <div className="grid-4">
-        <Stat icon={Target} label="Precision · recall" value={`${pct(o.precision)} · ${pct(o.recall)}`} sub={`F1 ${o.f1.toFixed(2)} across planted schemes`} />
-        <Stat icon={Gauge} label="Rupees caught" value={inr(o.inr_caught)} sub={`of ${inr(o.inr_planted)} planted (${pct(o.inr_caught / o.inr_planted)})`} />
-        <Stat icon={Users} label="Honest decoys defended" value={`${d.decoys.correctly_defended} / ${d.decoys.total}`} tone={d.decoys.flagged_needs_review ? 'warn' : 'good'} sub={`${d.decoys.flagged_needs_review} sent to SIU review · ${d.exoneration.planted_fraud_wrongly_cleared} planted fraud wrongly cleared`} />
+        <Stat icon={Target} label="Precision · recall" value={`${pct(o.precision)} · ${pct(o.recall)}`} />
+        <Stat icon={Gauge} label="Rupees caught" value={inr(o.inr_caught)} sub={`of ${inr(o.inr_planted)} planted`} />
+        <Stat icon={Users} label="Honest decoys defended" value={`${d.decoys.correctly_defended} / ${d.decoys.total}`} tone={d.decoys.flagged_needs_review ? 'warn' : 'good'} sub={`${d.exoneration.planted_fraud_wrongly_cleared} fraud cleared by mistake`} />
         <Stat icon={BadgeCheck} label="AI statements verified" value={aiStats.data ? num(aiStats.data.statements_checked) : '—'} tone="good"
-          sub={aiStats.data ? `${aiStats.data.uncited_blocked} uncited + ${aiStats.data.numbers_blocked} invented numbers blocked` : 'Part B backend offline'} />
+          sub={aiStats.data ? `${aiStats.data.uncited_blocked + aiStats.data.numbers_blocked} blocked` : 'AI offline'} />
       </div>
 
       <div className="grid-main">
         <Card className="card-flush">
-          <div style={{ padding: '14px 16px 6px' }}><h3>Detection on planted schemes</h3></div>
+          <div style={{ padding: '14px 16px 6px' }}><h3>Planted schemes</h3></div>
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th>Scheme</th><th>Detected</th><th className="num">Claim recall</th><th className="num">Planted</th><th className="num">Caught</th><th>Case</th></tr></thead>
+              <thead><tr><th>Scheme</th><th>Found</th><th className="num">Recall</th><th className="num">Caught</th></tr></thead>
               <tbody>
                 {d.detection.by_scheme.map(s => (
                   <tr key={s.scheme_id}>
-                    <td><b>{s.scheme_id}</b> {s.name}</td>
+                    <td>{s.name}</td>
                     <td>{s.detected ? <span className="chip chip-good">Yes</span> : <span className="chip chip-bad">No</span>}</td>
                     <td className="num">{pct(s.claim_recall)}</td>
-                    <td className="num">{inr(s.inr_planted)}</td>
-                    <td className="num strong">{inr(s.inr_caught)}</td>
-                    <td className="mono xs">{s.case_ids.join(', ')}</td>
+                    <td className="num strong" title={`of ${inr(s.inr_planted)} · ${s.case_ids.join(', ')}`}>{inr(s.inr_caught)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -60,24 +57,24 @@ export function Trust() {
           </div>
         </Card>
         <Card title="Forecast calibration" icon={Scale} action={<Segmented size="sm" label="Horizon" value={h} onChange={setH} options={[{ value: '30', label: '30d' }, { value: '60', label: '60d' }, { value: '90', label: '90d' }]} />}>
-          <div className="row" style={{ marginBottom: 8 }}><span className="chip">AUC {fc.auc}</span><span className="chip">Brier {fc.brier}</span><span className="xs faint">time-based holdout</span></div>
+          <div className="row" style={{ marginBottom: 8 }}><span className="chip">AUC {fc.auc}</span><span className="chip">Brier {fc.brier}</span></div>
           {fc.calibration.length ? <Calibration bins={fc.calibration} /> : <p className="small muted">Calibration bins arrive with the live engine.</p>}
         </Card>
       </div>
 
       <div className="grid-3">
-        <Card title="Flag rate by region" icon={Users}><BarList rows={fair.by_region.map(r => ({ label: r.group, value: r.flag_rate, hint: `${r.providers} providers` }))} format={v => pct(v, 1)} /></Card>
-        <Card title="Flag rate by provider size" icon={Users}><BarList rows={fair.by_size.map(r => ({ label: r.group, value: r.flag_rate, hint: `${r.providers} providers` }))} format={v => pct(v, 1)} /></Card>
-        <Card title="Rural vs urban" icon={Users}>
+        <Card title="Flag rate · region"><BarList rows={fair.by_region.map(r => ({ label: r.group, value: r.flag_rate, hint: `${r.providers} providers` }))} format={v => pct(v, 1)} /></Card>
+        <Card title="Flag rate · provider size"><BarList rows={fair.by_size.map(r => ({ label: r.group, value: r.flag_rate, hint: `${r.providers} providers` }))} format={v => pct(v, 1)} /></Card>
+        <Card title="Rural vs urban">
           <BarList rows={fair.rural_vs_urban.map(r => ({ label: r.group, value: r.flag_rate, hint: `${r.providers} providers` }))} format={v => pct(v, 1)} />
           <div className="divider" />
-          <div className="small">Max disparity ratio <b>{fair.max_disparity_ratio.toFixed(2)}×</b> <span className="muted">· rural and small providers are not flagged more often.</span></div>
+          <div className="small muted">Max disparity <b style={{ color: 'var(--text)' }}>{fair.max_disparity_ratio.toFixed(2)}×</b></div>
         </Card>
       </div>
 
       <div className="grid-main">
         <Card className="card-flush">
-          <div style={{ padding: '14px 16px 6px' }}><h3>Golden set</h3><p className="xs muted">Fixed fraud, decoy and ambiguous cases re-checked on every run.</p></div>
+          <div style={{ padding: '14px 16px 6px' }}><h3>Golden set</h3></div>
           <table className="table">
             <thead><tr><th>Case</th><th>Kind</th><th>Expected</th><th>Actual</th><th>Match</th></tr></thead>
             <tbody>{d.golden_set.map(g => (
@@ -87,12 +84,11 @@ export function Trust() {
         </Card>
         <Card title="Responsible AI" icon={ShieldCheck}>
           <ul className="small" style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
-            <li>Code computes every score, rank, status and rupee figure. Gemini only reads and words them.</li>
-            <li>Every AI statement must cite existing evidence; invented numbers are blocked.</li>
-            <li>Medical records and judge input are treated as untrusted: injected instructions are flagged, never followed.</li>
-            <li>No automatic denial, hold or fraud finding. A human approves every action, and it is logged.</li>
-            <li>Uncertain cases ask for documentation instead of escalating.</li>
-            <li>Limitations: synthetic data; heuristic confidence; we built both the attacks and the detector, so stress tests are optimistic.</li>
+            <li>Code scores; AI only explains.</li>
+            <li>Every AI statement must cite evidence.</li>
+            <li>Injected instructions are flagged, never followed.</li>
+            <li>A human approves every action.</li>
+            <li>Synthetic data; stress tests are optimistic.</li>
           </ul>
         </Card>
       </div>
