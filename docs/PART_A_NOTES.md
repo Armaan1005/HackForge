@@ -41,6 +41,12 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 - **Horizon risk** is a labelled placeholder (from current risk) until the M7 forecast; the limitation line says so.
 - **Live API:** a feature whose milestone hasn't landed answers 503 `layer_unavailable`; unknown IDs 404. `/cases/{id}/claims` serves precomputed rows from `processed/claims/`.
 
+### M4 (anomaly, temporal, graph)
+- **Anomaly:** Isolation Forest (200 trees, seed) on robust z (median/MAD, MeanAD fallback, clip ±8) of 14 features for providers with ≥ 10 claims; signal at percentile ≥ 0.9 plus top-3 |z| drivers. Model saved to `processed/anomaly_model.joblib` for Fraud Twin. **Member-level anomaly cut** (spec's first cut item).
+- **Temporal:** EM5 drift = OLS over the trailing 9 months (months with ≥ 5 E&M), slope > 3 pp/month and p < 0.05. Bursts: ≥ 12 claims, > median + 3·MAD *and* ≥ 3× the prior-6-month median; **region-wide** if ≥ 5 providers in the same city are elevated that month (looser test) → neutral signal (feeds EX4). Rapid ramp: tenure < 9 months and > 2× peer p90. Window clusters: same member, linked providers (shared owner/facility), mid/high-value claims, within `TEMPORAL_WINDOW_DAYS`.
+- **Graph "flagged" providers** = rule hits or anomaly ≥ 0.99. Shared owner/facility only becomes evidence with ≥ 2 flagged providers; shared bank across different owners always does. Projection ties: Jaccard ≥ 0.05 with ≥ 3 shared members, referrals, owner, bank, facility (0.5).
+- **Case grouping** no longer unions on shared primary facility (hospitals host many unrelated providers); graph cycles/communities/shared indicators supply links instead.
+
 ## Handoff log
 
 ### M0 — fixture server (done)
@@ -70,3 +76,10 @@ Assumptions, decisions and per-milestone handoffs. Spec: [PART_A_ENGINE.md](PART
 3. Seed 42 (rules only): 14 cases; all of S1–S8 are in cases; decoys D2 (oncologist) and D6 (dialysis) are cases until M5 exoneration; 3 cases are innocent noise.
 4. Next: M4: anomaly (IsolationForest + robust z + KL), temporal (drift, bursts, ramp), graph analytics (cycles, shared indicators, Louvain, exposure, small-claims pattern).
 5. Gotcha: every M3 status is `monitor` by design (one method); don't tune thresholds to "fix" that before M4.
+
+### M4 — four detection layers (done)
+1. Done: `detect/anomaly.py`, `detect/temporal.py`, `detect/graph_analytics.py` (+ re-export in `graph.py`, `neighbors()` for the tool endpoint), pipeline context sharing, 3 acceptance tests.
+2. Seed 42: 109 alerts → 9 cases (~8 s pipeline). Every S1–S8 is a case, all `needs_siu_review` or `request_documentation`; D2 is the only decoy case (cleared in M5 by EX2).
+3. Acceptance: S3 + S6 anomaly ≥ 0.98; S3 drift +4.9 pp/month; D5 burst region-wide; S1 4-cycle; S6 one community, 43 connected claims; D7 one community, not flagged.
+4. Next: M5 exoneration (EX1–EX6) + peer context.
+5. Gotcha: graph uses the rule + anomaly signals already in `context["signals"]`; keep layer order rules → anomaly → temporal → graph.

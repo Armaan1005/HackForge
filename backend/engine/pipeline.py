@@ -118,7 +118,7 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
     signals += rule_signals
     layers["rules"] = "ok" if len(failed) < 16 else "unavailable"
     stage("rules", t)
-    context: dict = {"feats": feats}
+    context: dict = {"feats": feats, "signals": signals}
     for name in ("anomaly", "temporal", "graph"):
         t = time.perf_counter()
         mod = optional_layer(name)
@@ -195,6 +195,10 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
 
     t = time.perf_counter()
     dump(out / "cases_index.json", index)
+    if "anomaly_model" in context:  # fitted once on the baseline; Fraud Twin reuses it
+        import joblib
+
+        joblib.dump({"model": context["anomaly_model"], "cols": context["anomaly_cols"]}, out / "anomaly_model.joblib")
     dump(out / "peer_stats.json", peer_stats_table(feats))
     dump(out / "entities.json", {e: {k: v[k] for k in ("entity_type", "risk", "by_method", "methods_agreeing", "hard")}
                                  for e, v in sorted(entities.items())})

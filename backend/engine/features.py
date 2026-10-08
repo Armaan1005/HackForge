@@ -74,6 +74,25 @@ def build_provider_features(store: DataStore, cfg: Config) -> pd.DataFrame:
     top_src = r.groupby(["to_provider_id", "from_provider_id"]).size()
     f["top_source_share"] = top_src.groupby(level=0).max() / f["referrals_in"]
     f["referral_sources"] = top_src.groupby(level=0).size()
+    # utilisation / behaviour features for anomaly scoring (A4)
+    f["claims_per_member"] = f["n_claims"] / f["n_members"]
+    f["avg_billed_per_claim"] = f["billed_total"] / f["n_claims"]
+    f["weekend_share"] = h.assign(w=h.service_date.dt.dayofweek >= 5).groupby("provider_id")["w"].mean()
+    first_seen = h.groupby("member_id")["service_date"].transform("min")
+    new = h.assign(new=first_seen >= today - pd.DateOffset(days=180))
+    f["new_member_share"] = new.drop_duplicates(["provider_id", "member_id"]).groupby("provider_id")["new"].mean()
+    out_pair = store.referrals.groupby(["from_provider_id", "to_provider_id"]).size()
+    f["top_dest_share"] = out_pair.groupby(level=0).max() / out_pair.groupby(level=0).sum()
+    fac = store.facilities.set_index("facility_id")
+    mem = store.members.set_index("member_id")
+    pmf = h[["provider_id", "member_id", "facility_id"]].drop_duplicates(["provider_id", "member_id"])
+    lat1, lon1 = pmf.member_id.map(mem.lat).to_numpy(float), pmf.member_id.map(mem.lon).to_numpy(float)
+    lat2, lon2 = pmf.facility_id.map(fac.lat).to_numpy(float), pmf.facility_id.map(fac.lon).to_numpy(float)
+    r1, r2 = np.radians(lat1), np.radians(lat2)
+    a = np.sin((r2 - r1) / 2) ** 2 + np.cos(r1) * np.cos(r2) * np.sin(np.radians(lon2 - lon1) / 2) ** 2
+    f["avg_distance_member_km"] = pmf.assign(km=6371 * 2 * np.arcsin(np.sqrt(a))).groupby("provider_id")["km"].mean()
+    daily = c.groupby(["provider_id", "service_date"])["duration_minutes"].sum()
+    f["max_daily_hours"] = daily.groupby(level=0).max() / 60
     # history and tenure
     inv = store.investigations
     f["prior_investigations"] = inv[inv.opened_date >= today - pd.DateOffset(months=36)].groupby("provider_id").size()
