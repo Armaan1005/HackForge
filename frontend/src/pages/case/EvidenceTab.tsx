@@ -79,20 +79,22 @@ export function EvidenceTab({ k, onShowOnGraph }: { k: CaseDetail; onShowOnGraph
       </div>
 
       <div className="stack-lg">
-        <Card className="card-accent">
+        <Card className="side-panel">
+          <section>
           <p className="eyebrow">One claim looks normal</p>
           <h2>{num(cs.claim_count)} connected claims add up to {inr(cs.amount_total)}</h2>
           <p className="small muted" style={{ marginTop: 6 }}>The biggest single claim is {inr(cs.amount_max)}, just under the {inr(cs.review_threshold)} review limit. {pct(cs.under_threshold_share)} of them sit right below it.</p>
-        </Card>
-        <Card>
-          <h2 style={{ marginBottom: 14 }}>How each method sees it</h2>
+          </section>
+          <section>
+          <h3>How each method sees it</h3>
           <div className="stack">
             {Object.entries(k.scores.by_method).map(([m, v]) => <Bar key={m} label={METHOD_LABEL[m] ?? m} value={v * 100} />)}
           </div>
-        </Card>
-        <Card>
-          <h2 style={{ marginBottom: 12 }}>What Axon can't be sure about</h2>
+          </section>
+          <section>
+          <h3>What Axon can't be sure about</h3>
           <ul className="list-check">{k.limitations.map(l => <li key={l}><Icon name="hint" size={14} /><span className="small">{l}</span></li>)}</ul>
+          </section>
         </Card>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Card, ErrorState, PageHeader, Ring, Segmented, Skeleton, Status, Strength } from '../components/ui';
@@ -15,6 +16,11 @@ import { NetworkTab } from './case/NetworkTab';
 import { TimelineTab } from './case/TimelineTab';
 
 type Tab = 'evidence' | 'court' | 'network' | 'documents' | 'timeline' | 'brief' | 'ask';
+
+const TABS = [
+  { value: 'evidence', label: 'Evidence' }, { value: 'court', label: 'Evidence Court' }, { value: 'network', label: 'Network' },
+  { value: 'documents', label: 'Records' }, { value: 'timeline', label: 'Timeline' }, { value: 'brief', label: 'Brief' }, { value: 'ask', label: 'Ask' },
+] as const;
 
 export function CaseView() {
   const { id = '' } = useParams();
@@ -61,7 +67,7 @@ export function CaseView() {
             <div className="wtw-col"><h4>Missing before deciding</h4><ul>{k.missing_documents.length ? k.missing_documents.map(m => <li key={m.doc_type}>{titleCase(m.doc_type)} for {m.claim_count} claims</li>) : <li>Nothing</li>}</ul></div>
           </div>
         </Card>
-          <div className="stats" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+          <div className="case-ledger">
             <div className="stat"><b>{inr(k.money.dollars_at_risk)}</b><span>at stake · {inr(k.money.pending)} unpaid</span></div>
             <div className={`stat ${days != null && days <= 3 ? 'warn' : ''}`}><b>{days == null ? '—' : `${days} day${days === 1 ? '' : 's'}`}</b><span>{days == null ? 'nothing pending' : 'until payment releases'}</span></div>
             <div className="stat"><b>{k.member_harm.members_affected}</b><span>members · {pct(k.member_harm.vulnerable_share)} vulnerable</span></div>
@@ -74,16 +80,15 @@ export function CaseView() {
         <DecisionBox k={k} />
       </div>
 
-      <div className="no-print case-tabs" style={{ marginBottom: 18, overflowX: 'auto' }}>
-        <Segmented label="Case sections" value={tab} onChange={setTab} options={[
-          { value: 'evidence', label: 'Evidence', icon: 'inspection' },
-          { value: 'court', label: 'Evidence Court', icon: 'decision' },
-          { value: 'network', label: 'Network', icon: 'org-chart' },
-          { value: 'documents', label: 'Records', icon: 'documents' },
-          { value: 'timeline', label: 'Timeline', icon: 'history' },
-          { value: 'brief', label: 'Brief', icon: 'document-text' },
-          { value: 'ask', label: 'Ask', icon: 'ai' },
-        ]} />
+      <div className="no-print case-tabs">
+        <nav className="utabs" role="tablist" aria-label="Case sections">
+          {TABS.map(t => (
+            <button key={t.value} type="button" role="tab" aria-selected={tab === t.value} className={tab === t.value ? 'on' : ''} onClick={() => setTab(t.value)}>
+              {t.label}
+              {tab === t.value && <motion.span layoutId="utab-line" className="utab-line" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+            </button>
+          ))}
+        </nav>
       </div>
 
       {tab === 'evidence' && <EvidenceTab k={k} onShowOnGraph={ev => { setHighlight(ev); setTab('network'); }} />}

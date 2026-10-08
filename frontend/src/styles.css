@@ -741,7 +741,19 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .pf-chart .recharts-scatter-symbol { transition: transform .2s var(--ease); transform-box: fill-box; transform-origin: center; }
 .pf-chart .recharts-scatter-symbol:hover { transform: scale(1.12); }
 
-/* case section tabs span the full content width */
-.case-tabs .segmented { display: flex; width: 100%; }
-.case-tabs .segmented > button { flex: 1 0 auto; justify-content: center; }
-.case-tabs .seg-content { justify-content: center; }
+/* case page: fewer boxes */
+.case-ledger { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.case-ledger .stat { background: none; border: 0; border-radius: 0; box-shadow: none; padding: 16px 18px; }
+.case-ledger .stat + .stat { border-left: 1px solid var(--line); }
+@media (max-width: 900px) { .case-ledger { grid-template-columns: repeat(2, minmax(0, 1fr)); } .case-ledger .stat + .stat { border-left: 0; } .case-ledger .stat { border-top: 1px solid var(--line); } .case-ledger .stat:nth-child(-n+2) { border-top: 0; } .case-ledger .stat:nth-child(even) { border-left: 1px solid var(--line); } }
+.case-tabs { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; margin: 4px 0 18px; }
+@media (max-width: 960px) { .case-tabs { grid-template-columns: 1fr; } }
+.utabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line-strong); overflow-x: auto; scrollbar-width: none; }
+.utabs button { position: relative; flex: 1 0 auto; padding: 10px 12px 12px; border: 0; background: none; font: inherit; font-size: .92rem; font-weight: 550; color: var(--text-3); cursor: pointer; white-space: nowrap; transition: color var(--dur) var(--ease); }
+.utabs button:hover { color: var(--text); }
+.utabs button.on { color: var(--text); font-weight: 650; }
+.utab-line { position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2.5px; border-radius: 2px; background: var(--accent); }
+.side-panel { padding: 0; }
+.side-panel section { padding: 20px 22px; }
+.side-panel section + section { border-top: 1px solid var(--line); }
+.side-panel h3 { font-size: 1rem; margin: 0 0 12px; }
