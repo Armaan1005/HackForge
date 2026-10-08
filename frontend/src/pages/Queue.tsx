@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { NumberTicker } from '../components/fx';
 import { PortfolioChart } from '../components/PortfolioChart';
 import { Icon } from '../components/Icon';
 import { ErrorState, PageHeader, RiskPill, Segmented, Sheet, Skeleton, Status, Strength } from '../components/ui';
@@ -37,7 +38,7 @@ export function QueuePage() {
         <aside className="planner-side">
           <div className="planner-hero">
             <span className="eyebrow">Likely recovered today</span>
-            <b>{d ? inr(d.expected_recovery_selected) : '…'}</b>
+            <b>{d ? <NumberTicker value={d.expected_recovery_selected} format={inr} /> : '…'}</b>
             <span className="small muted">{d ? `${d.selected_count} cases · ${d.hours_used} of ${capacity}h used · ${inr(d.recovery_per_hour)} per hour` : ' '}</span>
           </div>
           <div>

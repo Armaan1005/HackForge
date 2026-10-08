@@ -1,3 +1,4 @@
+import { BorderBeam, NumberTicker } from '../components/fx';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Funnel } from '../components/charts';
@@ -33,6 +34,7 @@ export function Command() {
           {urgent && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
               <Card className="card-accent" interactive onClick={() => nav(`/cases/${urgent.case_id}`)}>
+                <BorderBeam />
                 <div className="next-step">
                   <span className="big-icon"><Icon name="payment-approval" size={26} /></span>
                   <div style={{ flex: 1 }}>
@@ -73,8 +75,8 @@ export function Command() {
 
         <div className="stack-lg panel-stack">
           <div className="stats" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <div className="stat"><b>{queue ? inr(queue.expected_recovery_selected) : '…'}</b><span>likely recovered today</span></div>
-            <div className="stat"><b>{queue ? inr(queue.recovery_per_hour) : '…'}</b><span>per investigator hour</span></div>
+            <div className="stat"><b>{queue ? <NumberTicker value={queue.expected_recovery_selected} format={inr} /> : '…'}</b><span>likely recovered today</span></div>
+            <div className="stat"><b>{queue ? <NumberTicker value={queue.recovery_per_hour} format={inr} /> : '…'}</b><span>per investigator hour</span></div>
           </div>
 
           <Card>

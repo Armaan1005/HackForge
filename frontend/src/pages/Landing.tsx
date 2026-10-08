@@ -1,7 +1,10 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { AreaTrend, weekly } from '../components/AreaTrend';
+import { NumberTicker } from '../components/fx';
 import { Globe } from '../components/Globe';
+
+const fmtCount = (n: number) => num(Math.round(n));
 import { Icon } from '../components/Icon';
 import { MascotMark } from '../components/Mascot';
 import { Skeleton } from '../components/ui';
@@ -33,11 +36,11 @@ export function Landing() {
   const holdable = q.data?.cases.filter(c => c.hold_recommended).length;
   // The funnel, as the engine reports it: everything read, down to what a person looks at today.
   const stats = f ? [
-    { v: num(f.claim_lines), l: 'claim lines read' },
-    { v: num(f.alerts), l: 'alerts raised' },
-    { v: num(f.explained), l: 'explained away' },
-    { v: num(f.cases), l: 'cases built' },
-    { v: num(f.selected_today), l: `picked for today’s ${f.capacity_hours} review hours` },
+    { v: f.claim_lines, l: 'claim lines read' },
+    { v: f.alerts, l: 'alerts raised' },
+    { v: f.explained, l: 'explained away' },
+    { v: f.cases, l: 'cases built' },
+    { v: f.selected_today, l: `picked for today’s ${f.capacity_hours} review hours` },
   ] : [];
   const asOf = ov.data ? new Date(`${ov.data.sim_today}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
@@ -50,15 +53,15 @@ export function Landing() {
           <Link to="/rulebook">Rulebook</Link>
           <Link to="/trust">Trust</Link>
         </nav>
-        <Link to="/home" className="btn btn-primary btn-sm">Open workspace<Icon name="arrow-right" size={14} /></Link>
+        <Link to="/home" className="btn btn-primary btn-sm btn-shimmer">Open workspace<Icon name="arrow-right" size={14} /></Link>
       </header>
 
       <section className="landing-hero container">
         <motion.div className="hero-copy" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .6, ease: [.22, 1, .36, 1] }}>
-          <h1 className="hero-title">ClaimShield Nexus</h1>
+          <h1 className="hero-title">ClaimShield <span className="text-sheen">Nexus</span></h1>
           <p className="hero-sub">A unified platform that identifies suspicious claims and coordinated networks, predicts future risk, explains the evidence, and prioritizes cases for Special Investigations Unit review.</p>
           <div className="row-flex" style={{ gap: 10, marginTop: 26 }}>
-            <Link to="/home" className="btn btn-primary btn-md">Open workspace<Icon name="arrow-right" size={15} /></Link>
+            <Link to="/home" className="btn btn-primary btn-md btn-shimmer">Open workspace<Icon name="arrow-right" size={15} /></Link>
             <Link to="/timelines" className="btn btn-secondary btn-md"><Icon name="play" size={14} />Watch two timelines</Link>
           </div>
           <p className="xs faint" style={{ marginTop: 18 }}>Synthetic data only. Advisory: a person decides every case.</p>
@@ -87,7 +90,7 @@ export function Landing() {
                 {stats.map((s, i) => (
                   <div key={s.l} className={`ledger-item ${i === stats.length - 1 ? 'last' : ''}`}>
                     {i > 0 && <Icon name="slim-arrow-right" size={14} className="ledger-arrow" />}
-                    <b>{s.v}</b><span>{s.l}</span>
+                    <b><NumberTicker value={s.v} format={fmtCount} /></b><span>{s.l}</span>
                   </div>
                 ))}
               </div>

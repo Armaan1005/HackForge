@@ -827,3 +827,31 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 /* value curve: soft pulse on plan dots */
 .vc-pulse { transform-box: fill-box; transform-origin: center; animation: vc-pulse 2.2s ease-in-out infinite; }
 @keyframes vc-pulse { 50% { transform: scale(1.5); opacity: .05; } }
+
+/* ── Small motion touches (Magic UI / Eldora UI patterns) ─────────────────── */
+/* Border beam: a light travelling round the card edge */
+@property --beam-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.border-beam { position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; z-index: 1;
+  background: conic-gradient(from var(--beam-angle), transparent 0 78%, hsl(var(--ah) 45% 55% / .0) 80%, hsl(var(--ah) 45% 50%) 90%, #8fdcb8 94%, transparent 98%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: beam-spin 7s linear infinite; }
+@keyframes beam-spin { to { --beam-angle: 360deg; } }
+
+/* Shimmer: a soft shine sweeping across primary CTAs */
+.btn-shimmer { position: relative; overflow: hidden; isolation: isolate; }
+.btn-shimmer::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.28) 48%, transparent 66%);
+  transform: translateX(-120%); animation: btn-shimmer 3.6s ease-in-out infinite; }
+@keyframes btn-shimmer { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+
+/* Animated gradient text */
+.text-sheen { background: linear-gradient(100deg, var(--accent) 0%, #3fae7f 30%, #8fdcb8 45%, var(--accent) 60%, var(--accent) 100%);
+  background-size: 220% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: text-sheen 7s ease-in-out infinite; }
+@keyframes text-sheen { 0%, 100% { background-position: 100% 50%; } 50% { background-position: 0% 50%; } }
+
+/* Dot pattern behind the landing hero, fading out towards the edges */
+.landing-hero { position: relative; isolation: isolate; }
+.landing-hero::before { content: ""; position: absolute; inset: -30px -40px; z-index: -1; pointer-events: none;
+  background-image: radial-gradient(rgba(20, 20, 30, .13) 1px, transparent 1.2px); background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 30% 45%, #000 15%, transparent 70%); mask-image: radial-gradient(ellipse 60% 70% at 30% 45%, #000 15%, transparent 70%); }
+
+@media (prefers-reduced-motion: reduce) { .border-beam, .btn-shimmer::after, .text-sheen { animation: none; } .border-beam { display: none; } }
