@@ -823,3 +823,7 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .explore-row { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px; }
 @media (max-width: 1000px) { .explore-row { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .explore-row { grid-template-columns: 1fr; } }
+
+/* value curve: soft pulse on plan dots */
+.vc-pulse { transform-box: fill-box; transform-origin: center; animation: vc-pulse 2.2s ease-in-out infinite; }
+@keyframes vc-pulse { 50% { transform: scale(1.5); opacity: .05; } }
