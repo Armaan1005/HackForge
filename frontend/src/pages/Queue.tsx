@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PortfolioScatter } from '../components/charts';
+import { PortfolioChart } from '../components/PortfolioChart';
 import { Icon } from '../components/Icon';
 import { Card, ErrorState, PageHeader, RiskPill, Segmented, Sheet, Skeleton, Status, Strength } from '../components/ui';
 import { api } from '../lib/api';
@@ -54,7 +54,7 @@ export function QueuePage() {
           </div>
         </Card>
         <Card>
-          {d ? <PortfolioScatter cases={d.cases} capacity={capacity} onPick={id => nav(`/cases/${id}`)} /> : <Skeleton h={300} />}
+          {d ? <PortfolioChart cases={d.cases} capacity={capacity} onPick={id => nav(`/cases/${id}`)} /> : <Skeleton h={300} />}
         </Card>
       </div>
 
