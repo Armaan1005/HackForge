@@ -3,7 +3,7 @@
 // - Frees ports 8000/5173 from leftover dev servers first, and shuts the whole process tree down on Ctrl+C,
 //   so "port already in use" doesn't happen on the next start.
 import { execSync, spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -42,8 +42,10 @@ if (!existsSync(py)) {
   console.log('Installing Python packages (a few minutes, once)…');
   run(py, ['-m', 'pip', 'install', '-q', '-r', path.join('backend', 'requirements.txt')], root);
 }
-if (!existsSync(path.join(root, 'frontend', 'node_modules'))) {
-  console.log('Installing website packages (once)…');
+const fe = path.join(root, 'frontend');
+const stamp = path.join(fe, 'node_modules', '.package-lock.json');
+if (!existsSync(stamp) || statSync(path.join(fe, 'package-lock.json')).mtimeMs > statSync(stamp).mtimeMs) {
+  console.log('Installing website packages (new or changed)…');
   run('npm', ['install', '--no-audit', '--no-fund'], path.join(root, 'frontend'));
 }
 if (!existsSync(path.join(backend, 'aicore-key.json')) && !existsSync(path.join(backend, '.env'))) {
