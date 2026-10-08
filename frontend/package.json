@@ -5,10 +5,11 @@
   "type": "module",
   "description": "Axon SIU console: evidence-first FWA review (Part B UI)",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "dev:web": "vite"
   },
   "dependencies": {
     "@ui5/webcomponents-icons": "^2.27.2",

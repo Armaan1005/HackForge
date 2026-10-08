@@ -38,8 +38,9 @@ const SPEAKER: Record<'prosecution' | 'defense', { name: string; icon: IconName 
 };
 
 export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
+  const [session, setSession] = useState(0); // 0 = not started; each Start/New hearing = a live Gemini session
   const [refresh, setRefresh] = useState(0);
-  const court = useAsync(() => ai.court(k.case_id, refresh > 0), [k.case_id, refresh]);
+  const court = useAsync(() => (session ? ai.court(k.case_id, refresh > 0, refresh === 0) : Promise.resolve(null)), [k.case_id, session, refresh]);
   const turns = useMemo(() => (court.data ? script(court.data, k.case_id) : []), [court.data, k.case_id]);
   const [shown, setShown] = useState(0);
   const [playing, setPlaying] = useState(true);
@@ -56,6 +57,18 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
   }, [court.data, polls]); // eslint-disable-line react-hooks/exhaustive-deps
   useInterval(() => { if (playing && turns.length) setShown(s => { if (s >= turns.length) { setPlaying(false); return s; } return s + 1; }); }, 1500);
 
+  if (!session) return (
+    <Card className="card-accent">
+      <div className="row-flex" style={{ alignItems: 'center', gap: 20 }}>
+        <Mascot size={80} mood="watching" />
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <h2>Ready when you are</h2>
+          <p className="muted small" style={{ marginTop: 4 }}>Prosecution and Defense will argue this case live with Gemini. Every request and response is logged in the terminal.</p>
+        </div>
+        <Button size="lg" icon="play" onClick={() => setSession(1)}>Start hearing</Button>
+      </div>
+    </Card>
+  );
   if (court.error) return <ErrorState error={new Error(`Couldn't reach the AI service (${court.error.message}).`)} onRetry={court.reload} />;
   if (!court.data) return <Card><div className="row-flex"><Mascot size={60} mood="thinking" /><p className="muted">Calling the court to order…</p></div></Card>;
   const c = court.data, v = c.verdict;
@@ -116,7 +129,7 @@ export function CourtRoom({ k, decide }: { k: CaseDetail; decide?: boolean }) {
         <span className="spacer" />
         <span className={`engine-pill ${c.prosecution.source === 'llm' ? 'on' : ''}`} title={c.ai.notes[0] ?? c.ai.model}><Icon name="ai" size={13} />
           {c.prosecution.source === 'llm' ? `Argued by ${c.ai.model}` : c.ai.pending ? 'Gemini is still preparing, showing the quick version' : 'Argued from templates'}</span>
-        <Button size="sm" variant="ghost" icon="refresh" loading={court.loading} onClick={() => setRefresh(r => r + 1)}>New hearing</Button>
+        <Button size="sm" variant="ghost" icon="refresh" loading={court.loading} onClick={() => { setRefresh(0); setSession(n => n + 1); }}>New hearing</Button>
       </div>
 
       <Card>

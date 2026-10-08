@@ -51,12 +51,12 @@ async def _load_case(case_id: str) -> dict:
         raise HTTPException(503, {"code": "engine_unavailable", "message": f"Engine API unavailable: {e}"}) from e
 
 
-async def _court(case: dict, priority: int, refresh: bool = False) -> dict:
+async def _court(case: dict, priority: int, refresh: bool = False, fresh: bool = False) -> dict:
     key = _case_key(case)
     if not refresh and key in _court_cache:
         return _court_cache[key]
     if key not in _inflight:  # collapse concurrent requests for the same case
-        _inflight[key] = asyncio.create_task(run_court(case, priority))
+        _inflight[key] = asyncio.create_task(run_court(case, priority, fresh))
     try:
         result = await _inflight[key]
     finally:
@@ -74,8 +74,9 @@ async def status():
 
 
 @router.post("/court/{case_id}")
-async def court(case_id: str, refresh: bool = False):
-    return await _court(await _load_case(case_id), LIVE, refresh)
+async def court(case_id: str, refresh: bool = False, fresh: bool = False):
+    """fresh=true skips the answer cache so the hearing is argued live by Gemini."""
+    return await _court(await _load_case(case_id), LIVE, refresh or fresh, fresh)
 
 
 @router.get("/brief/{case_id}")
