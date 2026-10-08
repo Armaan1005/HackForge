@@ -19,7 +19,8 @@ LAYERS = ("rules", "anomaly", "temporal", "graph")
 HARD_FLOOR = 85
 
 
-def fuse(signals: list[dict], layers: dict[str, str], weights: dict[str, float]) -> dict[tuple[str, str], dict]:
+def fuse(signals: list[dict], layers: dict[str, str], weights: dict[str, float],
+         hard_floor: int = HARD_FLOOR, hard_bonus: int = 5) -> dict[tuple[str, str], dict]:
     avail = [m for m in LAYERS if layers.get(m) == "ok"]
     max_raw = 1.0
     for m in avail:
@@ -41,11 +42,12 @@ def fuse(signals: list[dict], layers: dict[str, str], weights: dict[str, float])
         for m in avail:
             prod *= 1 - weights[m] * by[m]
         risk = 100 * (1 - prod) / max_raw if max_raw > 0 else 0.0
+        agree = sum(1 for m in avail if by[m] >= 0.5)
         if hard[key]:
-            risk = max(risk, HARD_FLOOR)
+            risk = max(risk, hard_floor + hard_bonus * max(0, agree - 1))
         out[key] = {
             "entity_type": key[0], "entity_id": key[1], "risk": int(round(min(100.0, risk))),
             "by_method": {m: round(by[m], 2) for m in LAYERS},
-            "methods_agreeing": sum(1 for m in avail if by[m] >= 0.5), "hard": hard[key], "signals": sig_idx[key],
+            "methods_agreeing": agree, "hard": hard[key], "signals": sig_idx[key],
         }
     return out

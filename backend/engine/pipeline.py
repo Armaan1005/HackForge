@@ -134,7 +134,7 @@ def run(cfg: Config = CONFIG, raw_dir: Path | None = None, out_dir: Path | None 
 
     t = time.perf_counter()
     weights = current_weights(cfg)
-    entities = {k[1]: v for k, v in fuse(signals, layers, weights).items()}
+    entities = {k[1]: v for k, v in fuse(signals, layers, weights, cfg.HARD_FLOOR, cfg.HARD_METHOD_BONUS).items()}
     alerts = {e for e, v in entities.items() if v["risk"] >= cfg.ALERT_MIN_RISK}
     stage("fuse", t)
 

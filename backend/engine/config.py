@@ -88,6 +88,8 @@ class Config:
         default_factory=lambda: {"rules": 0.35, "anomaly": 0.25, "temporal": 0.15, "graph": 0.25}
     )
     ALERT_MIN_RISK: int = 20
+    HARD_FLOOR: int = 85
+    HARD_METHOD_BONUS: int = 5  # +5 risk per extra agreeing method above the hard floor
     CASE_MIN_RISK: int = 55
     SOLE_PROVIDER_KM: int = 60
     CASE_MIX_ADJ_CLEAR_RATIO: float = 1.5
