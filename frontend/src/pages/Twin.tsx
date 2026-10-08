@@ -1,103 +1,97 @@
 import { motion } from 'motion/react';
-import { ArrowRight, FlaskConical, QrCode, Sparkles, Wand2, Wrench } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
-import { BarList } from '../components/charts';
+import { Icon } from '../components/Icon';
+import { Mascot, type MascotMood } from '../components/Mascot';
 import { NetworkGraph } from '../components/NetworkGraph';
-import { Banner, Button, Card, Skeleton, SourceBadge } from '../components/ui';
+import { Bar, Button, Card, Chip, Note, PageHeader, Ring, Skeleton } from '../components/ui';
 import { ai, api } from '../lib/api';
 import { METHOD_LABEL, num, pct } from '../lib/format';
 import { useAsync } from '../lib/hooks';
+import { spring } from '../lib/theme';
 import type { TwinRun, TwinScenarioSpec } from '../lib/types';
 
-type Parsed = { scenario: string; scenario_name?: string; params: Record<string, unknown>; adjustments?: string[]; source: string };
+type Parsed = { scenario: string; params: Record<string, unknown>; adjustments?: string[] };
 
 export function Twin() {
   const wl = useAsync(() => api.twinScenarios(), []);
   const [text, setText] = useState('What if fraudsters split ₹2 lakh claims into four ₹50,000 claims?');
   const [parsed, setParsed] = useState<Parsed | null>(null);
-  const [parseMsg, setParseMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState<'parse' | 'run' | 'advise' | 'harden' | null>(null);
   const [run, setRun] = useState<TwinRun | null>(null);
   const [advice, setAdvice] = useState<Awaited<ReturnType<typeof ai.twinAdvise>> | null>(null);
   const [hardened, setHardened] = useState<TwinRun | null>(null);
   const scenarios = (wl.data?.scenarios ?? []) as unknown as TwinScenarioSpec[];
   const spec = scenarios.find(s => s.id === parsed?.scenario);
+  const mood: MascotMood = busy ? 'thinking' : hardened ? 'happy' : run ? 'watching' : 'watching';
 
-  const doParse = async () => {
-    setBusy('parse'); setParseMsg(null); setRun(null); setAdvice(null); setHardened(null);
+  const reset = () => { setRun(null); setAdvice(null); setHardened(null); };
+  const build = async () => {
+    setBusy('parse'); setMsg(null); reset();
     try {
       const r = await ai.twinParse(text);
-      if (r.supported && r.scenario) setParsed({ scenario: r.scenario, scenario_name: r.scenario_name, params: r.params ?? {}, adjustments: r.adjustments, source: r.source });
-      else { setParsed(null); setParseMsg(r.reason ?? 'Not a supported scenario.'); }
-    } catch (e) { setParseMsg(`Scenario Parser needs the Part B backend (${(e as Error).message}). Pick a scenario manually below.`); }
+      if (r.supported && r.scenario) setParsed({ scenario: r.scenario, params: r.params ?? {}, adjustments: r.adjustments });
+      else { setParsed(null); setMsg(r.reason ?? "I can't simulate that one yet."); }
+    } catch (e) { setMsg(`Couldn't reach the AI service (${(e as Error).message}). Pick a scheme below instead.`); }
     finally { setBusy(null); }
   };
-  const pick = (s: TwinScenarioSpec) => { setParsed({ scenario: s.id, scenario_name: s.name, params: Object.fromEntries(Object.entries(s.params).map(([k, v]) => [k, v.default])), source: 'manual' }); setParseMsg(null); setRun(null); setAdvice(null); setHardened(null); };
-  const doRun = async () => {
+  const go = async () => {
     if (!parsed) return;
-    setBusy('run'); setAdvice(null); setHardened(null);
-    try {
-      const r = await api.twinRun(parsed.scenario, parsed.params);
-      setRun(r);
-      if (r.missed > 0) { setBusy('advise'); ai.twinAdvise(r).then(setAdvice).catch(() => setAdvice(null)).finally(() => setBusy(null)); return; }
-    } finally { setBusy(b => (b === 'run' ? null : b)); }
+    setBusy('run'); reset();
+    const r = await api.twinRun(parsed.scenario, parsed.params);
+    setRun(r);
+    if (r.missed > 0) { setBusy('advise'); ai.twinAdvise(r).then(setAdvice).catch(() => setAdvice(null)).finally(() => setBusy(null)); }
+    else setBusy(null);
   };
-  const doHarden = async () => {
+  const harden = async () => {
     if (!run || !advice?.suggested_change) return;
     setBusy('harden');
     try { setHardened(await api.twinHarden(run.run_id, advice.suggested_change.param, advice.suggested_change.new_value)); } finally { setBusy(null); }
   };
 
   return (
-    <div className="stack-lg">
-      <div className="page-header">
-        <div>
-          <div className="eyebrow">Fraud Twin</div>
-          <h1>Can detection survive tomorrow's fraud?</h1>
-          <p className="subtitle">Describe an attack. Axon simulates it in a sandbox and shows what it catches.</p>
-        </div>
-      </div>
+    <>
+      <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" subtitle="Describe how a fraudster might change tactics. Axon simulates it on a copy of the data and shows what it catches." actions={<Mascot size={80} mood={mood} />} />
 
-      <div className="grid-main">
-        <Card title="What if…" icon={Wand2}>
-          <div className="stack">
-            <textarea className="textarea" value={text} onChange={e => setText(e.target.value)} maxLength={600} aria-label="Describe a fraud scheme" />
-            <div className="row">
-              {scenarios.slice(0, 3).flatMap(s => s.examples.slice(0, 1)).map(ex => <button key={ex} className="chip chip-outline" style={{ cursor: 'pointer', border: 0 }} onClick={() => setText(ex)}>{ex}</button>)}
-            </div>
-            <div className="row">
-              <Button icon={Sparkles} loading={busy === 'parse'} onClick={doParse}>Build attack</Button>
-              <select className="input" style={{ width: 'auto' }} value={parsed?.scenario ?? ''} onChange={e => { const sc = scenarios.find(x => x.id === e.target.value); if (sc) pick(sc); }} aria-label="Pick a scenario">
-                <option value="" disabled>or pick a scenario</option>
-                {scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-            </div>
-            {parseMsg && <Banner tone="warn">{parseMsg}</Banner>}
-            {parsed && spec && (
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card" style={{ background: 'var(--surface-2)', boxShadow: 'none' }}>
-                <div className="row between"><b>{spec.name}</b><SourceBadge source={parsed.source === 'manual' ? undefined : parsed.source} /></div>
-                <div style={{ height: 10 }} />
-                <div className="grid-3">
-                  {Object.entries(spec.params).map(([k, p]) => (
-                    <label key={k} className="stack-sm">
-                      <span className="xs muted">{k.replace(/_/g, ' ')}{p.min != null ? ` (${p.min}–${p.max})` : ''}</span>
-                      {p.type === 'bool' ? (
-                        <select className="input" value={String(parsed.params[k])} onChange={e => setParsed({ ...parsed, params: { ...parsed.params, [k]: e.target.value === 'true' } })}><option value="true">yes</option><option value="false">no</option></select>
-                      ) : p.type === 'enum' ? (
-                        <select className="input" value={String(parsed.params[k])} onChange={e => setParsed({ ...parsed, params: { ...parsed.params, [k]: e.target.value } })}>{p.values?.map(v => <option key={v}>{v}</option>)}</select>
-                      ) : (
-                        <input className="input" type="number" min={p.min} max={p.max} step={p.type === 'float' ? 0.05 : 1} value={Number(parsed.params[k])}
-                          onChange={e => setParsed({ ...parsed, params: { ...parsed.params, [k]: Math.min(Math.max(Number(e.target.value), p.min ?? -Infinity), p.max ?? Infinity) } })} />
-                      )}
-                    </label>
-                  ))}
-                </div>
-                {!!parsed.adjustments?.length && <p className="xs faint" style={{ marginTop: 8 }}>Adjusted: {parsed.adjustments.join('; ')}</p>}
-                <div className="row" style={{ marginTop: 12 }}><Button icon={FlaskConical} loading={busy === 'run'} onClick={doRun}>Run stress test</Button><span className="xs faint">sandbox only</span></div>
-              </motion.div>
-            )}
+      <div className="home-grid" style={{ marginBottom: 20 }}>
+        <Card>
+          <div className="field">
+            <label htmlFor="scheme">What if…</label>
+            <textarea id="scheme" className="textarea" style={{ minHeight: 80 }} value={text} onChange={e => setText(e.target.value)} maxLength={600} />
           </div>
+          <div className="chip-group" style={{ marginTop: 12 }}>
+            {scenarios.slice(0, 3).map(s => <Chip key={s.id} onClick={() => setText(s.examples[0])}>{s.name}</Chip>)}
+          </div>
+          <div className="row-flex" style={{ marginTop: 16 }}>
+            <Button icon="ai" loading={busy === 'parse'} onClick={build}>Build the attack</Button>
+            <select className="select" style={{ width: 'auto' }} value="" onChange={e => { const s = scenarios.find(x => x.id === e.target.value); if (s) { setParsed({ scenario: s.id, params: Object.fromEntries(Object.entries(s.params).map(([k, v]) => [k, v.default])) }); setMsg(null); reset(); } }} aria-label="Pick a scheme">
+              <option value="" disabled>or pick a scheme</option>
+              {scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+          {msg && <div style={{ marginTop: 14 }}><Note tone="warn">{msg}</Note></div>}
+          {parsed && spec && (
+            <motion.div className="help-panel" style={{ marginTop: 16 }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
+              <h4>{spec.name}</h4>
+              <div className="grid-3">
+                {Object.entries(spec.params).map(([k, p]) => (
+                  <div key={k} className="field">
+                    <label className="xs muted" style={{ fontWeight: 600 }}>{k.replace(/_/g, ' ')}</label>
+                    {p.type === 'bool' || p.type === 'enum' ? (
+                      <select className="select" value={String(parsed.params[k])} onChange={e => setParsed({ ...parsed, params: { ...parsed.params, [k]: p.type === 'bool' ? e.target.value === 'true' : e.target.value } })}>
+                        {(p.type === 'bool' ? ['true', 'false'] : p.values ?? []).map(v => <option key={v} value={v}>{p.type === 'bool' ? (v === 'true' ? 'yes' : 'no') : v}</option>)}
+                      </select>
+                    ) : (
+                      <input className="input" type="number" min={p.min} max={p.max} step={p.type === 'float' ? 0.05 : 1} value={Number(parsed.params[k])}
+                        onChange={e => setParsed({ ...parsed, params: { ...parsed.params, [k]: Math.min(Math.max(Number(e.target.value), p.min ?? -Infinity), p.max ?? Infinity) } })} />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="row-flex" style={{ marginTop: 14 }}><Button icon="play" loading={busy === 'run'} onClick={go}>Run it</Button><span className="small muted">Runs on a copy. Your real queue is never touched.</span></div>
+            </motion.div>
+          )}
         </Card>
         <JudgeQr />
       </div>
@@ -105,51 +99,50 @@ export function Twin() {
       {run && <Results run={run} />}
 
       {run && run.missed > 0 && (
-        <Card title="Hardening advisor" icon={Wrench}>
-          {busy === 'advise' ? <Skeleton h={80} /> : !advice?.suggested_change ? <p className="small muted">{advice?.explanation ?? 'No tunable parameter explains these misses.'}</p> : (
+        <Card className="card-accent" style={{ marginTop: 20 }}>
+          <div className="card-title"><span className="row-icon"><Icon name="wrench" size={15} /></span><h2>Make it stronger</h2></div>
+          {busy === 'advise' ? <Skeleton h={70} /> : !advice?.suggested_change ? <p className="muted">{advice?.explanation ?? 'Nothing obvious to tune.'}</p> : (
             <div className="stack">
-              <div className="row"><SourceBadge source={advice.source} /><span className="strong mono">{advice.suggested_change.param}</span><span className="chip">{advice.suggested_change.old_value}</span><ArrowRight size={14} /><span className="chip chip-accent">{advice.suggested_change.new_value}</span></div>
-              <p className="small">{advice.explanation}</p>
-              <div className="row">
-                <Button icon={Wrench} loading={busy === 'harden'} onClick={doHarden} disabled={!!hardened}>Approve and rerun in sandbox</Button>
-                <span className="xs faint">sandbox only · you approve</span>
+              <p>{advice.explanation}</p>
+              <div className="row-flex">
+                <span className="engine-pill on">{advice.suggested_change.param.replace(/_/g, ' ').toLowerCase()}: {advice.suggested_change.old_value} → {advice.suggested_change.new_value}</span>
+                <span className="spacer" />
+                <Button icon="accept" loading={busy === 'harden'} disabled={!!hardened} onClick={harden}>Approve and re-run</Button>
               </div>
               {hardened && <Compare before={run} after={hardened} />}
             </div>
           )}
         </Card>
       )}
-    </div>
+    </>
   );
 }
 
 function Results({ run }: { run: TwinRun }) {
-  const g = run.injected_graph;
   return (
-    <div className="stack">
-      <div className="grid-3">
-        <Card tight><div className="stat-label">Detection rate</div><div className="stat-value" style={{ fontSize: '2.4rem' }}>{pct(run.detection_rate, 1)}</div><div className="stat-sub">{num(run.detected)} of {num(run.generated)} injected claims</div></Card>
-        <Card tight><div className="stat-label">Missed</div><div className="stat-value" style={{ color: run.missed ? 'var(--warn-text)' : 'var(--good-text)' }}>{num(run.missed)}</div><div className="stat-sub">reasons below</div></Card>
-        <Card tight><div className="stat-label">False-positive rate</div><div className="stat-value">{pct(run.false_positive_rate.run, 1)}</div><div className="stat-sub">baseline {pct(run.false_positive_rate.baseline, 1)} on clean claims</div></Card>
-      </div>
-      <div className="grid-main">
-        <Card title="Caught by">
-          <BarList rows={Object.entries(run.by_layer).map(([k, v]) => ({ label: METHOD_LABEL[k] ?? k, value: v, hint: `${pct(v / run.generated)} of injected claims` }))} max={run.generated} />
-          <p className="xs faint" style={{ marginTop: 6 }}>Rules alone: {pct((run.by_layer.rules ?? 0) / run.generated)}</p>
-          <div className="divider" />
-          <h3 style={{ marginBottom: 8 }}>Why some were missed</h3>
-          {run.miss_reason_summary.map(m => (
-            <div key={m.reason_code} className="row-nw between small" style={{ padding: '4px 0' }}>
-              <span><b>{m.count}</b> · {m.reason_code.replace(/_/g, ' ').toLowerCase()} <span className="mono xs faint">{m.param_key}</span></span>
-              <span className="muted nowrap">threshold {m.threshold} · typical {m.typical_value}</span>
-            </div>
-          ))}
-        </Card>
-        <Card title="Injected network" className="card-flush">
-          {g.nodes.length ? <NetworkGraph nodes={g.nodes} edges={g.edges} injectedIds={new Set(g.nodes.map(n => n.id))} /> : <p className="small muted" style={{ padding: 16 }}>No graph for this run.</p>}
-        </Card>
-      </div>
-      {run.limitations.map(l => <Banner key={l} tone="warn">{l}</Banner>)}
+    <div className="home-grid">
+      <Card>
+        <div className="rec-head" style={{ marginBottom: 18 }}>
+          <Ring value={run.detection_rate * 100} size={96} label={`Caught ${pct(run.detection_rate, 1)}`}>
+            <div style={{ textAlign: 'center', lineHeight: 1.1 }}><div style={{ fontSize: '1.3rem' }}>{pct(run.detection_rate, 0)}</div><div style={{ fontSize: '.6rem', color: 'var(--text-3)', fontWeight: 650 }}>CAUGHT</div></div>
+          </Ring>
+          <div>
+            <h2>{num(run.detected)} of {num(run.generated)} fake claims caught</h2>
+            <p className="muted small">False alarms on real claims: {pct(run.false_positive_rate.run, 1)} (normally {pct(run.false_positive_rate.baseline, 1)})</p>
+          </div>
+        </div>
+        <div className="stack">{Object.entries(run.by_layer).map(([k, v]) => <Bar key={k} label={METHOD_LABEL[k] ?? k} value={v} max={run.generated} right={num(v)} />)}</div>
+        {run.miss_reason_summary.length > 0 && (
+          <div className="help-panel" style={{ marginTop: 16 }}>
+            <h4>Why {num(run.missed)} slipped through</h4>
+            {run.miss_reason_summary.map(m => <p key={m.reason_code} className="small">{m.count} claims: {m.reason_code === 'TEMPORAL_WINDOW' ? `spread over about ${m.typical_value} days, longer than the ${m.threshold}-day window` : m.reason_code === 'BELOW_HUG_SHARE' ? `only ${pct(m.typical_value)} of claims near the limit, under the ${pct(m.threshold)} trigger` : m.reason_code.replace(/_/g, ' ').toLowerCase()}</p>)}
+          </div>
+        )}
+      </Card>
+      <Card style={{ padding: 0 }}>
+        <div className="pad"><h2>The fake network</h2></div>
+        {run.injected_graph.nodes.length ? <NetworkGraph nodes={run.injected_graph.nodes} edges={run.injected_graph.edges} injectedIds={new Set(run.injected_graph.nodes.map(n => n.id))} /> : <p className="pad muted">No network for this scheme.</p>}
+      </Card>
     </div>
   );
 }
@@ -157,27 +150,24 @@ function Results({ run }: { run: TwinRun }) {
 function Compare({ before, after }: { before: TwinRun; after: TwinRun }) {
   const b = after.before ?? { detection_rate: before.detection_rate, false_positive_rate: before.false_positive_rate.run };
   const a = after.after ?? { detection_rate: after.detection_rate, false_positive_rate: after.false_positive_rate.run };
-  const fpDelta = (a.false_positive_rate - b.false_positive_rate) * 100;
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="grid-2">
-      <Card tight><div className="stat-label">Detection rate</div><div className="row" style={{ alignItems: 'baseline' }}><span className="faint">{pct(b.detection_rate, 1)}</span><ArrowRight size={14} /><span className="stat-value" style={{ color: 'var(--good-text)' }}>{pct(a.detection_rate, 1)}</span></div></Card>
-      <Card tight><div className="stat-label">False-positive rate</div><div className="row" style={{ alignItems: 'baseline' }}><span className="faint">{pct(b.false_positive_rate, 1)}</span><ArrowRight size={14} /><span className="stat-value">{pct(a.false_positive_rate, 1)}</span></div>
-        <div className="stat-sub">{fpDelta <= 0.5 ? `+${fpDelta.toFixed(1)} pp: acceptable` : `+${fpDelta.toFixed(1)} pp: review before applying`}</div></Card>
-    </motion.div>
+    <div className="stats">
+      <div className="stat"><b>{pct(b.detection_rate, 1)} → {pct(a.detection_rate, 1)}</b><span>caught</span></div>
+      <div className="stat"><b>{pct(b.false_positive_rate, 1)} → {pct(a.false_positive_rate, 1)}</b><span>false alarms</span></div>
+    </div>
   );
 }
 
 function JudgeQr() {
   const [url, setUrl] = useState(() => `${window.location.origin}/challenge`);
   const [svg, setSvg] = useState('');
-  useEffect(() => { QRCode.toString(url, { type: 'svg', margin: 1, width: 180 }).then(setSvg).catch(() => setSvg('')); }, [url]);
-  const local = /localhost|127\.0\.0\.1/.test(url);
+  useEffect(() => { QRCode.toString(url, { type: 'svg', margin: 1, width: 170, color: { dark: '#1d1d1f', light: '#ffffff' } }).then(setSvg).catch(() => setSvg('')); }, [url]);
   return (
-    <Card title="Judge challenge" icon={QrCode}>
-      <p className="small muted">Judges scan and try to beat the detector.</p>
-      <div style={{ display: 'grid', placeItems: 'center', margin: '14px 0', background: '#fff', borderRadius: 14, padding: 10 }} dangerouslySetInnerHTML={{ __html: svg }} />
-      <input className="input mono xs" value={url} onChange={e => setUrl(e.target.value)} aria-label="Challenge URL" />
-      {local && <p className="xs faint" style={{ marginTop: 6 }}>Use this laptop's Wi-Fi IP instead of localhost.</p>}
+    <Card>
+      <div className="card-title"><span className="row-icon"><Icon name="qr-code" size={15} /></span><h2>Judges, try it</h2></div>
+      <div style={{ display: 'grid', placeItems: 'center', margin: '4px 0 14px' }} dangerouslySetInnerHTML={{ __html: svg }} />
+      <input className="input mono" value={url} onChange={e => setUrl(e.target.value)} aria-label="Challenge link" />
+      {/localhost|127\.0\.0\.1/.test(url) && <p className="xs faint" style={{ marginTop: 6 }}>Phones need this laptop's Wi-Fi address instead of localhost.</p>}
     </Card>
   );
 }

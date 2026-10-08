@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Toasts } from './components/Toasts';
 import { TopNav } from './components/TopNav';
 import { fade } from './lib/theme';
 import { CaseView } from './pages/CaseView';
@@ -25,6 +26,7 @@ const shell = (el: ReactNode) => <><TopNav /><Page>{el}</Page></>;
 export default function App() {
   return (
     <BrowserRouter>
+        <Toasts />
         <Routes>
           <Route path="/" element={shell(<Command />)} />
           <Route path="/queue" element={shell(<QueuePage />)} />

@@ -1,55 +1,54 @@
-import { AlarmClock, CheckCircle2, CircleHelp, ShieldCheck, ShieldX } from 'lucide-react';
 import { useState } from 'react';
-import { Banner, Button, Sheet } from '../../components/ui';
+import { Icon } from '../../components/Icon';
+import { toast } from '../../components/Toasts';
+import { INVESTIGATOR } from '../../components/TopNav';
+import { Button } from '../../components/ui';
 import { api } from '../../lib/api';
-import { inr } from '../../lib/format';
 import type { CaseDetail } from '../../lib/types';
 
-const ACTIONS = {
-  confirm: { label: 'Investigate', icon: ShieldX, variant: 'bad' as const, desc: 'Assign an investigator. Starts a human review, not a fraud finding.' },
-  need_more_info: { label: 'Request records', icon: CircleHelp, variant: 'warn' as const, desc: 'Ask the provider for missing documents first.' },
-  clear: { label: 'Clear', icon: ShieldCheck, variant: 'good' as const, desc: 'Close with no action.' },
-  hold_payment: { label: 'Hold payment', icon: AlarmClock, variant: 'secondary' as const, desc: 'Hold pending claims until records arrive. Reversible.' },
-};
-type Action = keyof typeof ACTIONS;
+const SUGGESTS: Record<string, string> = { needs_siu_review: 'a full SIU review', request_documentation: 'asking for records first', monitor: 'keeping an eye on it', cleared: 'clearing it' };
+const LABEL: Record<string, string> = { confirm: 'Investigation opened', need_more_info: 'Records requested', clear: 'Provider cleared', hold_payment: 'Payment held' };
 
-export function DecisionBar({ k }: { k: CaseDetail }) {
-  const [open, setOpen] = useState<Action | null>(null);
+/** Human in the loop: the engine's status is a draft until a person acts. */
+export function DecisionBox({ k }: { k: CaseDetail }) {
   const [note, setNote] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<{ action: Action; id: string } | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [done, setDone] = useState<{ action: string; id: string; at: string } | null>(null);
 
-  const submit = async () => {
-    if (!open) return;
-    setBusy(true);
+  const decide = async (action: string) => {
+    setBusy(action);
     try {
-      const res = (await api.decision(k.case_id, open, note)) as { decision_id: string };
-      setDone({ action: open, id: res.decision_id });
-      setOpen(null); setNote('');
-    } finally { setBusy(false); }
+      const r = (await api.decision(k.case_id, action, note, INVESTIGATOR.name)) as { decision_id: string; recorded_at: string };
+      setDone({ action, id: r.decision_id, at: r.recorded_at });
+      setNote('');
+      toast({ title: LABEL[action], body: 'Saved in the audit trail.', icon: action === 'clear' ? 'accept' : action === 'hold_payment' ? 'pending' : 'flag' });
+    } catch (e) {
+      toast({ title: 'Not saved', body: (e as Error).message, icon: 'alert' });
+    } finally { setBusy(null); }
   };
 
+  if (done) return (
+    <div className="review-box done">
+      <div className="row-nw"><Icon name="accept" size={16} /><b>{LABEL[done.action]} by {INVESTIGATOR.name.split(' ')[0]}</b></div>
+      <p className="small muted" style={{ marginTop: 6 }}>{done.id} · {done.at.replace('T', ' ')}</p>
+      <Button variant="ghost" size="sm" style={{ marginTop: 8 }} onClick={() => setDone(null)}>Change decision</Button>
+    </div>
+  );
+
   return (
-    <div className="no-print stack-sm">
-      <div className="row">
-        {(Object.keys(ACTIONS) as Action[]).filter(a => a !== 'hold_payment' || k.money.pending > 0).map(a => {
-          const A = ACTIONS[a];
-          return <Button key={a} size="sm" variant={A.variant} icon={A.icon} onClick={() => setOpen(a)}>{A.label}</Button>;
-        })}
-        <span className="xs faint">You decide. Every action is logged.</span>
+    <div className="review-box">
+      <div className="row-nw" style={{ marginBottom: 6 }}><Icon name="shield" size={16} /><h2 style={{ fontSize: '1.1rem' }}>Human review needed</h2></div>
+      <p className="small" style={{ marginBottom: 10 }}>Axon suggests <b>{SUGGESTS[k.verdict.status] ?? k.verdict.status.replace(/_/g, ' ')}</b>. Nothing happens until you decide.</p>
+      <ul className="list-check" style={{ marginBottom: 12 }}>
+        {k.verdict.reasons.map(r => <li key={r}><Icon name="message-information" size={14} /><span className="small">{r}</span></li>)}
+      </ul>
+      <textarea className="textarea" style={{ minHeight: 64, marginBottom: 10 }} placeholder="Note for the audit trail (optional)" value={note} onChange={e => setNote(e.target.value)} />
+      <div className="row-flex">
+        <Button size="sm" icon="flag" loading={busy === 'confirm'} onClick={() => decide('confirm')}>Open investigation</Button>
+        <Button size="sm" variant="tinted" icon="documents" loading={busy === 'need_more_info'} onClick={() => decide('need_more_info')}>Request records</Button>
+        {k.money.pending > 0 && <Button size="sm" variant="secondary" icon="pending" loading={busy === 'hold_payment'} onClick={() => decide('hold_payment')}>Hold payment</Button>}
+        <Button size="sm" variant="danger" loading={busy === 'clear'} onClick={() => decide('clear')}>Clear</Button>
       </div>
-      {done && <Banner tone="good" icon={CheckCircle2}>{ACTIONS[done.action].label} logged as {done.id}.</Banner>}
-      <Sheet open={!!open} onClose={() => setOpen(null)} title={open ? ACTIONS[open].label : ''}
-        footer={<><Button variant="ghost" onClick={() => setOpen(null)}>Cancel</Button><Button variant={open ? ACTIONS[open].variant : 'primary'} loading={busy} onClick={submit}>Confirm</Button></>}>
-        {open && (
-          <div className="stack">
-            <p className="muted">{ACTIONS[open].desc}</p>
-            {open === 'hold_payment' && <Banner tone="warn">{k.payment_clock.pending_claims} claims · {inr(k.payment_clock.pending_amount)}</Banner>}
-            {open === 'confirm' && k.missing_documents.some(m => m.critical) && <Banner tone="warn">Critical documents are still missing.</Banner>}
-            <textarea className="textarea" value={note} onChange={e => setNote(e.target.value)} placeholder="Note (optional)" aria-label="Note for the audit log" />
-          </div>
-        )}
-      </Sheet>
     </div>
   );
 }

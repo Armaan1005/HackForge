@@ -1,9 +1,12 @@
 # Part B: Axon UI
 
-React 18 + TypeScript + Vite + `motion` + lucide icons + cytoscape. Plain CSS design tokens in `src/styles.css` (iOS-style: glass top nav with sliding pill, grouped cards, segmented controls, sheets). No Tailwind.
+React 18 + TypeScript + Vite + `motion` + cytoscape. The design system is carried over from Armaan's Prism (SAP Hackathon) app: keep new UI consistent with it.
 
-- Data: `src/lib/api.ts`. Engine calls (`api.*`) fall back to `contracts/*.json` when Part A's API isn't up; AI calls (`ai.*`) go to `/api/ai` and the UI shows template/offline states.
-- Pages: Command (`/`), SIU Queue, Case (`/cases/:id` with Evidence · Network · Timeline · Documents · Evidence Court · Brief · Ask tabs), Explained, Fraud Twin, Trust, and `/challenge` (judge phone page, no nav).
-- Charts are hand-rolled SVG in `components/charts.tsx` following the dataviz rules: reference palette via `--series-*`, status colours only with icon + label, legend for 2+ series, tooltips on every mark, real-pixel widths (`useWidth`).
-- Never show a number the engine or verifier didn't produce. Status pills always pair colour with an icon and label.
+- **Tokens** (`src/styles.css`): warm off-white `--bg #f4f4f0`, white cards, calm green accent `hsl(158 34% 31%)`, radius 20px, line-height 1.6, soft shadows. Light only.
+- **Icons**: SAP Horizon icons via `<Icon name="…" />` (`src/lib/icons.ts`, from `@ui5/webcomponents-icons`). Add a name there to use it. Don't add other icon libraries.
+- **Mascot**: Argus the owl (`components/Mascot.tsx`, moods watching/thinking/happy/rest) in page headers, empty states and the Ask tab. `MascotMark` is the logo.
+- **Patterns**: `PageHeader` (eyebrow + h1 + subtitle + mascot), `card-accent` "next step" cards, iOS grouped `Section` rows with `row-icon` tiles, `Status` (dot + text), `RiskPill`, `Strength`, `review-box` for human review, `help-panel`, `fair-note`/`Note`, `trace` steps, glass `toast()`.
+- **Copy**: plain and human ("Good afternoon, Priya.", "Why it might be fine"). Explanations go in sheets, tooltips or `details`, not paragraphs.
+- **Data**: `src/lib/api.ts`. Engine calls fall back to `contracts/*.json`; AI calls go to `/api/ai`.
+- **Charts**: `components/charts.tsx`, validated palette (`--series-1` green, `--series-2` amber), tooltips on every mark, real-pixel widths.
 - Typecheck: `npx tsc -b`. Dev: `npm run dev` (proxies `/api` to :8000).

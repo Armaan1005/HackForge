@@ -1,5 +1,4 @@
 import { motion } from 'motion/react';
-import { CircleHelp, FlaskConical, LayoutGrid, ListOrdered, ShieldCheck, Sparkles, Waypoints } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ai, useEngineSource } from '../lib/api';
@@ -7,48 +6,63 @@ import { useInterval } from '../lib/hooks';
 import { spring } from '../lib/theme';
 import type { AiStatus } from '../lib/types';
 import { HowItWorks } from './HowItWorks';
-import { IconButton } from './ui';
+import { Icon, type IconName } from './Icon';
+import { MascotMark } from './Mascot';
+import { Avatar, IconButton } from './ui';
 
-const links = [
-  { to: '/', label: 'Today', icon: LayoutGrid, end: true },
-  { to: '/queue', label: 'Queue', icon: ListOrdered },
-  { to: '/explained', label: 'Explained', icon: Sparkles },
-  { to: '/twin', label: 'Fraud Twin', icon: FlaskConical },
-  { to: '/trust', label: 'Trust', icon: ShieldCheck },
+export const INVESTIGATOR = { name: 'Priya Sharma', role: 'SIU investigator' };
+
+const links: { to: string; label: string; icon: IconName; end?: boolean }[] = [
+  { to: '/', label: 'Home', icon: 'home', end: true },
+  { to: '/queue', label: 'Cases', icon: 'workflow-tasks' },
+  { to: '/explained', label: 'Explained', icon: 'complete' },
+  { to: '/twin', label: 'Fraud Twin', icon: 'lab' },
+  { to: '/trust', label: 'How well it works', icon: 'shield' },
 ];
 
 export function TopNav() {
   const source = useEngineSource();
   const [status, setStatus] = useState<AiStatus | null>(null);
-  const [aiDown, setAiDown] = useState(false);
   const [help, setHelp] = useState(false);
-  const poll = () => ai.status().then(s => { setStatus(s); setAiDown(false); }).catch(() => setAiDown(true));
+  const [menu, setMenu] = useState(false);
+  const poll = () => ai.status().then(setStatus).catch(() => setStatus(null));
   useInterval(poll, 8000);
   useEffect(() => { poll(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const healthy = source === 'live' && status?.enabled && !aiDown;
-  const title = [
-    source === 'live' ? 'Engine: live' : 'Engine: contract fixtures',
-    aiDown ? 'AI: backend offline' : status?.enabled ? `AI: ${status.model} · ${status.queue_depth} queued · ${status.calls_this_minute}/${status.rpm_limit} per min` : 'AI: templates (no key)',
-  ].join('\n');
-
+  const aiOn = !!status?.enabled;
   return (
     <header className="topnav no-print">
       <div className="container topnav-inner">
-        <Link to="/" className="brand" aria-label="Axon home"><span className="brand-mark"><Waypoints size={15} strokeWidth={2.4} /></span>Axon</Link>
+        <Link to="/" className="brand" aria-label="Axon home"><MascotMark size={30} />Axon <small>for SIU teams</small></Link>
         <nav className="navlinks" aria-label="Main">
           {links.map(l => (
             <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}>
               {({ isActive }) => (<>
                 {isActive && <motion.span layoutId="nav-pill" className="nav-pill" transition={spring} />}
-                <l.icon size={15} strokeWidth={2.1} /><span className="lbl">{l.label}</span>
+                <Icon name={l.icon} size={15} /><span className="lbl">{l.label}</span>
               </>)}
             </NavLink>
           ))}
         </nav>
         <div className="nav-tools">
-          <span className="status-dot" title={title} aria-label={title}><span className={`dot ${healthy ? 'dot-live' : aiDown ? 'dot-off' : 'dot-warn'}`} /></span>
-          <IconButton icon={CircleHelp} label="How Axon works" onClick={() => setHelp(true)} />
+          <span className={`engine-pill ${aiOn ? 'on' : ''}`} title={`${source === 'live' ? 'Live detection engine' : 'Sample data (engine not connected yet)'} · ${status ? `${status.model}, ${status.mode}` : 'AI service offline'}`}>
+            <Icon name="ai" size={13} />{aiOn ? 'Gemini on' : 'AI templates'}
+          </span>
+          <IconButton icon="sys-help" label="How Axon works" onClick={() => setHelp(true)} />
+          <div style={{ position: 'relative' }}>
+            <button className="icon-btn" style={{ width: 'auto', padding: 3 }} aria-label="Account" aria-expanded={menu} onClick={() => setMenu(v => !v)}>
+              <Avatar name={INVESTIGATOR.name} hue={158} size={32} />
+            </button>
+            {menu && (
+              <motion.div className="card" style={{ position: 'absolute', right: 0, top: 46, width: 240, padding: 8, zIndex: 60 }}
+                initial={{ opacity: 0, y: -6, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={spring} onMouseLeave={() => setMenu(false)}>
+                <div style={{ padding: '8px 10px' }}><b>{INVESTIGATOR.name}</b><div className="small muted">{INVESTIGATOR.role}</div></div>
+                <div className="divider" style={{ margin: '6px 0' }} />
+                <div className="small muted" style={{ padding: '4px 10px' }}>{source === 'live' ? 'Connected to the live engine' : 'Using sample data'}</div>
+                <button className="btn btn-ghost btn-sm btn-block" style={{ justifyContent: 'flex-start' }} onClick={() => { setMenu(false); setHelp(true); }}><Icon name="sys-help" size={15} />How Axon works</button>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
       <HowItWorks open={help} onClose={() => setHelp(false)} />

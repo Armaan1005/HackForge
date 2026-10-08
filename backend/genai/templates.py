@@ -171,6 +171,16 @@ def parse_scenario_keywords(text: str, whitelist: dict) -> dict | None:
     return None
 
 
+PARAM_PLAIN = {
+    "TEMPORAL_WINDOW_DAYS": "linking window (days)",
+    "THRESHOLD_HUG_LOW": "near-the-limit band",
+    "THRESHOLD_HUG_SHARE": "share of claims near the limit",
+    "DUP_NEAR_DAYS": "duplicate window (days)",
+    "REFERRAL_CONCENTRATION": "referral concentration trigger",
+    "IDENTITY_SHARE_MIN": "shared-identity trigger",
+}
+
+
 def suggest_hardening(miss_reason_summary: list[dict], tunable: list[dict]) -> dict | None:
     """Pick the param behind the most misses and move it just past the typical missed value."""
     tun = {t["key"]: t for t in tunable}
@@ -182,9 +192,10 @@ def suggest_hardening(miss_reason_summary: list[dict], tunable: list[dict]) -> d
         target = typ * 1.2 if typ > thr else typ * 0.9
         target = min(max(target, t["min"]), t["max"])
         target = round(target) if float(t["current"]).is_integer() else round(target, 2)
+        what = PARAM_PLAIN.get(t["key"], t.get("description", t["key"]).lower())
         return {
             "param": t["key"], "new_value": target,
-            "explanation": f"{r.get('count')} missed claims had {t['key']} values around {typ:g}, past the current threshold {thr:g}. "
-                           f"Moving it to {target:g} should catch them; check the false-positive rate after the rerun.",
+            "explanation": f"{r.get('count')} missed claims sat around {typ:g} on the {what}, just past today's setting of {thr:g}. "
+                           f"Moving it to {target:g} should catch them. Check false alarms after the re-run.",
         }
     return None
