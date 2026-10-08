@@ -26,7 +26,10 @@ def _fixture_case(case_id: str) -> dict:
         return case
     row = next((c for c in fixture("queue")["cases"] if c["case_id"] == case_id), None)
     if row is None:
-        raise EngineError(f"unknown case {case_id}")
+        # Same as the engine's fixture mode: any case ID gets the sample evidence (never a 404),
+        # so a UI showing live IDs still works if this process started in fixture mode.
+        case.update(case_id=case_id, fixture_sample=True)
+        return case
     case.update(case_id=case_id, title=row["title"], pattern=row["pattern"], severity=row["severity"],
                 evidence_strength=row["evidence_strength"], confidence=row["confidence"], fixture_sample=True)
     case["scores"]["risk"] = row["risk"]

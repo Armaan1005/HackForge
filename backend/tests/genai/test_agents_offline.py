@@ -22,9 +22,10 @@ def test_court_is_grounded_and_keeps_code_status():
     assert all(a["evidence_ids"] for a in r["prosecution"]["arguments"] + r["defense"]["arguments"])
 
 
-def test_unknown_case_is_404():
+def test_unknown_case_uses_sample_in_fixture_mode():
     with client() as c:
-        assert c.post("/api/ai/court/CASE-NOPE").status_code == 404
+        r = c.post("/api/ai/court/CASE-0099")
+    assert r.status_code == 200 and r.json()["case_id"] == "CASE-0099"
 
 
 def test_brief_markdown_has_required_sections():
