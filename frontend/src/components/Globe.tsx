@@ -9,6 +9,25 @@ const MOVEMENT_DAMPING = 1400;
 const toAngles = (lat: number, lng: number): [number, number] => [Math.PI - ((lng * Math.PI) / 180 - Math.PI / 2), (lat * Math.PI) / 180];
 const [PHI0] = toAngles(21, 78);
 
+// Simplified outline of India (lat, lng). A grid of small dots inside it makes the country stand out on the globe.
+const INDIA: [number, number][] = [
+  [35.5, 74.5], [34.6, 78.2], [32.6, 79.4], [30.6, 81.1], [28.6, 84.2], [27.4, 88.1], [28.0, 88.8], [28.2, 92.0], [27.8, 95.6], [26.9, 97.1],
+  [25.2, 95.0], [23.5, 94.0], [22.0, 92.6], [23.6, 91.6], [24.3, 89.8], [22.2, 89.0], [21.6, 87.2], [19.6, 85.2], [17.6, 83.2], [15.8, 81.0],
+  [13.5, 80.3], [10.4, 79.9], [8.1, 77.5], [8.6, 76.7], [11.5, 75.6], [14.6, 74.3], [17.0, 73.3], [19.0, 72.8], [20.8, 72.7], [22.3, 70.8],
+  [22.8, 68.8], [24.3, 68.8], [24.8, 71.0], [26.6, 70.1], [28.1, 71.6], [30.1, 73.4], [32.5, 74.7], [34.1, 73.9],
+];
+const inside = (lat: number, lng: number) => {
+  let hit = false;
+  for (let i = 0, j = INDIA.length - 1; i < INDIA.length; j = i++) {
+    const [ay, ax] = INDIA[i], [by, bx] = INDIA[j];
+    if ((ay > lat) !== (by > lat) && lng < ((bx - ax) * (lat - ay)) / (by - ay) + ax) hit = !hit;
+  }
+  return hit;
+};
+const INDIA_DOTS: { location: [number, number]; size: number }[] = [];
+// cobe draws at most 64 markers (its shader has 64 slots): a 2.5° grid gives 46 dots, leaving room for the 10 cities.
+for (let lat = 8.2; lat <= 36; lat += 2.5) for (let lng = 68.5; lng <= 97.5; lng += 2.5) if (inside(lat, lng)) INDIA_DOTS.push({ location: [lat, lng], size: 0.04 });
+
 export const GLOBE_CONFIG: COBEOptions = {
   width: 800, height: 800, onRender: () => {}, devicePixelRatio: 2,
   phi: PHI0, theta: 0.32, dark: 0, diffuse: 0.4, mapSamples: 16000, mapBrightness: 1.2,
@@ -16,8 +35,9 @@ export const GLOBE_CONFIG: COBEOptions = {
   markerColor: [43 / 255, 138 / 255, 99 / 255],   // --series-1
   glowColor: [0.96, 0.96, 0.94],
   markers: [
-    { location: [19.076, 72.8777], size: 0.1 },    // Mumbai
-    { location: [28.6139, 77.209], size: 0.09 },   // Delhi
+    ...INDIA_DOTS,
+    { location: [19.076, 72.8777], size: 0.12 },   // Mumbai
+    { location: [28.6139, 77.209], size: 0.11 },   // Delhi
     { location: [12.9716, 77.5946], size: 0.08 },  // Bengaluru
     { location: [13.0827, 80.2707], size: 0.07 },  // Chennai
     { location: [17.385, 78.4867], size: 0.07 },   // Hyderabad
@@ -55,7 +75,7 @@ export function Globe({ className = '', config = GLOBE_CONFIG }: { className?: s
     window.addEventListener('resize', onResize);
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const globe = createGlobe(canvas, {
-      ...config, width: width * 2, height: width * 2,
+      ...config, markers: (config.markers ?? []).slice(-64), width: width * 2, height: width * 2,
       onRender: state => {
         if (pointerInteracting.current === null && !still) phi += 0.003;
         state.phi = phi + rs.get();
