@@ -103,12 +103,12 @@ export function Rulebook() {
                   {hit && <span className="bk-ribbon" title={`Retrieved for ${caseId}, rank ${hit.rank}`}>Pulled for {caseId}</span>}
                   <div className="bk-kicker"><span className="bk-id">{e.id}</span>{e.kind === 'law' ? 'Law summary' : 'Payer rule · synthetic'}</div>
                   <h3 className="bk-title">{e.title}</h3>
-                  <p className="bk-text">{e.text}</p>
-                  {e.kind === 'law' && <div className="bk-note warn"><Icon name="alert" size={14} /><span>Paraphrased summary for orientation. Verify against the official text before use.</span></div>}
+                  {!(e.kind === 'law' && e.detail?.length) && <p className="bk-text bk-lead">{e.text.replace(/^Summary: (.)/, (_, c: string) => c.toUpperCase())}</p>}
+                  {e.kind === 'law'
+                    ? e.detail?.map(d => <p key={d.slice(0, 20)} className="bk-text">{d}</p>)
+                    : e.detail?.map(d => <p key={d.slice(0, 20)} className="bk-text"><span className="bk-label">In practice</span>{d}</p>)}
+                  {e.kind === 'law' && <div className="bk-note warn"><Icon name="alert" size={14} /><span>Paraphrase, not legal advice. Check the official text.</span></div>}
                   <div className="bk-meta"><span className="bk-label">Source</span>{e.source}</div>
-                  <div className="bk-meta"><span className="bk-label">Found by searching for</span>
-                    <span className="bk-tags">{[...new Set(e.tags.split(' '))].slice(0, 10).map(t => <i key={t}>{t}</i>)}</span>
-                  </div>
                   {hit && <div className="bk-meta"><span className="bk-label">Match for {caseId}</span>rank {hit.rank} of {retrieved.size} · BM25 score {hit.score}</div>}
                   <span className="bk-num">{i + 1}</span>
                 </Page>

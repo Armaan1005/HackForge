@@ -72,7 +72,7 @@ export interface Argument {
   comparison_label: string; strength: Strength; verified?: boolean;
 }
 export interface Claim { claim_id: string; service_date: string; billed_amount: number; paid_amount: number; payment_status: 'paid' | 'pending' | 'denied'; payment_release_date: string | null }
-export interface RulebookEntry { id: string; kind: 'payer_rule' | 'law'; title: string; source: string; tags: string; text: string; verify?: boolean }
+export interface RulebookEntry { id: string; kind: 'payer_rule' | 'law'; title: string; source: string; tags: string; text: string; detail?: string[]; verify?: boolean }
 export interface Rule { id: string; kind: 'payer_rule' | 'law'; title: string; text: string; source: string; verify: boolean; cited: boolean }
 export interface Court {
   case_id: string;

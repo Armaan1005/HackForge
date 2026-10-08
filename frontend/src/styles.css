@@ -717,3 +717,9 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 /* cleared-alert sheet: two columns side by side */
 .alert-cols { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: start; }
 @media (max-width: 760px) { .alert-cols { grid-template-columns: 1fr; gap: 20px; } }
+
+/* rule pages with full paragraphs */
+.bk-page .bk-text { font-size: .86rem; line-height: 1.55; }
+.bk-page .bk-text.bk-lead { font-size: .95rem; font-weight: 500; }
+.bk-page .bk-inner { gap: 9px; overflow: hidden; }
+.bk-inner:has(.bk-ribbon) { padding-right: 60px; }
