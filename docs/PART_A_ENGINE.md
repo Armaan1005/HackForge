@@ -685,7 +685,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from engine.router import router as engine_router
 from genai.router import router as genai_router   # Part B
 
-app = FastAPI(title="ClaimShield Nexus")
+app = FastAPI(title="Axon")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["*"], allow_headers=["*"])
 app.include_router(engine_router)   # /api/...
 app.include_router(genai_router)    # /api/ai/...
