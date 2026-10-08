@@ -63,7 +63,7 @@ export function CaseView() {
         </Card>
           <div className="stats" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
             <div className="stat"><b>{inr(k.money.dollars_at_risk)}</b><span>at stake · {inr(k.money.pending)} unpaid</span></div>
-            <div className={`stat ${days != null && days <= 3 ? 'warn' : ''}`}><b>{days == null ? '—' : `${days} days`}</b><span>{days == null ? 'nothing pending' : 'until payment releases'}</span></div>
+            <div className={`stat ${days != null && days <= 3 ? 'warn' : ''}`}><b>{days == null ? '—' : `${days} day${days === 1 ? '' : 's'}`}</b><span>{days == null ? 'nothing pending' : 'until payment releases'}</span></div>
             <div className="stat"><b>{k.member_harm.members_affected}</b><span>members · {pct(k.member_harm.vulnerable_share)} vulnerable</span></div>
             <div className="stat"><b>{pct(k.horizon_risk[String(horizon)])}</b>
               <span className="row-flex" style={{ gap: 6 }}>repeat risk <Segmented size="sm" label="Horizon" value={horizon} onChange={setHorizon} options={[{ value: 30, label: '30d' }, { value: 60, label: '60d' }, { value: 90, label: '90d' }]} /></span></div>
