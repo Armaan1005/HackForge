@@ -9,6 +9,8 @@ import { Challenge } from './pages/Challenge';
 import { Command } from './pages/Command';
 import { CourtPage } from './pages/Court';
 import { Explained } from './pages/Explained';
+import { Landing } from './pages/Landing';
+import { Login } from './pages/Login';
 import { QueuePage } from './pages/Queue';
 import { Trust } from './pages/Trust';
 import { Twin } from './pages/Twin';
@@ -37,6 +39,8 @@ export default function App() {
           <Route path="/twin" element={shell(<Twin />)} />
           <Route path="/trust" element={shell(<Trust />)} />
           <Route path="/challenge" element={<Challenge />} />
+          <Route path="/welcome" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     </BrowserRouter>
