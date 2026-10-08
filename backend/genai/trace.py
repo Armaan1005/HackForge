@@ -66,7 +66,7 @@ def start(agent: str, model: str, system: str, prompt: str, images: int = 0, pri
     return Span(_n, agent, time.monotonic())
 
 
-def end(span: Span | None, content: str, usage=None) -> None:
+def end(span: Span | None, content: str, usage=None, model: str | None = None) -> None:
     if not span:
         return
     ms = int((time.monotonic() - span.t0) * 1000)
@@ -75,7 +75,8 @@ def end(span: Span | None, content: str, usage=None) -> None:
         tin, tout = getattr(usage, "prompt_token_count", None), getattr(usage, "candidates_token_count", None)
         if tin is not None:
             tokens = f" · {tin} in / {tout} out tokens"
-    _out(f"{C['green']}│ RESPONSE ←{C['reset']} {C['dim']}{ms} ms{tokens}{C['reset']}")
+    by = f" · answered by {model}" if model else ""
+    _out(f"{C['green']}│ RESPONSE ←{C['reset']} {C['dim']}{ms} ms{tokens}{by}{C['reset']}")
     _out(indent(clip(pretty(content), 2500)))
     _out(f"{C['green']}└─ #{span.n} done{C['reset']}")
 
@@ -83,6 +84,15 @@ def end(span: Span | None, content: str, usage=None) -> None:
 def retry(span: Span | None, attempt: int, total: int, err: Exception) -> None:
     if span:
         _out(f"{C['yellow']}│ retry {attempt}/{total} after: {type(err).__name__}: {clip(err, 200)}{C['reset']}")
+
+
+def switch(span: Span | None, old: str, new: str, err: Exception) -> None:
+    if not span:
+        return
+    code = getattr(err, "code", "?")
+    why = "overloaded" if code == 503 else "free-tier quota used up" if code == 429 else f"error {code}"
+    nxt = f"trying {new}" if new != old else f"waiting, then retrying {new}"
+    _out(f"{C['yellow']}│ {old}: {why} ({code}) → {nxt}{C['reset']}")
 
 
 def fail(span: Span | None, err: Exception) -> None:

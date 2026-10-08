@@ -46,3 +46,21 @@ def test_prose_against_whole_case():
     assert ok
     ok, reason = verify_text("Needs SIU review: ₹9.99L releases tomorrow.", [], _idx(), whole_case=case)
     assert not ok and reason.startswith("number not in case evidence")
+
+
+def test_ordinals_and_inline_ids():
+    from genai.verifier import strip_id_refs
+    assert numbers_in("3 vs 27 (1.6th percentile, n=64)") == [3, 27, 1.6, 64]
+    arg = {"point": "Distinct procedure codes billed is 3 vs a peer median of 27 (1.6th percentile, Orthopedics, MH, n=64) [PC-0001-04].",
+           "evidence_ids": ["PC-0001-04"], "case_value": 3, "comparison_value": 27}
+    kept, dropped = verify_arguments("prosecutor", [arg], _idx())
+    assert kept and not dropped
+    assert kept[0]["point"].endswith("n=64).")
+    assert strip_id_refs("Share is 94% [EV-0001-01, PC-0001-01] vs 11%.") == "Share is 94% vs 11%."
+
+
+def test_sentence_end_numbers_and_spacing():
+    from genai.verifier import strip_id_refs
+    assert numbers_in("The claims total ₹21.84L.") == [2184000]
+    assert numbers_in("Share is 94%.") == [94]
+    assert strip_id_refs("Clean history [EV-0001-09] .") == "Clean history."

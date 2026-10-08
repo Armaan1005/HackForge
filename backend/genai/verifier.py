@@ -17,7 +17,7 @@ _ID_TOKEN = re.compile(r"\b[A-Z]{2,6}(?:-[A-Z0-9]+)+\b")          # PRV-00412, E
 _DATE = re.compile(r"\b\d{4}-\d{2}(?:-\d{2})?(?:T[\d:]+)?\b")    # 2026-09-21, 2026-07
 _ALNUM = re.compile(r"\b[A-Za-z]+\d+[A-Za-z\d]*\b")              # EM5, Q1, S6, D2
 _NUM = re.compile(
-    r"(?:₹|rs\.?\s*|inr\s*)?(\d[\d,]*(?:\.\d+)?)\s*(crore|cr|lakhs?|lacs?|l|k|%|x|×|pp)?(?![\w])",
+    r"(?:₹|rs\.?\s*|inr\s*)?(\d[\d,]*(?:\.\d+)?)\s*(crore|cr|lakhs?|lacs?|l|k|%|x|×|pp|st|nd|rd|th)?(?!\w|\.\d)",
     re.IGNORECASE,
 )
 _MULT = {"crore": 1e7, "cr": 1e7, "lakh": 1e5, "lakhs": 1e5, "lac": 1e5, "lacs": 1e5, "l": 1e5, "k": 1e3}
@@ -72,6 +72,14 @@ def number_ok(n: float, allowed: set[float]) -> bool:
     if n in allowed:
         return True
     return any(abs(n - a) <= max(0.011 * abs(a), 0.051) for a in allowed)
+
+
+_ID_REFS = re.compile(r"\s*[\[(](?:\s*[A-Z]{2,6}(?:-[A-Z0-9]+)+\s*[,;]?)+[\])]")
+
+
+def strip_id_refs(text: str) -> str:
+    """Remove inline "[EV-0001-01, PC-0001-03]" lists: the UI renders citations as chips."""
+    return re.sub(r"\s+([.,;])", r"\1", _ID_REFS.sub("", text or "")).strip()
 
 
 def index_case(case: dict) -> dict[str, dict]:
@@ -139,7 +147,7 @@ def verify_arguments(agent: str, arguments: list[dict], idx: dict[str, dict]) ->
             numbers += not reason.startswith(("uncited", "cites unknown"))
             dropped.append({"agent": agent, "point": a.get("point", ""), "reason": reason})
         else:
-            kept.append({**a, "evidence_ids": ids, "verified": True})
+            kept.append({**a, "point": strip_id_refs(a.get("point", "")), "evidence_ids": ids, "verified": True})
     _record(len(kept), uncited, numbers)
     return kept, dropped
 

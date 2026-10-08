@@ -77,7 +77,7 @@ export interface Court {
   defense: { arguments: Argument[]; missing_evidence: string[]; source: string };
   verdict: { status: Status; status_label: string; next_action: string; next_action_text: string; confidence: number; evidence_strength: Strength; summary: string; human_approval_required: boolean; source: string };
   verifier: { checked: number; kept: number; dropped: number; dropped_items: { agent: string; point: string; reason: string }[] };
-  ai: { model: string; enabled: boolean; notes: string[] };
+  ai: { model: string; enabled: boolean; notes: string[]; pending?: boolean };
   generated_at: string;
 }
 

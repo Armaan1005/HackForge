@@ -1,10 +1,12 @@
 """The only path to Gemini.
 
 Protects the free-tier quota during a live demo:
-- disk cache keyed by (agent, model, prompt, images) so repeated views cost nothing
-- concurrency cap (worker pool) + requests-per-minute sliding window
+- disk cache keyed by (agent, prompt, images) so repeated views cost nothing
+- in-flight de-duplication: the same prompt asked twice waits on one call
+- concurrency cap (worker pool) + a requests-per-minute window *per model*
+- model fallback chain: a model that is overloaded (503) or out of quota (429) rests for
+  the delay Google asks for, and the next model in the chain answers instead
 - priority queue so a judge's live request jumps ahead of background prewarming
-- retry with exponential backoff + jitter on 429 / 5xx
 - callers get a timeout; the job still finishes in the background and fills the cache
 """
 from __future__ import annotations
@@ -13,9 +15,9 @@ import asyncio
 import hashlib
 import itertools
 import logging
-import random
+import re
 import time
-from collections import deque
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from typing import TypeVar
 
@@ -27,7 +29,7 @@ from .config import settings
 log = logging.getLogger("axon.gateway")
 
 LIVE, PREWARM, BACKGROUND = 0, 1, 2
-_PRIORITY = {LIVE: 'live', PREWARM: 'prewarm', BACKGROUND: 'background'}
+_PRIORITY = {LIVE: "live", PREWARM: "prewarm", BACKGROUND: "background"}
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -54,15 +56,30 @@ class _Job:
     future: asyncio.Future = field(compare=False)
 
 
+def _retry_after(err: Exception, default: float) -> float:
+    """Seconds Google asks us to wait ("retryDelay": "15s" / "retry in 15.05s"), else default."""
+    m = re.search(r"retry(?:Delay'?: '| in )(\d+(?:\.\d+)?)s", str(err))
+    return float(m.group(1)) + 0.5 if m else default
+
+
+def _consume(fut: asyncio.Future) -> None:
+    """Mark a background failure as handled so asyncio doesn't print 'exception never retrieved'."""
+    if not fut.cancelled():
+        fut.exception()
+
+
 class LLMGateway:
     def __init__(self) -> None:
         self._client = None
         self._queue: asyncio.PriorityQueue[_Job] | None = None
         self._seq = itertools.count()
-        self._call_times: deque[float] = deque()
+        self._calls: dict[str, deque[float]] = defaultdict(deque)   # model -> call timestamps (60 s window)
+        self._resting: dict[str, float] = {}                        # model -> monotonic time it may be used again
+        self._pending: dict[str, asyncio.Future] = {}               # cache key -> in-flight future
         self._rate_lock: asyncio.Lock | None = None
         self._workers: list[asyncio.Task] = []
-        self.stats = {"calls": 0, "cache_hits": 0, "failures": 0, "retries": 0}
+        self.stats = {"calls": 0, "cache_hits": 0, "failures": 0, "retries": 0, "fallbacks": 0}
+        self.last_model: dict[str, str] = {}
         settings.cache_dir.mkdir(parents=True, exist_ok=True)
 
     # ── lifecycle ────────────────────────────────────────────────────────────
@@ -83,28 +100,38 @@ class LLMGateway:
         self._workers = []
 
     # ── public API ───────────────────────────────────────────────────────────
+    @property
+    def models(self) -> list[str]:
+        return [settings.model, *[m for m in settings.fallback_models if m != settings.model]]
+
     def status(self) -> dict:
         now = time.monotonic()
-        recent = sum(1 for t in self._call_times if now - t <= 60)
+        per_model = {m: sum(1 for t in self._calls[m] if now - t <= 60) for m in self.models}
         return {
             "enabled": settings.ai_enabled,
             "mode": "live" if settings.ai_enabled else ("offline" if settings.ai_offline else "no_api_key"),
             "model": settings.model,
+            "fallback_models": settings.fallback_models,
+            "resting": {m: round(t - now) for m, t in self._resting.items() if t > now},
             "queue_depth": self._queue.qsize() if self._queue else 0,
-            "calls_this_minute": recent,
+            "calls_this_minute": sum(per_model.values()),
+            "calls_per_model": per_model,
             "rpm_limit": settings.rpm,
             "max_concurrent": settings.max_concurrent,
             **self.stats,
         }
 
     def cache_key(self, agent: str, prompt: str, system: str = "", images: list[Image] | None = None) -> str:
-        h = hashlib.sha256(f"{agent}|{settings.model}|{system}|{prompt}".encode())
+        h = hashlib.sha256(f"{agent}|{system}|{prompt}".encode())
         for img in images or []:
             h.update(hashlib.sha256(img.data).digest())
         return h.hexdigest()
 
+    def _path(self, agent: str, key: str):
+        return settings.cache_dir / f"{agent}-{key[:40]}.json"
+
     def cached(self, agent: str, prompt: str, schema: type[T], system: str = "", images: list[Image] | None = None) -> T | None:
-        path = settings.cache_dir / f"{agent}-{self.cache_key(agent, prompt, system, images)[:40]}.json"
+        path = self._path(agent, self.cache_key(agent, prompt, system, images))
         if path.exists():
             try:
                 return schema.model_validate_json(path.read_text(encoding="utf-8"))
@@ -112,17 +139,8 @@ class LLMGateway:
                 path.unlink(missing_ok=True)
         return None
 
-    async def run(
-        self,
-        agent: str,
-        prompt: str,
-        schema: type[T],
-        *,
-        system: str = "",
-        images: list[Image] | None = None,
-        priority: int = LIVE,
-        timeout: float | None = None,
-    ) -> T:
+    async def run(self, agent: str, prompt: str, schema: type[T], *, system: str = "", images: list[Image] | None = None,
+                  priority: int = LIVE, timeout: float | None = None) -> T:
         hit = self.cached(agent, prompt, schema, system, images)
         if hit is not None:
             self.stats["cache_hits"] += 1
@@ -134,9 +152,16 @@ class LLMGateway:
             raise AIUnavailable(reason)
         if self._queue is None:
             self.start()
-        path = settings.cache_dir / f"{agent}-{self.cache_key(agent, prompt, system, images)[:40]}.json"
-        fut: asyncio.Future = asyncio.get_running_loop().create_future()
-        await self._queue.put(_Job(priority, next(self._seq), agent, prompt, system, schema, images or [], path, fut))
+        key = self.cache_key(agent, prompt, system, images)
+        fut = self._pending.get(key)
+        if fut is None or fut.done():
+            fut = asyncio.get_running_loop().create_future()
+            fut.add_done_callback(_consume)
+            fut.add_done_callback(lambda _f, k=key: self._pending.pop(k, None))
+            self._pending[key] = fut
+            await self._queue.put(_Job(priority, next(self._seq), agent, prompt, system, schema, images or [], self._path(agent, key), fut))
+        else:
+            trace.skipped(agent, "same request already in flight, sharing it")
         try:
             # shield: on caller timeout the job keeps running and fills the cache for next time
             return await asyncio.wait_for(asyncio.shield(fut), timeout or settings.timeout_s)
@@ -148,17 +173,27 @@ class LLMGateway:
             raise AIUnavailable(f"{agent}: {type(e).__name__}: {str(e)[:160]}") from e
 
     # ── internals ────────────────────────────────────────────────────────────
-    async def _throttle(self) -> None:
+    async def _pick_model(self) -> str:
+        """First model in the chain that is not resting and has room in its per-minute window.
+        If none is free, wait for the earliest one."""
         assert self._rate_lock is not None
         async with self._rate_lock:
             while True:
                 now = time.monotonic()
-                while self._call_times and now - self._call_times[0] > 60:
-                    self._call_times.popleft()
-                if len(self._call_times) < settings.rpm:
-                    self._call_times.append(now)
-                    return
-                await asyncio.sleep(60 - (now - self._call_times[0]) + 0.1)
+                waits = []
+                for m in self.models:
+                    calls = self._calls[m]
+                    while calls and now - calls[0] > 60:
+                        calls.popleft()
+                    rest = self._resting.get(m, 0) - now
+                    if rest > 0:
+                        waits.append(rest)
+                        continue
+                    if len(calls) < settings.rpm:
+                        calls.append(now)
+                        return m
+                    waits.append(60 - (now - calls[0]))
+                await asyncio.sleep(max(0.2, min(waits) + 0.1))
 
     async def _worker(self) -> None:
         assert self._queue is not None
@@ -169,15 +204,15 @@ class LLMGateway:
                 job.cache_path.write_text(result.model_dump_json(), encoding="utf-8")
                 if not job.future.done():
                     job.future.set_result(result)
-            except Exception as e:  # noqa: BLE001 - surfaced to the caller
+            except Exception as e:  # noqa: BLE001 - surfaced to the caller (and the trace)
                 self.stats["failures"] += 1
-                log.warning("gemini call failed: %s", e)
+                log.debug("gemini call failed: %s", e)
                 if not job.future.done():
                     job.future.set_exception(e)
             finally:
                 self._queue.task_done()
 
-    async def _call(self, job: _Job, attempts: int = 4) -> BaseModel:
+    async def _call(self, job: _Job) -> BaseModel:
         from google.genai import errors, types
 
         contents: list = [types.Part.from_bytes(data=i.data, mime_type=i.mime_type) for i in job.images]
@@ -188,23 +223,29 @@ class LLMGateway:
             response_schema=job.schema,
             temperature=0.2,
         )
-        span = trace.start(job.agent, settings.model, job.system, job.prompt, len(job.images), _PRIORITY.get(job.priority, 'live'))
+        attempts = len(self.models) + 1
+        model = await self._pick_model()
+        span = trace.start(job.agent, model, job.system, job.prompt, len(job.images), _PRIORITY.get(job.priority, "live"))
         try:
             for i in range(attempts):
-                await self._throttle()
                 try:
                     self.stats["calls"] += 1
-                    resp = await self._client.aio.models.generate_content(model=settings.model, contents=contents, config=config)
+                    resp = await self._client.aio.models.generate_content(model=model, contents=contents, config=config)
                     result = job.schema.model_validate_json(resp.text)
-                    trace.end(span, resp.text, getattr(resp, "usage_metadata", None))
+                    self.last_model[job.agent] = model
+                    trace.end(span, resp.text, getattr(resp, "usage_metadata", None), model=model)
                     return result
                 except errors.APIError as e:
-                    if (e.code == 429 or e.code >= 500) and i < attempts - 1:
-                        self.stats["retries"] += 1
-                        trace.retry(span, i + 1, attempts - 1, e)
-                        await asyncio.sleep(2**i + random.random())
-                        continue
-                    raise
+                    if not (e.code == 429 or e.code >= 500) or i == attempts - 1:
+                        raise
+                    # rest this model for as long as Google asks (or a short default), then use the next free one
+                    self._resting[model] = time.monotonic() + _retry_after(e, 20 if e.code == 429 else 8)
+                    self.stats["retries"] += 1
+                    nxt = await self._pick_model()
+                    if nxt != model:
+                        self.stats["fallbacks"] += 1
+                    trace.switch(span, model, nxt, e)
+                    model = nxt
             raise AIUnavailable("exhausted retries")
         except Exception as e:
             trace.fail(span, e)
