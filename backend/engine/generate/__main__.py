@@ -16,6 +16,7 @@ import pandas as pd
 from ..config import CONFIG, REPO_DIR
 from . import decoys, schemes
 from .claims import ClaimBook, generate_baseline
+from .documents import generate_documents
 from .entities import World, day_iso, make_world
 from .reference import write_reference
 
@@ -166,6 +167,7 @@ def run(seed: int, n_claims: int, out_dir: Path, ref_dir: Path | None = None) ->
     build_investigations(w)
     tables = finalize(w, book)
     out_dir.mkdir(parents=True, exist_ok=True)
+    tables["documents"], tables["ground_truth_documents"] = generate_documents(tables, out_dir, seed)
     for name, df in tables.items():
         df.to_csv(out_dir / f"{name}.csv", index=False, lineterminator="\n")
     (out_dir / "planted_cases.json").write_text(

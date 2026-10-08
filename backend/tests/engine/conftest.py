@@ -28,3 +28,20 @@ def live_client(monkeypatch):
     from main import app
 
     return TestClient(app)
+
+
+TABLES = ["owners", "facilities", "providers", "members", "admissions", "referrals", "claims",
+          "investigations", "ground_truth", "documents", "ground_truth_documents"]
+
+
+@pytest.fixture(scope="session")
+def gen(tmp_path_factory):
+    """Generate seed-42 data once per test session: (out_dir, meta, tables-as-str)."""
+    import pandas as pd
+
+    from engine.generate.__main__ import run
+
+    out = tmp_path_factory.mktemp("raw")
+    meta = run(42, 50_000, out, ref_dir=tmp_path_factory.mktemp("ref"))
+    t = {name: pd.read_csv(out / f"{name}.csv", dtype=str, keep_default_na=False) for name in TABLES}
+    return out, meta, t
