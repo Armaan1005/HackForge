@@ -521,7 +521,10 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .area-card { padding: 20px 22px 16px; }
 .area-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
 .area-head h2 { margin: 0; }
-.area-legend { display: flex; justify-content: center; gap: 18px; margin-top: 8px; font-size: .8rem; color: var(--text-2); }
+.area-foot { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 12px; margin-top: 8px; }
+.area-legend { display: flex; justify-content: center; gap: 18px; font-size: .8rem; color: var(--text-2); }
+.area-source { justify-self: end; text-align: right; font-size: .7rem; color: var(--text-3); line-height: 1.35; max-width: 340px; cursor: help; }
+@media (max-width: 760px) { .area-foot { grid-template-columns: 1fr; justify-items: center; } .area-foot > span:first-child { display: none; } .area-source { justify-self: center; text-align: center; } }
 .area-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .area-legend i, .chart-tip-row i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 .chart-tip { min-width: 190px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 9px 11px; font-size: .78rem; }
@@ -626,3 +629,37 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 
 /* demo scheme being typed on the judge's phone */
 .textarea.is-typing { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); caret-color: var(--accent); }
+
+/* ── Landing: funnel ledger (replaces stat cards) ────────────────────────── */
+.ledger { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+.ledger-item { position: relative; display: grid; align-content: start; gap: 4px; padding: 22px 20px 20px; }
+.ledger-item + .ledger-item { border-left: 1px solid var(--line); }
+.ledger-item b { font-family: var(--font-display); font-size: clamp(1.6rem, 2.6vw, 2.2rem); font-weight: 650; letter-spacing: -.025em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.ledger-item span { font-size: .84rem; color: var(--text-2); line-height: 1.35; }
+.ledger-item.last b { color: var(--accent); }
+.ledger-arrow { position: absolute; left: -8px; top: 34px; width: 16px; height: 16px; padding: 1px; border-radius: 50%; background: var(--bg); color: var(--text-3); }
+.ledger-note { margin-top: 10px; font-size: .74rem; color: var(--text-3); text-align: right; }
+@media (max-width: 860px) {
+  .ledger { grid-template-columns: 1fr 1fr; }
+  .ledger-item + .ledger-item { border-left: 0; }
+  .ledger-item:nth-child(even) { border-left: 1px solid var(--line); }
+  .ledger-item:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .ledger-item.last { grid-column: 1 / -1; border-left: 0; }
+  .ledger-arrow { display: none; }
+  .ledger-note { text-align: left; }
+}
+
+/* ── Landing: how it works, as a numbered list ───────────────────────────── */
+.how { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 40px; align-items: start; }
+@media (max-width: 860px) { .how { grid-template-columns: 1fr; gap: 16px; } .how-head { position: static; } }
+.how-head { position: sticky; top: 24px; }
+.how-head .landing-h2 { margin: 4px 0 8px; }
+.how-list { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--line-strong); }
+.how-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 16px; align-items: baseline; padding: 22px 4px; border-top: 1px solid var(--line-strong); color: var(--text); }
+.how-n { font-family: var(--mono); font-size: .85rem; color: var(--text-3); }
+.how-row b { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: -.01em; transition: color var(--dur) var(--ease); }
+.how-row p { margin: 4px 0 0; color: var(--text-2); font-size: .92rem; max-width: 560px; }
+.how-where { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--text-3); white-space: nowrap; transition: color var(--dur) var(--ease), gap var(--dur) var(--ease); }
+.how-row:hover b, .how-row:hover .how-where { color: var(--accent); }
+.how-row:hover .how-where { gap: 10px; }
+@media (max-width: 560px) { .how-row { grid-template-columns: 36px minmax(0, 1fr); } .how-where { grid-column: 2; } }

@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { AreaTrend, weekly } from '../components/AreaTrend';
 import { Globe } from '../components/Globe';
-import { Icon, type IconName } from '../components/Icon';
+import { Icon } from '../components/Icon';
 import { MascotMark } from '../components/Mascot';
 import { Skeleton } from '../components/ui';
 import { api } from '../lib/api';
@@ -10,11 +10,11 @@ import { inr, num } from '../lib/format';
 import { useAsync } from '../lib/hooks';
 import type { Claim } from '../lib/types';
 
-const STEPS: { icon: IconName; title: string; body: string; to: string }[] = [
-  { icon: 'inspect', title: 'Detect', body: 'Rules, anomaly models, timing checks and a network map look at every claim line together.', to: '/home' },
-  { icon: 'accept', title: 'Explain away', body: 'Before anything reaches you, Axon tries to clear it: sicker patients, a rural sole provider, a seasonal surge.', to: '/explained' },
-  { icon: 'decision', title: 'Argue', body: 'A prosecution and a defense agent argue from the same evidence. Every line is checked against it.', to: '/court' },
-  { icon: 'employee', title: 'Decide', body: 'A person makes every call. Axon never denies a claim or holds a payment on its own.', to: '/queue' },
+const STEPS: { title: string; body: string; to: string; where: string }[] = [
+  { title: 'Detect', body: 'Rules, anomaly models, timing checks and a network map read every claim line together, so a ring of small claims shows up as one pattern.', to: '/home', where: 'Home' },
+  { title: 'Explain away', body: 'Before anything reaches a person, Axon tries the innocent readings first: sicker patients, a rural sole provider, a seasonal surge.', to: '/explained', where: 'Explained' },
+  { title: 'Argue', body: 'A prosecution and a defense agent argue from the same evidence. Anything they can’t back with a number from the claims is struck.', to: '/court', where: 'Evidence Court' },
+  { title: 'Decide', body: 'Cases are ranked against the team’s hours. A person makes every call; nothing is denied or held automatically.', to: '/queue', where: 'Cases' },
 ];
 
 const rise = { initial: { opacity: 0, y: 16 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-60px' }, transition: { duration: .5, ease: [.22, 1, .36, 1] as const } };
@@ -31,12 +31,15 @@ export function Landing() {
   const f = ov.data?.funnel;
   const atStake = q.data?.cases.reduce((s, c) => s + c.dollars_at_risk, 0);
   const holdable = q.data?.cases.filter(c => c.hold_recommended).length;
+  // The funnel, as the engine reports it: everything read, down to what a person looks at today.
   const stats = f ? [
-    { v: num(f.claim_lines), l: 'claim lines checked' },
+    { v: num(f.claim_lines), l: 'claim lines read' },
     { v: num(f.alerts), l: 'alerts raised' },
-    { v: num(f.explained), l: 'explained away before reaching anyone' },
-    { v: num(f.cases), l: 'cases for a person to review' },
+    { v: num(f.explained), l: 'explained away' },
+    { v: num(f.cases), l: 'cases built' },
+    { v: num(f.selected_today), l: `picked for today’s ${f.capacity_hours} review hours` },
   ] : [];
+  const asOf = ov.data ? new Date(`${ov.data.sim_today}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
   return (
     <div className="landing">
@@ -77,8 +80,20 @@ export function Landing() {
       </section>
 
       <section className="container">
-        <motion.div className="landing-stats" {...rise}>
-          {stats.length ? stats.map(s => <div key={s.l} className="landing-stat"><b>{s.v}</b><span>{s.l}</span></div>) : <Skeleton h={88} />}
+        <motion.div {...rise}>
+          {stats.length ? (
+            <>
+              <div className="ledger">
+                {stats.map((s, i) => (
+                  <div key={s.l} className={`ledger-item ${i === stats.length - 1 ? 'last' : ''}`}>
+                    {i > 0 && <Icon name="slim-arrow-right" size={14} className="ledger-arrow" />}
+                    <b>{s.v}</b><span>{s.l}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="ledger-note">Engine run as of {asOf} · synthetic data, seed {ov.data?.seed}</p>
+            </>
+          ) : <Skeleton h={88} />}
         </motion.div>
       </section>
 
@@ -87,24 +102,30 @@ export function Landing() {
           {claims.data ? (
             <AreaTrend title="Money moving through flagged cases" today={ov.data?.sim_today ?? new Date().toISOString().slice(0, 10)}
               description={`Billed per week across the ${claims.data.cases} open cases. Amber has already been paid out; green can still be stopped.`}
-              data={claims.data.weeks} />
+              data={claims.data.weeks}
+              source={`Axon engine, claims table (service_date, billed_amount, payment_status) · synthetic data${ov.data ? `, seed ${ov.data.seed}` : ''}`} />
           ) : <Skeleton h={360} />}
         </motion.div>
       </section>
 
       <section className="container landing-section">
-        <motion.h2 className="landing-h2" {...rise}>How a case gets to you</motion.h2>
-        <div className="landing-steps">
-          {STEPS.map((s, i) => (
-            <motion.div key={s.title} {...rise} transition={{ ...rise.transition, delay: i * .08 }}>
-              <Link to={s.to} className="landing-step">
-                <span className="landing-step-n">{i + 1}</span>
-                <span className="row-icon"><Icon name={s.icon} size={16} /></span>
-                <b>{s.title}</b>
-                <p className="small muted">{s.body}</p>
-              </Link>
-            </motion.div>
-          ))}
+        <div className="how">
+          <motion.div className="how-head" {...rise}>
+            <p className="eyebrow">How it works</p>
+            <h2 className="landing-h2">How a case gets to you</h2>
+            <p className="muted small">Four stages. Each one has its own page in the workspace, so you can check the work.</p>
+          </motion.div>
+          <ol className="how-list">
+            {STEPS.map((s, i) => (
+              <motion.li key={s.title} {...rise} transition={{ ...rise.transition, delay: i * .06 }}>
+                <Link to={s.to} className="how-row">
+                  <span className="how-n">{String(i + 1).padStart(2, '0')}</span>
+                  <div><b>{s.title}</b><p>{s.body}</p></div>
+                  <span className="how-where">{s.where}<Icon name="arrow-right" size={13} /></span>
+                </Link>
+              </motion.li>
+            ))}
+          </ol>
         </div>
       </section>
 

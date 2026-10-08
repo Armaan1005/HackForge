@@ -44,7 +44,7 @@ function TipBox({ active, payload, label }: { active?: boolean; payload?: { data
   );
 }
 
-export function AreaTrend({ title, description, data, today, height = 260 }: { title: string; description: string; data: Week[]; today: string; height?: number }) {
+export function AreaTrend({ title, description, data, today, source, height = 260 }: { title: string; description: string; data: Week[]; today: string; source: string; height?: number }) {
   const id = useId().replace(/:/g, '');
   const [range, setRange] = useState<'90' | '180' | 'all'>('all');
   const shown = useMemo(() => {
@@ -84,8 +84,14 @@ export function AreaTrend({ title, description, data, today, height = 260 }: { t
           </ResponsiveContainer>
         </div>
       )}
-      <div className="area-legend">
-        {[...SERIES].reverse().map(s => <span key={s.key}><i style={{ background: s.color }} />{s.label}</span>)}
+      <div className="area-foot">
+        <span />
+        <div className="area-legend">
+          {[...SERIES].reverse().map(s => <span key={s.key}><i style={{ background: s.color }} />{s.label}</span>)}
+        </div>
+        <span className="area-source" title={`${source}\nWeekly sums of billed_amount by service_date (week starts Monday); denied claims left out.`}>
+          Source: {source}
+        </span>
       </div>
     </div>
   );
