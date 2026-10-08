@@ -734,3 +734,9 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .case-tags .status-cleared { background: color-mix(in srgb, var(--good) 14%, transparent); }
 .case-tags-sep { width: 1px; height: 22px; background: var(--line-strong); margin: 0 4px; }
 .case-tags .btn { height: 34px; }
+
+/* Cases scatter polish */
+.pf-chart { position: relative; }
+.pf-hint { position: absolute; top: 26px; left: 78px; font-size: .7rem; font-weight: 600; letter-spacing: .02em; color: var(--text-3); background: var(--surface-2); padding: 2px 8px; border-radius: 99px; pointer-events: none; }
+.pf-chart .recharts-scatter-symbol { transition: transform .2s var(--ease); transform-box: fill-box; transform-origin: center; }
+.pf-chart .recharts-scatter-symbol:hover { transform: scale(1.12); }
