@@ -905,15 +905,5 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
   background: radial-gradient(circle closest-side, rgba(43,138,99,0) 78.6%, rgba(43,138,99,.95) 80%, rgba(63,174,127,.7) 81.6%, rgba(77,217,153,.28) 83.6%, rgba(77,217,153,0) 87%); }
 .globe canvas { position: relative; }
 
-/* Landing: stats band fits on the first screen, and echoes the black globe */
+/* Landing: stats strip fits on the first screen */
 .landing-hero { min-height: calc(100svh - 72px - 175px); padding-bottom: 8px; }
-.landing .ledger { background: #0e0f11; border: 0; border-radius: var(--radius); box-shadow: 0 18px 40px -22px rgba(0, 0, 0, .55); color: #f1f2f4; }
-.landing .ledger-item + .ledger-item { border-left-color: rgba(255, 255, 255, .09); }
-.landing .ledger-item b { color: #f6f7f8; }
-.landing .ledger-item span { color: #a3a8b0; }
-.landing .ledger-item.last b { color: #4dd999; }
-.landing .ledger-arrow { background: #0e0f11; color: #6b7078; }
-.landing .ledger-note { color: var(--text-3); }
-.landing .hero-copy .btn-primary { background: #0e0f11; color: #fff; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .6); }
-.landing .hero-copy .btn-primary:hover { background: #1c1e21; }
-@media (max-width: 860px) { .landing .ledger-item:nth-child(n + 3), .landing .ledger-item:nth-child(even) { border-color: rgba(255, 255, 255, .09); } }
