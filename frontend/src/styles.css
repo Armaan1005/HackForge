@@ -942,3 +942,10 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .tf-vertical .tf-dots i { width: 7px; height: 7px; }
 .tf-vertical .tf-legend { grid-row: 7; justify-content: flex-start; gap: 4px 10px; font-size: .66rem; margin-top: 6px; }
 @media (max-width: 1100px) { .twin-layout { grid-template-columns: 1fr; } .twin-side { position: static; max-height: none; order: -1; } }
+
+/* Judges' QR lives in the Fraud Twin sidebar, under Progress */
+.side-qr { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.side-qr .qr-card { border: 0; box-shadow: none; padding: 0; background: transparent; }
+.side-qr .qr-slot { min-height: 0; margin: 4px 0 10px; }
+.side-qr .card-title h2 { font-size: 1rem; }
+.side-qr .input, .side-qr .select { font-size: .78rem; }

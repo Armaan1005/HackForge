@@ -66,7 +66,7 @@ export function Twin() {
         <div className="twin-main">
 
 
-      <div className="home-grid twin-row" style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 20 }}>
         <Card>
           <div className="field">
             <label htmlFor="scheme">What if…</label>
@@ -105,7 +105,6 @@ export function Twin() {
             </motion.div>
           )}
         </Card>
-        <JudgeQr />
       </div>
 
       <section className="schemes" aria-label="The six schemes">
@@ -152,6 +151,7 @@ export function Twin() {
             change: advice?.suggested_change ?? null,
             hardened: hardened && run ? { before: hardened.before?.detection_rate ?? run.detection_rate, after: hardened.after?.detection_rate ?? hardened.detection_rate } : null,
           }} />
+          <div className="side-qr"><JudgeQr /></div>
         </aside>
       </div>
     </>
