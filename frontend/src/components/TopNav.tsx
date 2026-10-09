@@ -16,7 +16,7 @@ const links: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: '/explained', label: 'Explained', icon: 'complete' },
   { to: '/court', label: 'Evidence Court', icon: 'decision' },
   { to: '/twin', label: 'Fraud Twin', icon: 'lab' },
-  { to: '/deal-breaker', label: 'Deal Breaker', icon: 'history' },
+  { to: '/without-axon', label: 'Without Axon', icon: 'history' },
   { to: '/rulebook', label: 'Rulebook', icon: 'course-book' },
   { to: '/trust', label: 'Trust', icon: 'shield' },
 ];

@@ -40,8 +40,9 @@ export default function App() {
           <Route path="/cases/:id" element={shell(<CaseView />)} />
           <Route path="/explained" element={shell(<Explained />)} />
           <Route path="/twin" element={shell(<Twin />)} />
-          <Route path="/deal-breaker" element={shell(<Timelines />)} />
-          <Route path="/timelines" element={<Navigate to="/deal-breaker" replace />} />
+          <Route path="/without-axon" element={shell(<Timelines />)} />
+          <Route path="/timelines" element={<Navigate to="/without-axon" replace />} />
+          <Route path="/deal-breaker" element={<Navigate to="/without-axon" replace />} />
           <Route path="/rulebook" element={shell(<Rulebook />)} />
           <Route path="/trust" element={shell(<Trust />)} />
           <Route path="/challenge" element={<Challenge />} />

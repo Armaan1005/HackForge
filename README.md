@@ -67,9 +67,9 @@ Alerts the engine cleared, and the innocent explanation that fit the facts.
 Try to beat the detector: pick or describe a scheme, see how many fakes each method catches, why some slipped through, and the fix Axon suggests.
 ![Fraud Twin](docs/screenshots/twin.png)
 
-### Deal Breaker
+### Without Axon
 The same case, the same dates, with and without Axon: money paid out and lost vs. held before it leaves.
-![Deal Breaker](docs/screenshots/timelines.png)
+![Without Axon](docs/screenshots/timelines.png)
 
 ### Rulebook
 The 33 synthetic payer rules and 10 paraphrased Indian law summaries the agents may cite, retrieved per case (BM25 RAG).

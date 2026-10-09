@@ -219,7 +219,7 @@ export function Timelines() {
 
   return (
     <div className={`twotl ${act2 ? 'tl-act2' : ''} ${phase === 'rewind' ? 'tl-rewind' : ''} ${phase === 'strike' || phase === 'cta' ? 'tl-lost' : ''}`}>
-      <PageHeader eyebrow="Deal Breaker"
+      <PageHeader eyebrow="Without Axon"
         title={phase === 'cta' ? 'Back to today' : act2 || phase === 'rewind' ? 'The same days, without Axon' : 'With Axon'}
         subtitle={<>{k.case_id} · {PATTERN[k.pattern] ?? k.pattern}. Same data, same dates, two outcomes.</>}
         actions={<div className="row-flex">
