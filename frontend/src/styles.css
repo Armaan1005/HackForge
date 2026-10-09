@@ -536,9 +536,11 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .chart-tip-row.total { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; }
 
 /* ── Landing ─────────────────────────────────────────────────────────────── */
+/* cool grey stage so the black globe and its white rim stand out */
 .landing { min-height: 100vh; background:
-  radial-gradient(60% 50% at 85% 10%, hsl(var(--ah) 40% 85% / .55), transparent 70%),
-  radial-gradient(40% 40% at 0% 30%, hsl(40 60% 88% / .5), transparent 70%), var(--bg); }
+  radial-gradient(38% 46% at 74% 30%, rgba(255,255,255,.85), transparent 70%),
+  radial-gradient(50% 40% at 10% 20%, rgba(255,255,255,.45), transparent 70%),
+  linear-gradient(180deg, #e6e8eb 0%, #dcdfe3 55%, #d4d8dd 100%); }
 .landing-nav { display: flex; align-items: center; gap: 16px; height: 72px; }
 .landing-links { display: flex; gap: 22px; margin-left: auto; font-size: .92rem; font-weight: 550; }
 .landing-links a { color: var(--text-2); }
@@ -904,3 +906,4 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
   /* cobe draws the sphere at 80% of the canvas radius: a white ring that fades outwards from that edge */
   background: radial-gradient(circle closest-side, rgba(255,255,255,0) 77%, rgba(255,255,255,.95) 80.5%, rgba(255,255,255,.55) 85%, rgba(255,255,255,0) 95%); }
 .globe canvas { position: relative; }
+.landing .ledger-arrow { background: #e3e5e8; }
