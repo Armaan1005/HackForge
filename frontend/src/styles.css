@@ -954,3 +954,13 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .pc-title h2 { margin: 0; }
 
 .row-icon.good { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+
+/* Trust page: open, editorial layout (rules instead of boxes) */
+.trust-ledger { margin-bottom: 34px; }
+.trust-open .rai-grid { background: transparent; border: 0; border-radius: 0; box-shadow: none; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+.trust-open .rai-col { padding: 20px 22px 22px; }
+.trust-open .rai-col:first-child { padding-left: 4px; }
+.trust-open .side-flat { border-top: 1px solid var(--line-strong); }
+.trust-open .side-flat > .card { background: transparent; border: 0; box-shadow: none; border-radius: 0; padding: 18px 2px 22px; }
+.trust-open .side-flat > .card + .card { border-top: 1px solid var(--line-strong); }
+.trust-open .plain-section .pad { padding-top: 18px; }

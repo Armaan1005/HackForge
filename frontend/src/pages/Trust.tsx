@@ -20,14 +20,15 @@ export function Trust() {
   const maxFlag = Math.max(...[...fair.by_region, ...fair.by_size, ...fair.rural_vs_urban].map(r => r.flag_rate));
 
   return (
-    <>
+    <div className="trust-open">
       <PageHeader eyebrow="How well it works" title="Can you trust these numbers?" subtitle="Measured on synthetic data with planted fraud, so the right answers are known." />
 
-      <div className="stats" style={{ marginBottom: 20 }}>
-        <div className="stat"><b>{pct(o.recall)}</b><span>of planted fraud found</span></div>
-        <div className="stat"><b>{pct(o.precision)}</b><span>of flagged cases were real</span></div>
-        <div className="stat"><b>{d.decoys.correctly_defended} of {d.decoys.total}</b><span>honest look-alikes left alone</span></div>
-        <div className="stat"><b>{aiStats.data ? num(aiStats.data.uncited_blocked + aiStats.data.numbers_blocked) : '—'}</b><span>AI statements blocked for missing evidence</span></div>
+      <div className="ledger trust-ledger">
+        <div className="ledger-item"><b>{pct(o.recall)}</b><span>of planted fraud found</span></div>
+        <div className="ledger-item"><b>{pct(o.precision)}</b><span>of flagged cases were real</span></div>
+        <div className="ledger-item"><b>{d.decoys.correctly_defended} of {d.decoys.total}</b><span>honest look-alikes left alone</span></div>
+        <div className="ledger-item"><b>{d.exoneration.planted_fraud_wrongly_cleared}</b><span>planted fraud cleared by mistake</span></div>
+        <div className="ledger-item last"><b>{aiStats.data ? num(aiStats.data.uncited_blocked + aiStats.data.numbers_blocked) : '—'}</b><span>AI statements struck for missing evidence</span></div>
       </div>
 
       <ResponsibleAI struck={aiStats.data ? aiStats.data.uncited_blocked + aiStats.data.numbers_blocked : null} checked={aiStats.data?.statements_checked ?? null}
@@ -50,7 +51,7 @@ export function Trust() {
             </tbody>
           </table>
         </div>
-        <div className="stack-lg panel-stack">
+        <div className="side-flat">
           <Card>
             <div className="row-flex" style={{ marginBottom: 10 }}><h2>Is the forecast honest?</h2><span className="spacer" />
               <Segmented size="sm" label="Look ahead" value={h} onChange={setH} options={[{ value: '30', label: '30d' }, { value: '60', label: '60d' }, { value: '90', label: '90d' }]} /></div>
@@ -60,7 +61,7 @@ export function Trust() {
           <Card>
             <h2 style={{ marginBottom: 14 }}>Is anyone treated unfairly?</h2>
             <div className="stack">
-              {[...fair.rural_vs_urban, ...fair.by_size].map(r => <Bar key={r.group} label={r.group.replace(/^Q\d /, '')} value={r.flag_rate} max={maxFlag * 1.2} right={pct(r.flag_rate, 1)} />)}
+              {[...fair.rural_vs_urban, ...fair.by_size].map(r => <Bar key={r.group} label={/^Q\d$/.test(r.group) ? `Provider size ${r.group.slice(1)} of 5${r.group === 'Q1' ? ' (smallest)' : r.group === 'Q5' ? ' (largest)' : ''}` : r.group.replace(/^\w/, c => c.toUpperCase())} value={r.flag_rate} max={maxFlag * 1.2} right={pct(r.flag_rate, 1)} />)}
             </div>
             <p className="small muted" style={{ marginTop: 12 }}>Rural and small providers aren't flagged more often.</p>
           </Card>
@@ -95,6 +96,6 @@ export function Trust() {
           ))}
         </Section>
       </div>
-    </>
+    </div>
   );
 }
