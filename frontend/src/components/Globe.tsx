@@ -30,10 +30,10 @@ for (let lat = 9; lat <= 36; lat += 3.5) for (let lng = 70; lng <= 97.5; lng += 
 
 export const GLOBE_CONFIG: COBEOptions = {
   width: 800, height: 800, onRender: () => {}, devicePixelRatio: 2,
-  phi: PHI0, theta: 0.32, dark: 0, diffuse: 0.4, mapSamples: 16000, mapBrightness: 1.2,
-  baseColor: [1, 1, 1],
-  markerColor: [43 / 255, 138 / 255, 99 / 255],   // --series-1
-  glowColor: [0.96, 0.96, 0.94],
+  phi: PHI0, theta: 0.32, dark: 1, diffuse: 1.2, mapSamples: 16000, mapBrightness: 6,  // dark globe, as in Eldora UI's Cobe Globe
+  baseColor: [0.3, 0.3, 0.3],
+  markerColor: [0.3, 0.85, 0.6],                    // brighter green so India reads on black
+  glowColor: [0.85, 0.85, 0.82],
   markers: [
     ...INDIA_DOTS,
     { location: [19.076, 72.8777], size: 0.06 },   // Mumbai
