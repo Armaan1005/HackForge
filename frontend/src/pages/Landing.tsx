@@ -1,6 +1,5 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { AreaTrend, weekly } from '../components/AreaTrend';
 import { NumberTicker } from '../components/fx';
 import { Globe } from '../components/Globe';
 
@@ -11,25 +10,13 @@ import { Skeleton } from '../components/ui';
 import { api } from '../lib/api';
 import { inr, num } from '../lib/format';
 import { useAsync } from '../lib/hooks';
-import type { Claim } from '../lib/types';
 
-const STEPS: { title: string; body: string; to: string; where: string }[] = [
-  { title: 'Detect', body: 'Rules, anomaly models, timing checks and a network map read every claim line together, so a ring of small claims shows up as one pattern.', to: '/home', where: 'Home' },
-  { title: 'Explain away', body: 'Before anything reaches a person, Axon tries the innocent readings first: sicker patients, a rural sole provider, a seasonal surge.', to: '/explained', where: 'Explained' },
-  { title: 'Argue', body: 'A prosecution and a defense agent argue from the same evidence. Anything they can’t back with a number from the claims is struck.', to: '/court', where: 'Evidence Court' },
-  { title: 'Decide', body: 'Cases are ranked against the team’s hours. A person makes every call; nothing is denied or held automatically.', to: '/queue', where: 'Cases' },
-];
 
 const rise = { initial: { opacity: 0, y: 16 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-60px' }, transition: { duration: .5, ease: [.22, 1, .36, 1] as const } };
 
 export function Landing() {
   const ov = useAsync(() => api.overview(), []);
   const q = useAsync(() => api.queue(40, 30), []);
-  const claims = useAsync(async () => {
-    const ids = (await api.queue(40, 30)).cases.map(c => c.case_id);
-    const all = await Promise.all(ids.map(id => api.claims(id).then(r => r.claims).catch(() => [] as Claim[])));
-    return { cases: ids.length, weeks: weekly(all.flat()) };
-  }, []);
 
   const f = ov.data?.funnel;
   const atStake = q.data?.cases.reduce((s, c) => s + c.dollars_at_risk, 0);
@@ -90,55 +77,6 @@ export function Landing() {
         </motion.div>
       </section>
 
-      <section className="container landing-section">
-        <motion.div {...rise}>
-          {claims.data ? (
-            <AreaTrend title="Money moving through flagged cases" today={ov.data?.sim_today ?? new Date().toISOString().slice(0, 10)}
-              description={`Billed per week across the ${claims.data.cases} open cases`}
-              data={claims.data.weeks}
-              source={`Axon engine, claims table (service_date, billed_amount, payment_status) · synthetic data${ov.data ? `, seed ${ov.data.seed}` : ''}`} />
-          ) : <Skeleton h={360} />}
-        </motion.div>
-      </section>
-
-      <section className="container landing-section">
-        <div className="how">
-          <motion.div className="how-head" {...rise}>
-            <p className="eyebrow">How it works</p>
-            <h2 className="landing-h2">How a case gets to you</h2>
-            <p className="muted small">Four stages. Each one has its own page in the workspace, so you can check the work.</p>
-          </motion.div>
-          <ol className="how-list">
-            {STEPS.map((s, i) => (
-              <motion.li key={s.title} {...rise} transition={{ ...rise.transition, delay: i * .06 }}>
-                <Link to={s.to} className="how-row">
-                  <span className="how-n">{String(i + 1).padStart(2, '0')}</span>
-                  <div><b>{s.title}</b><p>{s.body}</p></div>
-                  <span className="how-where">{s.where}<Icon name="arrow-right" size={13} /></span>
-                </Link>
-              </motion.li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="container landing-section">
-        <motion.div className="landing-book" {...rise}>
-          <Link to="/rulebook" className="mini-book" aria-label="Open the rulebook">
-            <span className="mini-book-spine" /><span className="mini-book-cover"><MascotMark size={34} /><b>Axon Rulebook</b><small>Payer rules · law summaries</small></span>
-          </Link>
-          <div>
-            <h2 className="landing-h2" style={{ margin: 0 }}>Every argument opens the rulebook</h2>
-            <p className="muted" style={{ marginTop: 8, maxWidth: 560 }}>For each case, Axon looks up the few payer rules and law summaries that apply. The agents may cite only those pages, and every number must still come from the claims.</p>
-            <Link to="/rulebook" className="btn btn-secondary btn-sm" style={{ marginTop: 14 }}><Icon name="course-book" size={14} />Read the rulebook</Link>
-          </div>
-        </motion.div>
-      </section>
-
-      <footer className="container landing-foot small faint">
-        <span>Axon · built on synthetic data for a hackathon. Not legal advice; law summaries must be checked against the official text.</span>
-        <Link to="/home">Dive in</Link>
-      </footer>
     </div>
   );
 }
