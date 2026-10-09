@@ -949,3 +949,6 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .side-qr .qr-slot { min-height: 0; margin: 4px 0 10px; }
 .side-qr .card-title h2 { font-size: 1rem; }
 .side-qr .input, .side-qr .select { font-size: .78rem; }
+
+.pc-title { display: flex; flex-direction: column; justify-content: center; padding-top: 16px; padding-bottom: 16px; }
+.pc-title h2 { margin: 0; }
