@@ -536,30 +536,11 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .chart-tip-row.total { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; }
 
 /* ── Landing ─────────────────────────────────────────────────────────────── */
-/* Landing in dark metallic grey: tokens re-defined for this page only, so every component follows */
-.landing {
-  --text: #f1f2f4; --text-2: #b6bac1; --text-3: #8a8f97;
-  --surface: #26292e; --surface-2: #2d3036; --bg: #1f2125; --bg-2: #30343a;
-  --glass: rgba(38, 41, 46, .78);
-  --line: rgba(255, 255, 255, .08); --line-strong: rgba(255, 255, 255, .15);
-  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px -10px rgba(0, 0, 0, .55);
-  --shadow-lg: 0 2px 6px rgba(0, 0, 0, .35), 0 28px 60px -20px rgba(0, 0, 0, .7);
-  --al: 52%;                                   /* lighter green so it reads on dark */
-  --accent: hsl(var(--ah) 45% var(--al));      /* re-derived here: custom properties resolve where they're declared */
-  --m-light: hsl(var(--ah) 38% 74%); --m-dark: var(--accent);
-  --series-1: #3fbf8a; --series-2: #e09a4f; --mark-muted: #5b6068;
-  --grid: #34383e; --axis: #464b52; --chart-surface: #26292e;
-  --accent-softer: hsl(var(--ah) 45% 52% / .10); --accent-soft: hsl(var(--ah) 45% 52% / .18);
-  color: var(--text); min-height: 100vh;
-  background:
-    radial-gradient(40% 50% at 74% 30%, rgba(255, 255, 255, .10), transparent 70%),
-    linear-gradient(115deg, rgba(255, 255, 255, .04) 0%, transparent 35%, rgba(255, 255, 255, .03) 55%, transparent 75%),
-    linear-gradient(180deg, #2c2f34 0%, #23262a 50%, #1b1d20 100%);
-}
-.landing .landing-hero::before { background-image: radial-gradient(rgba(255, 255, 255, .09) 1px, transparent 1.2px); }
-.landing .ledger-arrow { background: #2a2d32; }
-.landing .btn-secondary { background: var(--surface-2); color: var(--text); }
-.landing .mini-book-cover { box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .8); }
+/* cool grey stage so the black globe and its white rim stand out */
+.landing { min-height: 100vh; background:
+  radial-gradient(38% 46% at 74% 30%, rgba(255,255,255,.85), transparent 70%),
+  radial-gradient(50% 40% at 10% 20%, rgba(255,255,255,.45), transparent 70%),
+  linear-gradient(180deg, #e6e8eb 0%, #dcdfe3 55%, #d4d8dd 100%); }
 .landing-nav { display: flex; align-items: center; gap: 16px; height: 72px; }
 .landing-links { display: flex; gap: 22px; margin-left: auto; font-size: .92rem; font-weight: 550; }
 .landing-links a { color: var(--text-2); }
@@ -925,3 +906,4 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
   /* cobe draws the sphere at 80% of the canvas radius: a white ring that fades outwards from that edge */
   background: radial-gradient(circle closest-side, rgba(255,255,255,0) 77%, rgba(255,255,255,.95) 80.5%, rgba(255,255,255,.55) 85%, rgba(255,255,255,0) 95%); }
 .globe canvas { position: relative; }
+.landing .ledger-arrow { background: #e3e5e8; }
