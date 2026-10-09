@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { Mascot, type MascotMood } from '../components/Mascot';
+import { SCHEME_ART } from '../components/SchemeArt';
 import { TwinFlow } from '../components/TwinFlow';
 import { NetworkGraph } from '../components/NetworkGraph';
 import { Bar, Button, Card, Chip, Note, PageHeader, Ring, Skeleton } from '../components/ui';
@@ -29,6 +30,12 @@ export function Twin() {
   const mood: MascotMood = busy ? 'thinking' : hardened ? 'happy' : run ? 'watching' : 'watching';
 
   const reset = () => { setRun(null); setAdvice(null); setHardened(null); };
+  const pickScheme = (id: string) => {
+    const s = scenarios.find(x => x.id === id);
+    if (!s) return;
+    setParsed({ scenario: s.id, params: Object.fromEntries(Object.entries(s.params).map(([k, v]) => [k, v.default])) });
+    setText(s.examples[0] ?? text); setMsg(null); reset();
+  };
   const build = async () => {
     setBusy('parse'); setMsg(null); reset();
     try {
@@ -70,6 +77,23 @@ export function Twin() {
         }} />}
       </Card>
 
+      <section className="schemes" aria-label="The six schemes">
+        {scenarios.map(sc => {
+          const a = SCHEME_ART[sc.id];
+          if (!a) return null;
+          return (
+            <div key={sc.id} className="scheme">
+              <a.art />
+              <b>{sc.name}</b>
+              <span>{a.line}</span>
+              <button type="button" className="scheme-try" onClick={() => { pickScheme(sc.id); document.getElementById('scheme')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>
+                Try it <Icon name="arrow-right" size={13} />
+              </button>
+            </div>
+          );
+        })}
+      </section>
+
       <div className="home-grid twin-row" style={{ marginBottom: 20 }}>
         <Card>
           <div className="field">
@@ -81,7 +105,7 @@ export function Twin() {
           </div>
           <div className="row-flex" style={{ marginTop: 16 }}>
             <Button icon="ai" loading={busy === 'parse'} onClick={build}>Build the attack</Button>
-            <select className="select" style={{ width: 'auto' }} value="" onChange={e => { const s = scenarios.find(x => x.id === e.target.value); if (s) { setParsed({ scenario: s.id, params: Object.fromEntries(Object.entries(s.params).map(([k, v]) => [k, v.default])) }); setMsg(null); reset(); } }} aria-label="Pick a scheme">
+            <select className="select" style={{ width: 'auto' }} value="" onChange={e => pickScheme(e.target.value)} aria-label="Pick a scheme">
               <option value="" disabled>or pick a scheme</option>
               {scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>

@@ -863,3 +863,25 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 @media (max-width: 1000px) { .home-grid { grid-template-columns: minmax(0, 1fr); } }
 .plain-section { overflow-x: auto; }
 .landing { overflow-x: clip; }
+
+/* Fraud Twin: the six schemes, one ruled panel */
+.schemes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+@media (max-width: 900px) { .schemes { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .schemes { grid-template-columns: 1fr; } }
+.scheme { display: grid; gap: 4px; align-content: start; padding: 16px 18px 18px; border-left: 1px solid var(--line); border-top: 1px solid var(--line); margin: -1px 0 0 -1px; }
+.scheme .sa { width: 100%; height: 92px; margin-bottom: 6px; background: var(--surface-2); border-radius: 12px; }
+.scheme b { font-size: .95rem; }
+.scheme > span { font-size: .82rem; color: var(--text-2); line-height: 1.4; }
+.scheme-try { justify-self: start; display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 0; border: 0; background: none; font: inherit; font-size: .82rem; font-weight: 600; color: var(--accent); cursor: pointer; }
+.scheme-try:hover { gap: 8px; }
+.sa-pop { transform-box: fill-box; transform-origin: center bottom; animation: sa-pop 2.8s ease-in-out infinite; }
+@keyframes sa-pop { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.85); } }
+.sa-flow { animation: sa-flow 1.6s linear infinite; }
+@keyframes sa-flow { to { stroke-dashoffset: -18; } }
+.sa-ghost { animation: sa-ghost 2.2s ease-in-out infinite; }
+@keyframes sa-ghost { 50% { opacity: .25; } }
+.sa-draw { stroke-dasharray: 200; animation: sa-draw 3.5s ease-in-out infinite; }
+@keyframes sa-draw { 0% { stroke-dashoffset: 200; } 60%, 100% { stroke-dashoffset: 0; } }
+.sa-slide { animation: sa-slide 3s ease-in-out infinite; }
+@keyframes sa-slide { 0%, 100% { transform: translate(-8px, -4px); opacity: .5; } 50% { transform: translate(0, 0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sa-pop, .sa-flow, .sa-ghost, .sa-draw, .sa-slide { animation: none; } }
