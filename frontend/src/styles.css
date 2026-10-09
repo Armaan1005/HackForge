@@ -898,3 +898,9 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .rai-col ul { margin: 2px 0 4px; padding-left: 16px; display: grid; gap: 6px; font-size: .84rem; color: var(--text-2); line-height: 1.45; }
 
 .landing-nav > .btn { margin-left: auto; }
+
+/* white gradient halo behind the dark globe */
+.globe::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  /* cobe draws the sphere at 80% of the canvas radius: a white ring that fades outwards from that edge */
+  background: radial-gradient(circle closest-side, rgba(255,255,255,0) 77%, rgba(255,255,255,.95) 80.5%, rgba(255,255,255,.55) 85%, rgba(255,255,255,0) 95%); }
+.globe canvas { position: relative; }
