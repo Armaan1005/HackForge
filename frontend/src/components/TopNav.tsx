@@ -13,8 +13,8 @@ export const INVESTIGATOR = { name: 'Priya Sharma', role: 'SIU investigator' };
 const links: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: '/home', label: 'Home', icon: 'home', end: true },
   { to: '/queue', label: 'Cases', icon: 'workflow-tasks' },
-  { to: '/court', label: 'Evidence Court', icon: 'decision' },
   { to: '/explained', label: 'Explained', icon: 'complete' },
+  { to: '/court', label: 'Evidence Court', icon: 'decision' },
   { to: '/twin', label: 'Fraud Twin', icon: 'lab' },
   { to: '/timelines', label: 'Timelines', icon: 'history' },
   { to: '/rulebook', label: 'Rulebook', icon: 'course-book' },
