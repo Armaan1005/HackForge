@@ -26,7 +26,6 @@ export function Twin() {
   const [hardened, setHardened] = useState<TwinRun | null>(null);
   const scenarios = (wl.data?.scenarios ?? []) as unknown as TwinScenarioSpec[];
   const spec = scenarios.find(s => s.id === parsed?.scenario);
-  const [howOpen, setHowOpen] = useState(true);
   const mood: MascotMood = busy ? 'thinking' : hardened ? 'happy' : run ? 'watching' : 'watching';
 
   const reset = () => { setRun(null); setAdvice(null); setHardened(null); };
@@ -63,36 +62,9 @@ export function Twin() {
     <>
       <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" subtitle="Describe a new fraud trick. Axon tests it on a copy of the data." actions={<Mascot size={80} mood={mood} />} />
 
-      <Card style={{ marginBottom: 20 }}>
-        <div className="row-flex" style={{ marginBottom: howOpen ? 18 : 0 }}>
-          <h2>How the Fraud Twin works</h2>
-          <span className="spacer" />
-          <Button size="sm" variant="ghost" icon={howOpen ? 'less' : 'add'} onClick={() => setHowOpen(v => !v)}>{howOpen ? 'Hide' : 'Show'}</Button>
-        </div>
-        {howOpen && <TwinFlow s={{
-          text, recipes: scenarios.length, busy, run,
-          recipe: parsed && spec ? { name: spec.name, params: Object.entries(parsed.params) } : null,
-          change: advice?.suggested_change ?? null,
-          hardened: hardened && run ? { before: hardened.before?.detection_rate ?? run.detection_rate, after: hardened.after?.detection_rate ?? hardened.detection_rate } : null,
-        }} />}
-      </Card>
+      <div className="twin-layout">
+        <div className="twin-main">
 
-      <section className="schemes" aria-label="The six schemes">
-        {scenarios.map(sc => {
-          const a = SCHEME_ART[sc.id];
-          if (!a) return null;
-          return (
-            <div key={sc.id} className="scheme">
-              <a.art />
-              <b>{sc.name}</b>
-              <span>{a.line}</span>
-              <button type="button" className="scheme-try" onClick={() => { pickScheme(sc.id); document.getElementById('scheme')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>
-                Try it <Icon name="arrow-right" size={13} />
-              </button>
-            </div>
-          );
-        })}
-      </section>
 
       <div className="home-grid twin-row" style={{ marginBottom: 20 }}>
         <Card>
@@ -136,6 +108,23 @@ export function Twin() {
         <JudgeQr />
       </div>
 
+      <section className="schemes" aria-label="The six schemes">
+        {scenarios.map(sc => {
+          const a = SCHEME_ART[sc.id];
+          if (!a) return null;
+          return (
+            <div key={sc.id} className="scheme">
+              <a.art />
+              <b>{sc.name}</b>
+              <span>{a.line}</span>
+              <button type="button" className="scheme-try" onClick={() => { pickScheme(sc.id); document.getElementById('scheme')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>
+                Try it <Icon name="arrow-right" size={13} />
+              </button>
+            </div>
+          );
+        })}
+      </section>
+
       {run && <Results run={run} />}
 
       {run && run.missed > 0 && (
@@ -154,6 +143,17 @@ export function Twin() {
           )}
         </Card>
       )}
+        </div>
+        <aside className="twin-side" aria-label="Fraud Twin progress">
+          <p className="eyebrow">Progress</p>
+          <TwinFlow vertical s={{
+            text, recipes: scenarios.length, busy, run,
+            recipe: parsed && spec ? { name: spec.name, params: Object.entries(parsed.params) } : null,
+            change: advice?.suggested_change ?? null,
+            hardened: hardened && run ? { before: hardened.before?.detection_rate ?? run.detection_rate, after: hardened.after?.detection_rate ?? hardened.detection_rate } : null,
+          }} />
+        </aside>
+      </div>
     </>
   );
 }

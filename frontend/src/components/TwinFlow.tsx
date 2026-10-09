@@ -38,7 +38,7 @@ function Scored({ rate }: { rate: number | null }) {
   );
 }
 
-export function TwinFlow({ s }: { s: TwinFlowState }) {
+export function TwinFlow({ s, vertical }: { s: TwinFlowState; vertical?: boolean }) {
   const ov = useAsync(() => api.overview(), []);
   const claims = ov.data?.tables.claims;
   const r = s.run;
@@ -63,7 +63,7 @@ export function TwinFlow({ s }: { s: TwinFlowState }) {
   ];
 
   return (
-    <div className="tf" role="list" aria-label="How the Fraud Twin works">
+    <div className={`tf ${vertical ? 'tf-vertical' : ''}`} role="list" aria-label="How the Fraud Twin works">
       <div className="tf-sandbox" aria-hidden><span>Sandbox copy · the real queue is never touched</span></div>
       {steps.map((st, i) => {
         const state = running(i) ? 'running' : i < stage ? 'done' : i === stage ? 'active' : 'todo';
