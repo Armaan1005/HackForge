@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toasts } from './components/Toasts';
 import { TopNav } from './components/TopNav';
 import { fade } from './lib/theme';
@@ -20,7 +21,7 @@ function Page({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   return (
     <motion.main key={pathname} className="page container" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={fade}>
-      {children}
+      <ErrorBoundary resetKey={pathname}>{children}</ErrorBoundary>
     </motion.main>
   );
 }
@@ -32,7 +33,7 @@ export default function App() {
     <BrowserRouter>
         <Toasts />
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<ErrorBoundary><Landing /></ErrorBoundary>} />
           <Route path="/home" element={shell(<Command />)} />
           <Route path="/queue" element={shell(<QueuePage />)} />
           <Route path="/court" element={shell(<CourtPage />)} />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Calibration } from '../components/charts';
+import { ResponsibleAI } from '../components/ResponsibleAI';
 import { Icon } from '../components/Icon';
 import { Bar, Card, ErrorState, PageHeader, Section, Segmented, Skeleton, Status } from '../components/ui';
 import { ai, api, localDecisions } from '../lib/api';
@@ -28,6 +29,9 @@ export function Trust() {
         <div className="stat"><b>{d.decoys.correctly_defended} of {d.decoys.total}</b><span>honest look-alikes left alone</span></div>
         <div className="stat"><b>{aiStats.data ? num(aiStats.data.uncited_blocked + aiStats.data.numbers_blocked) : '—'}</b><span>AI statements blocked for missing evidence</span></div>
       </div>
+
+      <ResponsibleAI struck={aiStats.data ? aiStats.data.uncited_blocked + aiStats.data.numbers_blocked : null} checked={aiStats.data?.statements_checked ?? null}
+        decisions={audit.data?.total ?? 0} wronglyCleared={d.exoneration.planted_fraud_wrongly_cleared} />
 
       <div className="home-grid" style={{ marginBottom: 20 }}>
         <div className="plain-section">

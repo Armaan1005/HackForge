@@ -885,3 +885,14 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .sa-slide { animation: sa-slide 3s ease-in-out infinite; }
 @keyframes sa-slide { 0%, 100% { transform: translate(-8px, -4px); opacity: .5; } 50% { transform: translate(0, 0); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sa-pop, .sa-flow, .sa-ghost, .sa-draw, .sa-slide { animation: none; } }
+
+/* Trust: Responsible AI, three ruled columns */
+.rai { margin-bottom: 28px; }
+.rai-head { margin-bottom: 12px; }
+.rai-head h2 { margin: 2px 0 0; }
+.rai-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+@media (max-width: 900px) { .rai-grid { grid-template-columns: 1fr; } }
+.rai-col { display: grid; gap: 8px; align-content: start; padding: 20px 22px; border-left: 1px solid var(--line); border-top: 1px solid var(--line); margin: -1px 0 0 -1px; }
+.rai-col > b { font-size: 1.05rem; }
+.rai-promise { margin: 0; font-weight: 550; color: var(--accent); font-size: .9rem; }
+.rai-col ul { margin: 2px 0 4px; padding-left: 16px; display: grid; gap: 6px; font-size: .84rem; color: var(--text-2); line-height: 1.45; }
