@@ -920,3 +920,5 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 
 .landing .hero-copy .btn-primary { background: #0e0f11; color: #fff; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .55); }
 .landing .hero-copy .btn-primary:hover { background: #24262a; }
+
+.landing-brand { font-size: 1.45rem; gap: 12px; letter-spacing: -.02em; }

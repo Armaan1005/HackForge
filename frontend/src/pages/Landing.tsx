@@ -46,7 +46,7 @@ export function Landing() {
   return (
     <div className="landing">
       <header className="landing-nav container">
-        <Link to="/" className="brand"><MascotMark size={30} />Axon</Link>
+        <Link to="/" className="brand landing-brand"><MascotMark size={38} />Axon</Link>
       </header>
 
       <section className="landing-hero container">
