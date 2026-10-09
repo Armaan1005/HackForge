@@ -964,3 +964,19 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .trust-open .side-flat > .card { background: transparent; border: 0; box-shadow: none; border-radius: 0; padding: 18px 2px 22px; }
 .trust-open .side-flat > .card + .card { border-top: 1px solid var(--line-strong); }
 .trust-open .plain-section .pad { padding-top: 18px; }
+
+/* Fraud Twin: open layout on rules (fewer boxes) */
+.twin-open .twin-form { margin-bottom: 10px; border-top: 1px solid var(--line-strong); }
+.twin-open .twin-form > .card { background: transparent; border: 0; box-shadow: none; border-radius: 0; padding: 18px 2px 20px; }
+.twin-open .twin-form .textarea { background: var(--surface); }
+.twin-open .twin-form .help-panel { background: var(--surface); }
+.twin-open .schemes { background: transparent; border: 0; border-radius: 0; box-shadow: none; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); margin-bottom: 28px; }
+.twin-open .scheme { padding-left: 16px; }
+.twin-open .scheme .sa { background: var(--surface); }
+.twin-open .twin-side { background: transparent; border: 0; border-left: 1px solid var(--line-strong); border-radius: 0; box-shadow: none; padding: 4px 0 4px 18px; }
+.twin-open .twin-side .tf-step.active, .twin-open .twin-side .tf-step.running { background: var(--surface); }
+.twin-open .twin-side .tf-sandbox { background: rgba(255, 255, 255, .45); }
+.twin-open .twin-row { border-top: 1px solid var(--line-strong); padding-top: 4px; margin-bottom: 8px; }
+.twin-open .twin-row > .card { background: transparent; border: 0; box-shadow: none; border-radius: 0; padding: 18px 2px; }
+.twin-open .twin-row > .graph-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0; margin: 14px 0; }
+.twin-open .card-accent { box-shadow: none; border: 0; border-radius: 16px; background: var(--accent-softer); }

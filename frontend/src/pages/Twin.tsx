@@ -59,14 +59,14 @@ export function Twin() {
   };
 
   return (
-    <>
+    <div className="twin-open">
       <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" actions={<Mascot size={80} mood={mood} />} />
 
       <div className="twin-layout">
         <div className="twin-main">
 
 
-      <div style={{ marginBottom: 20 }}>
+      <div className="twin-form">
         <Card>
           <div className="field">
             <label htmlFor="scheme">What if…</label>
@@ -154,7 +154,7 @@ export function Twin() {
           <div className="side-qr"><JudgeQr /></div>
         </aside>
       </div>
-    </>
+    </div>
   );
 }
 
