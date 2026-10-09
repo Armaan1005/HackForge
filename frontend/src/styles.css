@@ -907,3 +907,13 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 
 /* Landing: stats strip fits on the first screen */
 .landing-hero { min-height: calc(100svh - 72px - 175px); padding-bottom: 8px; }
+
+/* Landing: a few black accents to go with the dark globe (page stays light) */
+.landing .globe-card { background: rgba(14, 15, 17, .86); color: #f4f5f6; box-shadow: 0 16px 36px -16px rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .08); }
+.landing .globe-card span { color: #a7acb3; }
+.landing .globe-dot { background: #4dd999; box-shadow: 0 0 0 5px rgba(77, 217, 153, .18); }
+.landing .globe-dot.warn { background: #e09a4f; box-shadow: 0 0 0 5px rgba(224, 154, 79, .2); }
+.landing .ledger { border-top: 2px solid #0e0f11; }
+.landing .ledger-item b { color: #0e0f11; }
+.landing .ledger-item.last b { color: var(--accent); }
+.landing .landing-nav .m-bg { fill: #0e0f11; }
