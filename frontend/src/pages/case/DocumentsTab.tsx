@@ -105,6 +105,23 @@ export function DocumentsTab({ k }: { k: CaseDetail }) {
   const docs = fx.data.documents;
   const flagged = docs.filter(d => d.integrity_flags.length).length;
 
+  // Some cases have no medical records at all (e.g. ambulance trips: there are no trip sheets in the data).
+  if (docs.length === 0) {
+    const NOUN: Record<string, string> = { ambulance: 'ambulance trips', professional: 'clinic visits', pharmacy: 'pharmacy fills', lab: 'lab tests',
+      facility: 'facility stays', behavioral_health: 'behavioural health sessions', home_health: 'home health visits', dme: 'equipment rentals' };
+    const types = Object.keys(k.claims_summary.service_types ?? {}).map(t => NOUN[t] ?? t.replace(/_/g, ' '));
+    return (
+      <Card>
+        <h2>No medical records linked to this case</h2>
+        <p className="muted" style={{ marginTop: 6, maxWidth: 640 }}>
+          The {k.claims_summary.claim_count} claims here are {types.length ? types.join(' and ') : 'services'} with no notes, reports or scans attached,
+          so there is nothing for the records check to read. The evidence comes from the claims themselves; see the Evidence tab.
+        </p>
+        {k.missing_documents.length > 0 && <p className="small" style={{ marginTop: 10 }}>Missing: {k.missing_documents.map(m => `${m.doc_type.replace(/_/g, ' ')} (${m.claim_count} claims)`).join(', ')}</p>}
+      </Card>
+    );
+  }
+
   return (
     <div className="cand-bottom flat">
       <div>
