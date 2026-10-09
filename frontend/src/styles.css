@@ -952,3 +952,5 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 
 .pc-title { display: flex; flex-direction: column; justify-content: center; padding-top: 16px; padding-bottom: 16px; }
 .pc-title h2 { margin: 0; }
+
+.row-icon.good { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }

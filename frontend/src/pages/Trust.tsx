@@ -4,7 +4,7 @@ import { ResponsibleAI } from '../components/ResponsibleAI';
 import { Icon } from '../components/Icon';
 import { Bar, Card, ErrorState, PageHeader, Section, Segmented, Skeleton, Status } from '../components/ui';
 import { ai, api, localDecisions } from '../lib/api';
-import { inr, num, pct } from '../lib/format';
+import { inr, num, pct, STATUS } from '../lib/format';
 import { useAsync } from '../lib/hooks';
 
 export function Trust() {
@@ -68,11 +68,14 @@ export function Trust() {
       </div>
 
       <div className="home-grid flat">
-        <Section title="Golden set: checked on every run">
+        <Section title={`Golden set: ${d.golden_set.filter(g => g.match).length} of ${d.golden_set.length} match, checked on every run`}>
           {d.golden_set.map(g => (
             <div key={g.case_id} className="row">
-              <span className="row-icon"><Icon name={g.match ? 'accept' : 'alert'} size={14} /></span>
-              <div className="row-text"><span className="row-label">{g.case_id}</span><span className="row-desc">{g.kind} case</span></div>
+              <span className={`row-icon ${g.match ? 'good' : 'bad'}`}><Icon name={g.match ? 'accept' : 'decline'} size={14} /></span>
+              <div className="row-text">
+                <span className="row-label">{g.case_id}</span>
+                <span className="row-desc">{g.kind} case{g.match ? '' : ` · expected ${STATUS[g.expected]?.label ?? g.expected}`}</span>
+              </div>
               <Status value={g.actual} />
             </div>
           ))}
