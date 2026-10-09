@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calibration } from '../components/charts';
+import { CalibrationChart } from '../components/CalibrationChart';
 import { ResponsibleAI } from '../components/ResponsibleAI';
 import { Icon } from '../components/Icon';
 import { Bar, Card, ErrorState, PageHeader, Section, Segmented, Skeleton, Status } from '../components/ui';
@@ -54,7 +54,7 @@ export function Trust() {
           <Card>
             <div className="row-flex" style={{ marginBottom: 10 }}><h2>Is the forecast honest?</h2><span className="spacer" />
               <Segmented size="sm" label="Look ahead" value={h} onChange={setH} options={[{ value: '30', label: '30d' }, { value: '60', label: '60d' }, { value: '90', label: '90d' }]} /></div>
-            {fc.calibration.length ? <Calibration bins={fc.calibration} /> : <p className="small muted">Arrives with the live engine.</p>}
+            {fc.calibration.length ? <CalibrationChart bins={fc.calibration} /> : <p className="small muted">Arrives with the live engine.</p>}
             <p className="small muted" style={{ marginTop: 6 }}>Ranking quality (AUC) {fc.auc}</p>
           </Card>
           <Card>
