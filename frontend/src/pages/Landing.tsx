@@ -42,7 +42,6 @@ export function Landing() {
     { v: f.cases, l: 'cases built' },
     { v: f.selected_today, l: `picked for today’s ${f.capacity_hours} review hours` },
   ] : [];
-  const asOf = ov.data ? new Date(`${ov.data.sim_today}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
   return (
     <div className="landing">
@@ -86,7 +85,6 @@ export function Landing() {
                   </div>
                 ))}
               </div>
-              <p className="ledger-note">Engine run as of {asOf} · synthetic data, seed {ov.data?.seed}</p>
             </>
           ) : <Skeleton h={88} />}
         </motion.div>

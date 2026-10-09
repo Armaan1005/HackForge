@@ -637,7 +637,7 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .ledger-item { position: relative; display: grid; align-content: start; gap: 4px; padding: 22px 20px 20px; }
 .ledger-item + .ledger-item { border-left: 1px solid var(--line); }
 .ledger-item b { font-family: var(--font-display); font-size: clamp(1.6rem, 2.6vw, 2.2rem); font-weight: 650; letter-spacing: -.025em; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.ledger-item span { font-size: .84rem; color: var(--text-2); line-height: 1.35; }
+.ledger-item > span { font-size: .84rem; color: var(--text-2); line-height: 1.35; }  /* labels only, not the number ticker inside <b> */
 .ledger-item.last b { color: var(--accent); }
 .ledger-arrow { position: absolute; left: -8px; top: 34px; width: 16px; height: 16px; padding: 1px; border-radius: 50%; background: var(--bg); color: var(--text-3); }
 .ledger-note { margin-top: 10px; font-size: .74rem; color: var(--text-3); text-align: right; }
@@ -917,3 +917,6 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .landing .ledger-item b { color: #0e0f11; }
 .landing .ledger-item.last b { color: var(--accent); }
 .landing .landing-nav .m-bg { fill: #0e0f11; }
+
+.landing .hero-copy .btn-primary { background: #0e0f11; color: #fff; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .55); }
+.landing .hero-copy .btn-primary:hover { background: #24262a; }
