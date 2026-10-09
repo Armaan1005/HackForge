@@ -21,7 +21,7 @@ export function Trust() {
 
   return (
     <>
-      <PageHeader eyebrow="How well it works" title="Can you trust these numbers?" subtitle="Measured on synthetic data where we planted fraud and honest look-alikes, so we know the right answers." />
+      <PageHeader eyebrow="How well it works" title="Can you trust these numbers?" subtitle="Measured on synthetic data with planted fraud, so the right answers are known." />
 
       <div className="stats" style={{ marginBottom: 20 }}>
         <div className="stat"><b>{pct(o.recall)}</b><span>of planted fraud found</span></div>

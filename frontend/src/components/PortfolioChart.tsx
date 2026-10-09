@@ -67,7 +67,6 @@ export function PortfolioChart({ cases, capacity, onPick }: { cases: QueueCase[]
       <div className="pc-head">
         <div className="pc-title">
           <h2>Where today's hours go</h2>
-          <p className="small muted">Today's picks first, then the rest by ₹ per hour: how much each extra hour brings back</p>
         </div>
         <div className="pc-totals" role="group" aria-label="Highlight a group">
           {totals.map(t => (

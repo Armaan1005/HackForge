@@ -20,7 +20,7 @@ export function CourtPage() {
   return (
     <>
       <PageHeader eyebrow="Evidence Court" title="Every case gets a fair hearing"
-        subtitle="Two AI agents argue from the same evidence. Code strikes anything they can't back up. You make the ruling."
+       
         actions={<Mascot size={84} mood="watching" />} />
 
       <div className="row-flex" style={{ marginBottom: 18 }}>

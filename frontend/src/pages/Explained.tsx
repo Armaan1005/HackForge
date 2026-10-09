@@ -46,7 +46,7 @@ export function Explained() {
   return (
     <>
       <PageHeader eyebrow="Explained" title={cl.data ? `${num(cl.data.total)} alerts you don't need to look at` : '…'}
-        subtitle="Raised by the engine, then cleared because an innocent explanation fit the facts. Tap one to see why."
+        subtitle="Tap one to see why it was cleared."
         actions={<Mascot size={80} mood="happy" />} />
 
       <div className="home-grid flat">

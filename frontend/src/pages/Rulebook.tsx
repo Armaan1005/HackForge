@@ -43,7 +43,6 @@ export function Rulebook() {
   if (book.error) return <ErrorState error={new Error(`Couldn't load the rulebook (${book.error.message}).`)} onRetry={book.reload} />;
   if (!book.data) return <Skeleton h={600} />;
   const total = FRONT + entries.length + 1;
-  const pol = entries.filter(e => e.kind === 'payer_rule').length, law = entries.length - pol;
   const side = (i: number): 'left' | 'right' => (i % 2 ? 'left' : 'right');
 
   const tocLine = (e: RulebookEntry) => {
@@ -57,8 +56,7 @@ export function Rulebook() {
 
   return (
     <>
-      <PageHeader eyebrow="Rulebook" title="The book Axon reads from"
-        subtitle={`${pol} payer rules and ${law} law summaries. Agents may cite only the pages pulled for their case.`} />
+      <PageHeader eyebrow="Rulebook" title="The book Axon reads from" />
 
       <div className="bk-layout">
         <div className="bk-stage">
@@ -128,7 +126,6 @@ export function Rulebook() {
             <span className="small muted">Page {page + 1} of {total}</span>
             <Button size="sm" variant="secondary" iconRight="slim-arrow-right" onClick={() => ref.current?.pageFlip()?.flipNext()} disabled={page >= total - 1}>Next</Button>
           </div>
-          <p className="xs faint" style={{ textAlign: 'center' }}>Drag a page corner, swipe, or use the arrows.</p>
         </div>
 
         <div className="stack-lg flat">

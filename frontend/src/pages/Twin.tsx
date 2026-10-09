@@ -60,7 +60,7 @@ export function Twin() {
 
   return (
     <>
-      <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" subtitle="Describe a new fraud trick. Axon tests it on a copy of the data." actions={<Mascot size={80} mood={mood} />} />
+      <PageHeader eyebrow="Fraud Twin" title="Try to beat the detector" actions={<Mascot size={80} mood={mood} />} />
 
       <div className="twin-layout">
         <div className="twin-main">
