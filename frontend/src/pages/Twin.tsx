@@ -72,15 +72,15 @@ export function Twin() {
             <label htmlFor="scheme">What if…</label>
             <textarea id="scheme" className="textarea" style={{ minHeight: 80 }} value={text} onChange={e => setText(e.target.value)} maxLength={600} />
           </div>
-          <div className="chip-group" style={{ marginTop: 12 }}>
-            {scenarios.slice(0, 3).map(s => <Chip key={s.id} onClick={() => setText(s.examples[0])}>{s.name}</Chip>)}
-          </div>
-          <div className="row-flex" style={{ marginTop: 16 }}>
+          <div className="row-flex" style={{ marginTop: 14, gap: 10, flexWrap: 'wrap' }}>
             <Button icon="ai" loading={busy === 'parse'} onClick={build}>Build the attack</Button>
             <select className="select" style={{ width: 'auto' }} value="" onChange={e => pickScheme(e.target.value)} aria-label="Pick a scheme">
               <option value="" disabled>or pick a scheme</option>
               {scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
+            <span className="spacer" />
+            <span className="small muted">Examples:</span>
+            {scenarios.slice(0, 3).map(s => <Chip key={s.id} onClick={() => setText(s.examples[0])}>{s.name}</Chip>)}
           </div>
           {msg && <div style={{ marginTop: 14 }}><Note tone="warn">{msg}</Note></div>}
           {parsed && spec && (
