@@ -896,3 +896,5 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .rai-col > b { font-size: 1.05rem; }
 .rai-promise { margin: 0; font-weight: 550; color: var(--accent); font-size: .9rem; }
 .rai-col ul { margin: 2px 0 4px; padding-left: 16px; display: grid; gap: 6px; font-size: .84rem; color: var(--text-2); line-height: 1.45; }
+
+.landing-nav > .btn { margin-left: auto; }

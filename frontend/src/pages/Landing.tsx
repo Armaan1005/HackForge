@@ -48,12 +48,7 @@ export function Landing() {
     <div className="landing">
       <header className="landing-nav container">
         <Link to="/" className="brand"><MascotMark size={30} />Axon</Link>
-        <nav className="landing-links">
-          <Link to="/timelines">Two timelines</Link>
-          <Link to="/rulebook">Rulebook</Link>
-          <Link to="/trust">Trust</Link>
-        </nav>
-        <Link to="/home" className="btn btn-primary btn-sm btn-shimmer">Open workspace<Icon name="arrow-right" size={14} /></Link>
+        <Link to="/home" className="btn btn-primary btn-sm btn-shimmer">Dive in<Icon name="arrow-right" size={14} /></Link>
       </header>
 
       <section className="landing-hero container">
@@ -61,10 +56,8 @@ export function Landing() {
           <h1 className="hero-title">ClaimShield <span className="text-sheen">Nexus</span></h1>
           <p className="hero-sub">A unified platform that identifies suspicious claims and coordinated networks, predicts future risk, explains the evidence, and prioritizes cases for Special Investigations Unit review.</p>
           <div className="row-flex" style={{ gap: 10, marginTop: 26 }}>
-            <Link to="/home" className="btn btn-primary btn-md btn-shimmer">Open workspace<Icon name="arrow-right" size={15} /></Link>
-            <Link to="/timelines" className="btn btn-secondary btn-md"><Icon name="play" size={14} />Watch two timelines</Link>
+            <Link to="/home" className="btn btn-primary btn-md btn-shimmer">Dive in<Icon name="arrow-right" size={15} /></Link>
           </div>
-          <p className="xs faint" style={{ marginTop: 18 }}>Synthetic data only. Advisory: a person decides every case.</p>
         </motion.div>
 
         <div className="hero-globe">
@@ -147,7 +140,7 @@ export function Landing() {
 
       <footer className="container landing-foot small faint">
         <span>Axon · built on synthetic data for a hackathon. Not legal advice; law summaries must be checked against the official text.</span>
-        <Link to="/home">Open workspace</Link>
+        <Link to="/home">Dive in</Link>
       </footer>
     </div>
   );
