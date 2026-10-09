@@ -901,6 +901,6 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 
 /* white gradient halo behind the dark globe */
 .globe::before { content: ""; position: absolute; inset: 0; pointer-events: none;
-  /* cobe draws the sphere at 80% of the canvas radius: a white ring that fades outwards from that edge */
-  background: radial-gradient(circle closest-side, rgba(255,255,255,0) 77%, rgba(255,255,255,.95) 80.5%, rgba(255,255,255,.55) 85%, rgba(255,255,255,0) 95%); }
+  /* cobe draws the sphere at 80% of the canvas radius: a thin mint ring (the India dots' green) fading out from that edge */
+  background: radial-gradient(circle closest-side, rgba(77,217,153,0) 79.2%, rgba(77,217,153,.75) 80.2%, rgba(77,217,153,.22) 81.6%, rgba(77,217,153,0) 84%); }
 .globe canvas { position: relative; }
