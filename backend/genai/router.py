@@ -10,12 +10,12 @@ import socket
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
 from . import engine_client as engine, ollama, rag
 from .agents.brief import write_brief
-from .agents.court import run_court
+from .agents.court import run_court, side_events
 from .agents.explain import ask_case, explain_cleared
 from .agents.forensics import analyze_document
 from .agents.twin import advise_hardening, parse_scenario
@@ -108,6 +108,42 @@ async def status():
 async def court(case_id: str, refresh: bool = False, fresh: bool = False):
     """fresh=true skips the answer cache so the hearing is argued live by Gemini."""
     return await _court(await _load_case(case_id), LIVE, refresh or fresh, fresh)
+
+
+@router.post("/court/{case_id}/stream")
+async def court_stream(case_id: str, refresh: bool = False, fresh: bool = False):
+    """Same hearing as /court, streamed as NDJSON: each side's verified arguments as soon as that agent finishes,
+    then {"event": "done", "court": <full result>}. Lets the UI start the hearing before the clerk is done."""
+    case = await _load_case(case_id)
+    key = _case_key(case)
+
+    def line(ev: dict) -> str:
+        return json.dumps(ev, ensure_ascii=False) + "\n"
+
+    async def events():
+        cached = None if (refresh or fresh) else _court_cache.get(key)
+        if cached is not None:
+            for ev in side_events(cached):
+                yield line(ev)
+            yield line({"event": "done", "court": cached})
+            return
+        q: asyncio.Queue = asyncio.Queue()
+        task = asyncio.create_task(run_court(case, LIVE, fresh, emit=q.put))
+        task.add_done_callback(lambda _t: q.put_nowait(None))
+        while (ev := await q.get()) is not None:
+            yield line(ev)
+        try:
+            result = task.result()
+        except Exception as e:  # noqa: BLE001 - surfaced to the UI, which falls back to the plain endpoint
+            log.exception("court stream failed for %s", case_id)
+            yield line({"event": "error", "message": f"{type(e).__name__}: {e}"})
+            return
+        if not any("still queued" in n for n in result["ai"]["notes"]):
+            _court_cache[key] = result
+        yield line({"event": "done", "court": result})
+
+    return StreamingResponse(events(), media_type="application/x-ndjson",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @router.get("/brief/{case_id}")

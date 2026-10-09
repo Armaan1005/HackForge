@@ -986,3 +986,6 @@ button.cite.rule:hover { filter: brightness(.95); text-decoration: underline; }
 .twin-open .twin-row > .card { background: transparent; border: 0; box-shadow: none; border-radius: 0; padding: 18px 2px; }
 .twin-open .twin-row > .graph-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0; margin: 14px 0; }
 .twin-open .card-accent { box-shadow: none; border: 0; border-radius: 16px; background: var(--accent-softer); }
+
+/* Evidence Court: waiting on the clerk while the stream finishes */
+.court-wait { display: flex; align-items: center; gap: 10px; padding: 6px 2px; }

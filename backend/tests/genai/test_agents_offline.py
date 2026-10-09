@@ -22,6 +22,19 @@ def test_court_is_grounded_and_keeps_code_status():
     assert all(a["evidence_ids"] for a in r["prosecution"]["arguments"] + r["defense"]["arguments"])
 
 
+def test_court_stream_sends_each_side_then_the_full_result():
+    with client() as c:
+        lines = [json.loads(x) for x in c.post("/api/ai/court/CASE-0001/stream?refresh=true").text.splitlines() if x]
+    sides = [e for e in lines if e["event"] == "side"]
+    assert {e["side"] for e in sides} == {"prosecution", "defense"}
+    assert all(e["arguments"] and all(a["evidence_ids"] for a in e["arguments"]) for e in sides)
+    assert lines[-1]["event"] == "done"
+    done = lines[-1]["court"]
+    assert done["verdict"]["human_approval_required"] is True
+    by_side = {e["side"]: e["arguments"] for e in sides}
+    assert by_side["prosecution"] == done["prosecution"]["arguments"] and by_side["defense"] == done["defense"]["arguments"]
+
+
 def test_unknown_case_uses_sample_in_fixture_mode():
     with client() as c:
         r = c.post("/api/ai/court/CASE-0099")

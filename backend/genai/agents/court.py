@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 from datetime import datetime
+from typing import Awaitable, Callable
 
 from .. import prompts, templates, trace
 from ..config import settings
@@ -24,27 +25,47 @@ async def _agent(name: str, prompt: str, schema, fallback: dict, priority: int, 
         return fallback, "template", str(e)
 
 
-async def run_court(case: dict, priority: int = LIVE, fresh: bool = False) -> dict:
+Emit = Callable[[dict], Awaitable[None]]
+
+
+def side_events(result: dict) -> list[dict]:
+    """A finished court result as the events a live stream would have sent (used when the answer is cached)."""
+    dropped = result["verifier"]["dropped_items"]
+    return [
+        {"event": "side", "side": "prosecution", "arguments": result["prosecution"]["arguments"], "source": result["prosecution"]["source"], "rules": result.get("rules", []),
+         "dropped": [d for d in dropped if d.get("agent") == "prosecutor"], "model": result["ai"]["model"]},
+        {"event": "side", "side": "defense", "arguments": result["defense"]["arguments"], "source": result["defense"]["source"], "rules": result.get("rules", []),
+         "missing_evidence": result["defense"]["missing_evidence"], "dropped": [d for d in dropped if d.get("agent") == "defense"],
+         "model": result["ai"]["model"]},
+    ]
+
+
+async def run_court(case: dict, priority: int = LIVE, fresh: bool = False, emit: Emit | None = None) -> dict:
+    """emit (optional) receives each side the moment it is verified, so the UI can start the hearing early."""
     idx = index_case(case)
     pool = pool_json(case)
     trace.retrieval("court", for_case(case))
 
-    (pros, pros_src, pros_note), (defn, def_src, def_note) = await asyncio.gather(
-        _agent("prosecutor", prompts.PROSECUTOR.format(pool=pool), ProsecutionOut, templates.prosecution(case), priority, fresh),
-        _agent("defense", prompts.DEFENSE.format(pool=pool), DefenseOut, templates.defense(case), priority, fresh),
-    )
-    pros_kept, pros_dropped = verify_arguments("prosecutor", pros["arguments"], idx, case)
-    def_kept, def_dropped = verify_arguments("defense", defn["arguments"], idx, case)
-    trace.verifier("prosecutor", len(pros_kept), pros_dropped)
-    trace.verifier("defense", len(def_kept), def_dropped)
+    async def side(name: str, agent: str, prompt: str, schema, template: dict):
+        out, src, note = await _agent(agent, prompt, schema, template, priority, fresh)
+        kept, dropped = verify_arguments(agent, out["arguments"], idx, case)
+        trace.verifier(agent, len(kept), dropped)
+        # If the model produced nothing verifiable, fall back to the deterministic side so the panel is never empty.
+        if not kept:
+            kept, _ = verify_arguments(agent, template["arguments"], idx)
+            src = "template"
+        if emit:
+            ev = {"event": "side", "side": name, "arguments": kept, "source": src, "dropped": dropped, "rules": rule_refs(kept, case),
+                  "model": gateway.last_model.get(agent, gateway.models[0] if gateway.models else settings.model)}
+            if name == "defense":
+                ev["missing_evidence"] = out.get("missing_evidence") or template["missing_evidence"]
+            await emit(ev)
+        return out, src, note, kept, dropped
 
-    # If the model produced nothing verifiable, fall back to the deterministic side so the panel is never empty.
-    if not pros_kept:
-        pros_kept, _ = verify_arguments("prosecutor", templates.prosecution(case)["arguments"], idx)
-        pros_src = "template"
-    if not def_kept:
-        def_kept, _ = verify_arguments("defense", templates.defense(case)["arguments"], idx)
-        def_src = "template"
+    (pros, pros_src, pros_note, pros_kept, pros_dropped), (defn, def_src, def_note, def_kept, def_dropped) = await asyncio.gather(
+        side("prosecution", "prosecutor", prompts.PROSECUTOR.format(pool=pool), ProsecutionOut, templates.prosecution(case)),
+        side("defense", "defense", prompts.DEFENSE.format(pool=pool), DefenseOut, templates.defense(case)),
+    )
 
     v = case.get("verdict", {})
     status_label = STATUS_LABEL.get(v.get("status", ""), v.get("status", ""))

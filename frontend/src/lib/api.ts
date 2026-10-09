@@ -111,4 +111,35 @@ export const ai = {
   prewarm: () => fetchJson<{ queued_cases: string[] }>('/api/ai/prewarm', { method: 'POST' }),
 };
 
-export const briefDownloadUrl = (id: string) => `/api/ai/brief/${id}?format=md`;
+/** One line of the court stream: a side's verified arguments as soon as that agent finishes. */
+export interface CourtSide {
+  side: 'prosecution' | 'defense'; arguments: Court['prosecution']['arguments']; source: string; model: string;
+  dropped: Court['verifier']['dropped_items']; rules?: Rule[]; missing_evidence?: string[];
+}
+
+/** Evidence Court, streamed: onSide fires per side as it lands; resolves with the full result (clerk included). */
+export async function courtStream(id: string, onSide: (s: CourtSide) => void, opts: { refresh?: boolean; fresh?: boolean; signal?: AbortSignal } = {}): Promise<Court> {
+  const q = opts.fresh ? '?fresh=true' : opts.refresh ? '?refresh=true' : '';
+  const r = await fetch(`/api/ai/court/${id}/stream${q}`, { method: 'POST', signal: opts.signal });
+  if (!r.ok || !r.body) throw Object.assign(new Error(`${r.status} ${r.statusText}`), { status: r.status });
+  const reader = r.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (value) buf += dec.decode(value, { stream: true });
+    let nl;
+    while ((nl = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
+      const ev = JSON.parse(line);
+      if (ev.event === 'side') onSide(ev as CourtSide);
+      else if (ev.event === 'done') return ev.court as Court;
+      else if (ev.event === 'error') throw new Error(ev.message);
+    }
+    if (done) throw new Error('The hearing ended before the clerk finished.');
+  }
+}
+
+export const briefDownloadUrl =(id: string) => `/api/ai/brief/${id}?format=md`;
